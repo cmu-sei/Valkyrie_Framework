@@ -1,0 +1,19 @@
+# config file version
+apiVersion: 1
+
+# list of datasources to insert/update
+datasources:
+- name: default  # <string, required> datasource type. Required
+  type: mysql
+  access: proxy
+  orgId: 1
+  uid: "TlndQyrnk"
+  url: bh_db:3306
+  user: grafana
+  database: beacon
+  allowUiUpdates: true
+  isDefault: true
+  secureJsonData:
+    password: "BeaconHunt1!"
+  version: 1
+  editable: true
