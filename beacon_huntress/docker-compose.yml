@@ -1,0 +1,58 @@
+version: '3.9'
+networks:
+  bh_network:
+    driver: bridge
+
+services:
+  db:
+    container_name: beacon_huntress_db
+    image: mysql:5.7
+    restart: always
+    command: --init-file /scripts/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: 'RootBeacon1!'
+      MYSQL_DATABASE: 'beacon'
+    ports:
+      - "3306:3306"
+    expose:
+      - '3306'
+    volumes:
+      - ./_mysql:/var/lib/mysql
+      - ./src/setup/init.sql:/scripts/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - bh_network          
+
+  grafana:
+    container_name: bh_grafana
+    image: grafana
+    depends_on:
+      - db
+    user: root
+    environment:
+      - GF_INSTALL_PLUGINS=michaeldmoore-scatter-panel
+    ports:
+      - '3000:3000'
+    networks:
+      - bh_network
+    restart: always
+    volumes: 
+      - ./src/lib/grafana/datasources:/etc/grafana/datasources/
+      - ./src/lib/grafana/dashboards:/etc/grafana/dashboards/
+      - ./src/lib/grafana/plugins:/var/lib/grafana/plugins/    
+
+  beacon_huntress:
+    container_name: beacon_huntress
+    build: .
+    restart: always
+    ports: 
+      - "5000:5000"
+    volumes:
+      - "./src/config:/app/config"
+      - "./_beacon_huntress/:/tmp/raw/data"
+    depends_on:
+      db:
+        condition: service_healthy
