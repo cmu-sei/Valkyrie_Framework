@@ -1,0 +1,15 @@
+# UNCOMMENT FOR DASHBOARD
+[Unit]
+Description=Beacon Huntress
+Requires=mysql.service grafana-server.service
+After=mysql.service grafana-server.service
+
+[Service]
+Type=simple
+WorkingDirectory=/var/beacon_huntress/bin
+ExecStart=python3 /var/beacon_huntress/bin/beacon_huntress.py --conf "/var/beacon_huntress/conf/beacon.json"
+KillSignal=SIGINT
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target
