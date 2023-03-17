@@ -1,0 +1,279 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3,
+  "iteration": 1654275667387,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "TlndQyrnk"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "border": {
+          "color": "yellow",
+          "size": 0
+        },
+        "fieldSets": [
+          {
+            "col": 1,
+            "color": "#185d7a",
+            "dotSize": 3,
+            "hidden": false,
+            "lineSize": 1,
+            "lineType": "none",
+            "polynomialOrder": 3,
+            "sizeCol": -5
+          }
+        ],
+        "grid": {
+          "color": "#00000000"
+        },
+        "label": {
+          "col": -1,
+          "color": "#CCC",
+          "textSize": 2
+        },
+        "legend": {
+          "show": false,
+          "size": 3
+        },
+        "xAxis": {
+          "col": 1,
+          "inverted": false
+        },
+        "xAxisExtents": {
+          "min": null,
+          "max": null
+        },
+        "xAxisTitle": {
+          "text": "",
+          "color": "#C4162A",
+          "textSize": 1,
+          "rotated": false,
+          "logScale": false
+        },
+        "xMargins": {
+          "lower": 30,
+          "upper": 10
+        },
+        "yAxisExtents": {
+          "min": null,
+          "max": null
+        },
+        "yAxisTitle": {
+          "text": "",
+          "color": "#F2495C",
+          "textSize": 4,
+          "rotated": false,
+          "logScale": false
+        },
+        "yMargins": {
+          "lower": 20,
+          "upper": 20
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "TlndQyrnk"
+          },
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  dt AS \"time\",\n  delta_mins\nFROM beacon\nWHERE\n  $__timeFilter(dt)\n  and dest_ip = '$conns'\nORDER BY dt",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "orig_bytes"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "beacon",
+          "timeColumn": "dt",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Cluster Points",
+      "type": "michaeldmoore-scatter-panel"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "TlndQyrnk"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "DateTime"
+          }
+        ]
+      },
+      "pluginVersion": "8.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "TlndQyrnk"
+          },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  source_ip as \"Source IP\",\n  dest_ip as \"Destination IP\",\n  port as \"Port\",\n  source_port as \"Source Port\",\n  dt as \"Date\",\n  delta_mins as \"Delta in Mins\",\n  duration as \"Connection Duration\",\n  orig_bytes as \"Source Bytes\",\n  resp_bytes as \"Destination Bytes\",\n  conn_state as \"Connection State\"\nFROM beacon\nWHERE\n  $__timeFilter(dt)\n  and dest_ip = '$conns'\nORDER BY dt",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "orig_bytes"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "beacon",
+          "timeColumn": "dt",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "Beacon Details",
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "88.83.20.220",
+          "value": "88.83.20.220"
+        },
+        "datasource": {
+          "type": "mysql",
+          "uid": "TlndQyrnk"
+        },
+        "definition": "select dest_ip from beacon",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "conns",
+        "options": [],
+        "query": "select dest_ip from beacon",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6M",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Beacon Details",
+  "uid": "uC9Ro6_nz",
+  "version": 1,
+  "weekStart": ""
+}
