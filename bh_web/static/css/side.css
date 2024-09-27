@@ -1,0 +1,313 @@
+@import url("https://fonts.googleapis.com/css?family=Oswald");
+
+:root {
+    --background: #FFF;
+    --side_bg: rgb(5, 68, 104);
+    --side_text: #FFF;
+    --text: rgb(5, 68, 104);
+    --highlight: grey;
+    --modebutton: #000;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    top: 500px;
+    transition: 0.5s background ease;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* SIDE */
+.theme-switch {
+    --background: #000;
+    --side_bg: #000;
+    --side_text: skyblue;
+    --text: skyblue;
+    --highlight: grey;
+    --modebutton: #000;
+    color: var(--text);
+    background: var(--highlight);
+    border-radius: 50px;
+    position: fixed;
+    left: 5px;
+    bottom: 15px;
+    width: 70px;
+    height: 30px;
+    overflow: auto;    
+}
+
+/* THEME */
+.theme-switch .switch {
+    width: 24px;
+    height: 24px;
+    background: #000;
+    border-radius: 100%;
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    transition: 0.5s all ease;
+}
+
+.dark-theme {
+    --background: #000;
+    --side_bg: #000;
+    --side_text: skyblue;
+    --text: skyblue;
+    --highlight: #FFF;
+    --modebutton: #000;
+    /*background: var(--highlight);*/
+}
+
+.dark-theme .theme-switch {
+    background: #FFF;
+}
+
+.dark-theme .theme-switch .switch {
+    transform: translateX(37px);
+}
+
+.dark-theme a {
+    color: var(--side_text)
+}
+
+
+/* NAVIGATOR */
+.navigation {
+    display: flex;
+    justify-content: center;
+}
+
+.dashboard-nav {
+    min-width: 238px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 20%;
+    height: 100%;
+    overflow: auto;
+    background: var(--side_bg);
+    color: var(--side_text);
+    font-family: "Oswald", sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    text-decoration: none;
+    list-style-type: none;
+    /*margin: 10px 30px;*/
+}
+
+.dashboard-nav a {
+    /*margin: 10px 30px;*/
+    display: block;
+    padding: 13px 30px;
+    position: relative;
+    color: var(--side_text);
+    border-bottom: 1px solid var(--side_text);
+    font-family: "Oswald", sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.dashboard-nav a:before {
+    position: absolute;
+    bottom: -2px;
+    content: "";
+    width: 100%;
+    height: 3px;
+    background: var(--highlight);
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.dashboard-nav a:hover {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    background: var(--side_text);
+    color: var(--side_bg);
+}
+
+.dashboard-nav .active {
+    color: var(--highlight);
+}
+
+.dashboard-nav .active:hover:before {
+    opacity: 0;
+}
+
+.fa-caret-down {
+    float: right;
+    padding-right: 8px;
+}  
+
+.color-btn {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 20px;
+    color: var(--side_text);
+    display: block;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+  }
+
+  
+/* DROP LIST ITEMS */
+.dropdown-btn {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 20px;
+    color: var(--side_text);
+    display: block;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+  }
+
+
+/* Fixed sidenav, full height */
+.sidenav {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    padding-top: 20px;
+  }
+  
+  /* Style the sidenav links and the dropdown button */
+  .sidenav a, .dropdown-btn {
+    display: block;
+    padding: 13px 30px;
+    position: relative;
+    color: var(--side_text);
+    border-bottom: 1px solid var(--side_text);
+    font-family: "Oswald", sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .sidenav a, .color-btn {
+    display: block;
+    padding: 13px 30px;
+    position: relative;
+    color: var(--side_text);
+    border-bottom: 1px solid var(--side_text);
+    font-family: "Oswald", sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    text-decoration: none;
+  }  
+
+  /* On mouse-over */
+  .sidenav a:hover, .dropdown-btn:hover {
+    background: var(--side_text);
+    color: var(--side_bg);
+  }
+
+  .sidenav a:hover, .color-btn:hover {
+    background: var(--side_text);
+    color: var(--side_bg);
+  }
+  
+  /* Main content */
+  .main {
+    margin-left: 200px; /* Same as the width of the sidenav */
+    font-size: 20px; /* Increased text to enable scrolling */
+    padding: 0px 10px;
+  }
+  
+  /* Add an active class to the active dropdown button */
+  .active {
+    background: var(--side_text);
+    color: var(--side_bg);
+  }
+  
+
+  /* Dropdown container*/
+  .dropdown-container {
+    display: none;
+    background-color: var(--side_bg);
+    padding-left: 8px;
+  }
+  
+  /* Optional: Style the caret down icon */
+  .fa-caret-down {
+    float: right;
+    padding-right: 8px;
+  }
+
+  .fa-caret-up {
+    float: right;
+    padding-right: 8px;
+  }  
+
+/* RIGHT PANEL */
+.right_panel {
+    background-color: var(--background);
+    color: var(--text);
+    position: absolute;
+    right: 5px;
+    width: 78%;
+    height: 98%;
+    font-family: "Oswald", sans-serif;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* ALERT MESSAGES */
+.right_panel .alert {
+  padding: 20px;
+  background-color: var(--text) ;
+  color: var(--background);
+  margin-bottom: 15px;
+}
+
+/* ALERT CLOSE BUTTONEclose button */
+.right_panel .alert_closebtn {
+  margin-left: 15px;
+  color: var(--background);
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.right_panel .alert_closebtn:hover {
+  color: red;
+}
+
+/* TABLE LAYOUT */
+.right_panel .display {
+    background-color: var(--background);
+    color: var(--text);
+}
+.right_panel .display a {
+    background-color: var(--background);
+    color: blue;
+}
+

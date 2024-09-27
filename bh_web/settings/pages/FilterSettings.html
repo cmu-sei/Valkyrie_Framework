@@ -1,0 +1,22 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<h1>Filter Settings</h1>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert">
+        <span class="alert_closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+{% load crispy_forms_tags %}
+<form action = "" method = "post">
+    {% csrf_token %}
+    {{form | crispy }}
+    <input type="submit" value="Save" class="r-button">
+</form>
+
+{% endblock %}

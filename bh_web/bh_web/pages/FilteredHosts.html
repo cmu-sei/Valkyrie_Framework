@@ -1,0 +1,18 @@
+{% extends 'index.html' %}
+
+{% block content %}
+
+<h1>Filtered Hosts</h1>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert">
+        <span class="alert_closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+{{ files|safe }}
+
+{% endblock %}

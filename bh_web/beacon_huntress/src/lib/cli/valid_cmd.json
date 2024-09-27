@@ -1,0 +1,13 @@
+{
+    "valid_cmd": [
+        {
+            "cmd": "add",
+            "len": 3    
+        },
+        {
+            "cmd": "delete",
+            "len": 4
+        }
+    ]
+    
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=Beacon Huntress
+After=multi-user.target
+
+[Service]
+ExecStart=python3 /var/lib/bh_web/manage.py runserver
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

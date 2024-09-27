@@ -1,0 +1,15 @@
+{% extends 'index.html' %}
+
+{% block content %}
+<h1>Execute Beacon Huntress</h1>
+<h2>Quick Cluster Search </i></h2><br>
+
+{% load crispy_forms_tags %}
+<form action = "" method = "post">
+    <script type="text/javascript" src="/static/cursor.js"></script>
+    {% csrf_token %}
+    {{form | crispy }}
+    <input type="submit" value="Run" class="r-button" onclick="document.body.style.cursor='wait'">
+</form>
+
+{% endblock %}

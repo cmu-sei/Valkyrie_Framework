@@ -1,0 +1,54 @@
+<!--BH Version 2.0-->
+<head>
+    <link rel="stylesheet" href="/static/css/all.css">
+    <link rel="stylesheet" href="/static/css/side.css">
+    <script src="/static/script/jquery.min.js"></script>
+    <link rel="icon" type="image/icon type" href="/static/icons/beacon_huntress.png">
+    <meta charset="UTF-8">
+    <title>Beacon Huntress</title>
+
+    <link rel="stylesheet" href="/static/css/jquery.dataTables.min.css">
+    <script src="/static/script/jquery-3.7.0.js"></script>
+    <script src="/static/script/jquery.dataTables.min.js"></script>
+    <script src="/static/script/datagrid.js"></script>    
+    <script type="text/javascript" src="/static/script/mode.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-nav">
+            <a href="#">Beacon Huntress</a>
+            <button class="dropdown-btn" id="nav_exe" onclick="navDropList(this.id)"><i class="fas fa-play"></i> Execute 
+            <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container">
+                <a href="ExeDBScanVar.html" class="dashboard-nav-dropdown-item"><i class="fas fa-play"></i> Quick Cluster Search</a>
+                <a href="ExeDBScan.html" class="dashboard-nav-dropdown-item"><i class="fa-solid fa-chart-area"></i> Cluster Search</a>
+                <a href="ExeAgg.html" class="dashboard-nav-dropdown-item"><i class="fa-solid fa-sitemap"></i> Hierarchical Search</a>
+            </div>
+            <button class="dropdown-btn" id="nav_set" onclick="navDropList(this.id)"><i class="fa-solid fa-gears"></i> Settings 
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container">
+                <a href="GenSettings.html" class=""><i class="fa-solid fa-toolbox"></i> General</a>
+                <a href="FilterSettings.html" class="dashboard-nav-dropdown-item"><i class="fa-solid fa-filter"></i> Filters</a>
+                <a href="FilteredHosts.html" class="dashboard-nav-dropdown-item"><i class="fas fa-times-circle"></i> Filtered Hosts</a>
+            </div>        
+            <a href="Results.html"><i class="fas fa-database"></i> Results</a>
+            <a href="Logs.html"><i class="fas fa-file"></i> Logs</a>
+            <a href="Documentation.html"><i class="fa-solid fa-book"></i> Documentation</a>
+            <button class="color-btn" onclick="changeTheme(false);"><i class="fa-solid fa-cloud-sun"></i> Mode</button>
+        </div>
+    <div class="right_panel">
+        {% block content %}
+        <p><img src="/static/images/beacon_huntress.png" alt="Beacon Huntress"></p>
+        {% endblock %}
+    </div>
+    <div>
+        <script type="text/javascript" src="/static/script/mode.js" ></script>
+        <script type="text/javascript" src="/static/script/settings.js" ></script>
+        <script>changeTheme(true)</script>
+        <script>keepDropList("nav_exe")</script>
+        <script>keepDropList("nav_set")</script>
+    </div>    
+</body>

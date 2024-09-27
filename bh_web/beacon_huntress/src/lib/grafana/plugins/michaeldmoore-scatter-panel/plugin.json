@@ -1,0 +1,46 @@
+{
+  "type": "panel",
+  "name": "Scatter",
+  "id": "michaeldmoore-scatter-panel",
+  "info": {
+    "description": "A really easy-to-use scatter-plot plugin panel for table formatted Grafana data",
+    "author": {
+      "name": "Michael Moore",
+      "url": "https://github.com/michaeldmoore/michaeldmoore-scatter-panel"
+    },
+    "keywords": [
+      "Grafana",
+      "panel",
+      "plugin",
+      "scatter",
+      "michaeldmoore"
+    ],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {
+        "name": "Project Site",
+        "url": "https://github.com/michaeldmoore/michaeldmoore-scatter-panel"
+      },
+      {
+        "name": "License",
+        "url": "https://github.com/michaeldmoore/michaeldmoore-scatter-panel/blob/master/LICENSE"
+      }
+    ],
+    "screenshots": [
+      {
+        "name": "Scatter",
+        "path": "img/screenshot.png"
+      }
+    ],
+    "version": "1.2.0",
+    "updated": "2022-11-23"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=8.3.0",
+    "grafanaVersion": "8.3.x",
+    "plugins": []
+  }
+}

@@ -1,0 +1,69 @@
+networks:
+  bh_network:
+    driver: bridge
+
+services:
+  db:
+    container_name: bh_db
+    image: mysql
+    restart: always
+    command: --init-file /setup/init.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: 'R00tB3aC0n!'
+      MYSQL_DATABASE: 'beacon'
+    ports:
+      - "3306:3306"
+    expose:
+      - '3306'
+    volumes:
+      - ./db_data:/var/lib/mysql
+      - ./bh_web/beacon_huntress/src/setup/init.sql:/setup/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - bh_network          
+
+  grafana:
+    container_name: bh_grafana
+    image: grafana/grafana
+    user: root
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+    ports:
+      - '3000:3000'
+    networks:
+      - bh_network
+    restart: always
+    volumes:
+      - ./bh_web/beacon_huntress/src/lib/grafana/datasources:/etc/grafana/provisioning/datasources/
+      - ./bh_web/beacon_huntress/src/lib/grafana/dashboards:/etc/grafana/provisioning/dashboards/
+      - ./bh_web/beacon_huntress/src/lib/grafana/plugins:/var/lib/grafana/plugins/
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+    container_name: beacon_huntress
+    command: >
+      sh -c "python3 bh_web/manage.py migrate &&
+             python3 bh_web/manage.py runserver 0.0.0.0:8000"
+    restart: always
+    volumes:
+      - .:/app
+      - /tmp:/tmp
+      - ./bh_web/datasets/tutorial:/tutorial
+    ports:
+      - "8000:8000"
+    networks:
+      - bh_network      
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data: 
+

@@ -1,0 +1,18 @@
+{
+    "id":1,
+    "uid":"TlndQyrnk",
+    "orgId":1,
+    "name":"MySQL",
+    "type":"mysql",
+    "typeName":"MySQL",
+    "typeLogoUrl":"public/app/plugins/datasource/mysql/img/mysql_logo.svg",
+    "access":"proxy",
+    "url":"bh_db:3306",
+    "password":"B3aC0nHunT!",
+    "user":"grafana",
+    "database":"beacon",
+    "basicAuth":false,
+    "isDefault":true,
+    "jsonData":{},
+    "readOnly":false
+}

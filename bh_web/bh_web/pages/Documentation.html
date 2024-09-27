@@ -1,0 +1,412 @@
+{% extends 'index.html' %}
+
+{% block content %}
+
+<p><img src="/static/images/beacon_huntress.png" alt="Beacon Huntress"></p>
+<h2 id="-table-of-contents-"><strong>Table of Contents</strong></h2>
+<blockquote>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#zeek">Copy Zeek Logs</a></li>
+<li><a href="#webpage">Open Beacon Huntress</a></li>
+<li><a href="#config">Configure</a></li>
+<li><a href="#examplerun">Example Run</a></li>
+<li><a href="#resultdetails">Result Details</a></li>
+<li><a href="#filterbeacons">Filter Beacons</a></li>
+<li><a href="#dashboard">Dashboard</a></li>
+<li><a href="#logs">Logs</a></li>
+<li><a href="#rcdetails">Run Configuration Details</a></li>
+<li>Algorithms<ul>
+<li><a href="#dbscanvar">Quick Cluster Search</a></li>
+<li><a href="#dbscan">Cluster Search</a></li>
+<li><a href="#agg">Hierarchical</a></li>
+</ul>
+</li>
+<li>Other Configurations<ul>
+<li><a href="#filterips">Filter Ips</a></li>
+</ul>
+</li>
+<li><a href="#lightdark">Light/Dark Mode</a></li>
+</ul>
+</blockquote>
+<h2 id="-overview-"><strong>Overview</strong></h2>
+<p>Beacon Huntress uses a combination of Python and Machine Learning to find potential beacons.</p>
+<h2 id="-copy-zeek-logs-"><strong>Copy Zeek Logs</strong></h2>
+<p>Zeek Connection Logs are required to run Beacon Huntress. Follow the steps below to copy the Zeek Connection Logs. It&#39;s recommended to organize the logs into directories, with one directory per day.</p>
+<ol>
+<li><p>Zeek logs can be copied to the <code>/tmp</code> directory. The <code>/tmp</code> directory is mounted to the Docker container beacon_huntress.</p>
+<pre><code> <span class="hljs-comment"># CREATE DIRECTORY (REPLACE YYYY-MM-DD WITH DATE)</span>
+ mkdir -p <span class="hljs-regexp">/tmp/</span>raw<span class="hljs-regexp">/data/</span>YYYY-MM-DD
+
+ <span class="hljs-comment"># START SFTP SHELL</span>
+ sftp root@YOUR_SFTP_SERVER
+
+ <span class="hljs-comment"># SFTP COMMAND EXAMPLE (REPLACE YYYY-MM-DD WITH DATE)</span>
+ get -R <span class="hljs-regexp">/nsm/</span>zeek<span class="hljs-regexp">/logs/</span>YYYY-MM-DD<span class="hljs-regexp">/conn.* /</span>tmp<span class="hljs-regexp">/raw/</span>data<span class="hljs-regexp">/YYYY-MM-DD</span>
+</code></pre></li>
+</ol>
+<h2 id="-open-web-page-"><strong>Open Web Page</strong></h2>
+<p>To get started</p>
+<ol>
+<li>Open a browser window</li>
+<li>Go to 127.0.0.1:8000</li>
+<li>You will now see Beacon Huntress loaded.</li>
+</ol>
+<p><img src="/static/documentation/images/image.png" alt="Alt text"></p>
+<h2 id="-configure-"><strong>Configure</strong></h2>
+<p>How to configure Beacon Huntress to run a search.</p>
+<ol>
+<li>Navigate to Settings and click on General.</li>
+</ol>
+<p><img src="/static/documentation/images/image-1.png" alt="Alt text"></p>
+<ol>
+<li><p>You will have the following settings.</p>
+<ul>
+<li><strong>Raw Log Location</strong><ul>
+<li>Physical location of the raw Zeek logs</li>
+</ul>
+</li>
+<li><strong>Working File Type</strong><ul>
+<li>The type of files you want to use. Parquet is the recommended setting</li>
+</ul>
+</li>
+<li><strong>Overwrite Existing Data</strong><ul>
+<li>Will overwrite all existing results</li>
+</ul>
+</li>
+<li><strong>Verbose Logging</strong><ul>
+<li>Verbose Logging True/False</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="-example-run-"><strong>Example Run</strong></h2>
+<p>This test run is using Quick Cluster Search with some test data.</p>
+<ol>
+<li>To run a test use the test dataset located in /tutorial. From the General Settings page change the Raw Log Location to /tutorial and click the save button.</li>
+</ol>
+<p><img src="/static/documentation/images/image-3.png" alt="Alt text"></p>
+<ol>
+<li>Navigate to Execute and select Quick Cluster Search.</li>
+</ol>
+<p><img src="/static/documentation/images/image-4.png" alt="Alt text"></p>
+<ol>
+<li><p>Quick Cluster Search expects the parameters below. In this example do not change anything, just click the run button. <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed.</em></strong></p>
+<ul>
+<li><strong>Average Delta Time</strong><ul>
+<li>Average delta time to include in the search using your delta column. Greater than equal (&lt;=).</li>
+</ul>
+</li>
+<li><strong>Connection Count</strong><ul>
+<li>Total connection count for filtering. Greater than equal (&gt;=).</li>
+</ul>
+</li>
+<li><p><strong>Time Span Average</strong></p>
+<ul>
+<li>The percentage to increase and decrease from the connections total delta span.<br>EXAMPLE: 15 will decrease 15% from the minimum and maximum delta span.<br>min delta = 5<br>max delta = 10<br>span min = 4.25 (5 - (5 <em>15%))<br>span max = 11.5 (10 + (10</em> 15%))  </li>
+</ul>
+</li>
+<li><p><strong>Variance Percentage</strong></p>
+<ul>
+<li>Total variance percentage for filtering. Greater than equal (&gt;=).</li>
+</ul>
+</li>
+<li><strong>Minimum Likelihood Percentage</strong><ul>
+<li>Minimum likelihood value to identify a beacon.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>From the results you will have the following columns.</p>
+<ul>
+<li><strong>Group ID</strong><ul>
+<li>This is your beacon search identifier. This will send you to a detail results screen..</li>
+</ul>
+</li>
+<li><strong>Date</strong><ul>
+<li>Date of beacon search.</li>
+</ul>
+</li>
+<li><strong>Beacon Count</strong><ul>
+<li>Number of potential beacons.</li>
+</ul>
+</li>
+<li><strong>Dashboard</strong><ul>
+<li>Link to a Grafana Dashboard.</li>
+</ul>
+</li>
+<li><strong>Log File</strong><ul>
+<li>The log file associated with this run. Used for troubleshooting.</li>
+</ul>
+</li>
+<li><strong>Config</strong><ul>
+<li>The configuration used for the beacon search.</li>
+</ul>
+</li>
+<li><strong>Delete</strong><ul>
+<li>Permanently delete the beacon search.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><img src="/static/documentation/images/image-5.png" alt="Alt text"></p>
+<h2 id="-result-details-"><strong>Result Details</strong></h2>
+<p>From the Result Details page you can further investigate or filter potential beacons. You will need to investigate these ips to determine if they are beacons. In this example both IPs are in fact beacons.</p>
+<ol>
+<li>Click on the Group ID.</li>
+</ol>
+<p><img src="/static/documentation/images/image-6.png" alt="Alt text"></p>
+<ol>
+<li><p>The result details page will display the following columns.</p>
+<ul>
+<li><strong>ID</strong><ul>
+<li>Row identifier.</li>
+</ul>
+</li>
+<li><strong>Source IP</strong><ul>
+<li>Source IP Address.</li>
+</ul>
+</li>
+<li><strong>Destination IP</strong><ul>
+<li>Destination IP Address.</li>
+</ul>
+</li>
+<li><strong>Port</strong><ul>
+<li>Destination Port.</li>
+</ul>
+</li>
+<li><strong>Connection Count</strong><ul>
+<li>Number of connections for the source ip, destination ip and destination port.</li>
+</ul>
+</li>
+<li><strong>First Occurrence</strong><ul>
+<li>Date of first connection.</li>
+</ul>
+</li>
+<li><strong>Last Occurrence</strong><ul>
+<li>Date of latest connection.</li>
+</ul>
+</li>
+<li><strong>Filter</strong><ul>
+<li>Remove destination IP from future beacon results.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><img src="/static/documentation/images/image-7.png" alt="Alt text"></p>
+<h2 id="-filter-beacons-"><strong>Filter Beacons</strong></h2>
+<p>You can filter out any falsely identified beacons from the Result Details page.</p>
+<ol>
+<li>To filter a destination ip click on the filter button. The destination ip will have be filtered from all beacon results. The ip will be excluded in any future results.</li>
+</ol>
+<p><img src="/static/documentation/images/image-8.png" alt="Alt text"></p>
+<ol>
+<li><p>To view or remove filtered beacons navigate to Settings, then Filtered Hosts. Click on the trash can to remove an IP from filtered host. Once remove the IP will show in beacon results.</p>
+<ul>
+<li><strong>ID</strong><ul>
+<li>Row identifier.</li>
+</ul>
+</li>
+<li><strong>IP</strong><ul>
+<li>IP that is filtered from beacon results.</li>
+</ul>
+</li>
+<li><strong>Description</strong><ul>
+<li>Description of why the beacon was filtered. Please Note: This will be included in a future version.</li>
+</ul>
+</li>
+<li><strong>Filtered Date</strong><ul>
+<li>The date the IP was filtered.</li>
+</ul>
+</li>
+<li><strong>Option</strong><ul>
+<li>Delete the IP from the filtered beacons.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><img src="/static/documentation/images/image-9.png" alt="Alt text"></p>
+<h2 id="-dashboard-"><strong>Dashboard</strong></h2>
+<p>You can access the Grafana Dashboard via the Dashboard button on the Result Details page.</p>
+<blockquote>
+<h3 id="-note-"><strong>Note</strong></h3>
+<p>For addtional details related to the Granfana Dashboard navigate to the github site.<br><a href="https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md">https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md</a></p>
+</blockquote>
+<p><img src="/static/documentation/images/image-10.png" alt="Alt text"></p>
+<p>The dashboard will open in another window.</p>
+<p><img src="/static/documentation/images/image-12.png" alt="Alt text"></p>
+<h2 id="-logs-"><strong>Logs</strong></h2>
+<p>You can access the Grafana Dashboard via the Dashboard button on the Result Details page. The log files are used for troubleshooting a beacon search.</p>
+<p><img src="/static/documentation/images/image-14.png" alt="Alt text"></p>
+<p><img src="/static/documentation/images/image-15.png" alt="Alt text"></p>
+<p>All logs files are available via the Logs button on the navigation pane. You can open the log by clicking on the log file link. To delete log files permanently click on the trash can.</p>
+<p><img src="/static/documentation/images/image-17.png" alt="Alt text"></p>
+<h2 id="-run-configuration-details-"><strong>Run Configuration Details</strong></h2>
+<p>Beacon results configurations can be access via the Config link.</p>
+<p><img src="/static/documentation/images/image-18.png" alt="Alt text"></p>
+<p><img src="/static/documentation/images/image-19.png" alt="Alt text"></p>
+<p>To find the algorithm used in the search, use the general.cluster type configuration.  The cluster_type algorithm names are below.</p>
+<blockquote>
+<ul>
+<li>dbscan_var = Quick Cluster Search</li>
+<li>dbscan = Cluster Search</li>
+<li>agg = Hierarchical</li>
+</ul>
+</blockquote>
+<p><img src="/static/documentation/images/image-20.png" alt="Alt text"></p>
+<h2 id="-quick-cluster-search-"><strong>Quick Cluster Search</strong></h2>
+<p>Quick Cluster Search uses the same principals as Cluster Search but will exclude the amount of records that is needed to be scanned by variance and spans are generated based upon the percentage given. If the variance is outside of the configured threshold it is excluded from the scan. This feature provides all the benefits of a DBScan without the performance overhead.</p>
+<ol>
+<li>Navigate to Execute and select Quick Cluster Search.</li>
+</ol>
+<p><img src="/static/documentation/images/image-4.png" alt="Alt text"></p>
+<ol>
+<li><p>Quick Cluster Search expects the parameters below. In this example do not change anything, just click the run button. <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed.</em></strong></p>
+<ul>
+<li><strong>Average Delta Time</strong><ul>
+<li>Average delta time to include in the search using your delta column. Greater than equal (&lt;=).</li>
+</ul>
+</li>
+<li><strong>Connection Count</strong><ul>
+<li>Total connection count for filtering. Greater than equal (&gt;=).</li>
+</ul>
+</li>
+<li><p><strong>Time Span Average</strong></p>
+<ul>
+<li>The percentage to increase and decrease from the connections total delta span.<br>EXAMPLE: 15 will decrease 15% from the minimum and maximum delta span.<br>min delta = 5<br>max delta = 10<br>span min = 4.25 (5 - (5 <em>15%))<br>span max = 11.5 (10 + (10</em> 15%))  </li>
+</ul>
+</li>
+<li><p><strong>Variance Percentage</strong></p>
+<ul>
+<li>Total variance percentage for filtering. Greater than equal (&gt;=).</li>
+</ul>
+</li>
+<li><strong>Minimum Likelihood Percentage</strong><ul>
+<li>Minimum likelihood value to identify a beacon.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="-cluster-search-"><strong>Cluster Search</strong></h2>
+<p>Cluster Search uses DBScan to search for beacons. DBScan stands for Density-Based Spatial Clustering of Applications with Noise. DBScan discovers clusters of different sizes from a large amount of data that contains noise and outliers, see image below. DBScan primarily uses two parameter Minimum Points and ESP (Epsilion). Minimum points are the minimum number of points (a threshold) clustered together for a region to be considered dense. EPS is the distance measure that will be used to locate the points for a cluster.</p>
+<ol>
+<li>Navigate to Execute and select Cluster Search.</li>
+</ol>
+<p><img src="/static/documentation/images/image-22.png" alt="Alt text"></p>
+<ol>
+<li><p>Cluster Search expects the parameters below. <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed.</em></strong></p>
+<ul>
+<li><p><strong>Minimum Delta Time</strong></p>
+<ul>
+<li>Minimum number of delta records to search using your delta column.</li>
+</ul>
+</li>
+<li><p><strong>Time Spans</strong></p>
+<ul>
+<li>Spans you wish to search, in list format. Minimum number of delta records to search using your delta column.<br>EXAMPLE: Will search two spans 0-5 and 5-10.<br>[[0, 5], [5, 10]]  </li>
+</ul>
+</li>
+<li><p><strong>Minimum Cluster Points</strong></p>
+<ul>
+<li>Minimum number of points in the cluster.</li>
+</ul>
+</li>
+<li><p><strong>Likelihood Percentage</strong></p>
+<ul>
+<li>Minimum likelihood value to identify a beacon.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="-hierarchical-search-"><strong>Hierarchical Search</strong></h2>
+<p>Hierarchical Search uses Agglomerative clustering to find beacons. Agglomerative clustering is a Hierarchical clustering used to group objects in clusters based upon similarity. Each item is treated as a singleton cluster, working from the bottom up. Clusters that are similar are merged into a larger cluster. This process continues until all the clusters are placed into a single large cluster, see image below.</p>
+<ol>
+<li>Navigate to Execute and select Hierarchical Search.</li>
+</ol>
+<p><img src="/static/documentation/images/image-21.png" alt="Alt text"></p>
+<ol>
+<li><p>Hierarchical Search expects the parameters below. <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed.</em></strong></p>
+<ul>
+<li><strong>Maximum Variance Percentage</strong><ul>
+<li>Max Variance threshold for any potential beacons.</li>
+</ul>
+</li>
+<li><strong>Minimum Number of Values</strong><ul>
+<li>Minimum number of delta records to search.</li>
+</ul>
+</li>
+<li><strong>Cluster Factor Percentage</strong><ul>
+<li>The likelihood percentage for a cluster.</li>
+</ul>
+</li>
+<li><strong>Process Lines</strong><ul>
+<li>Line amounts to process at a time, in list format.</li>
+</ul>
+</li>
+<li><strong>Minimum Delta Time</strong><ul>
+<li>Minimum delta time to search by, in milliseconds.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="-filter-ips-"><strong>Filter IPs</strong></h2>
+<p>Configuration for additional filtering. Filtering at this level will exclude/include prior to the beacon algorithm. Filtered beacons are post beacon algorithm.</p>
+<ol>
+<li>Navigate to Settings and click on Filters.</li>
+</ol>
+<p><img src="/static/documentation/images/image-23.png" alt="Alt text"></p>
+<ol>
+<li><p>Filter expects the parameters below. Change the parameter/s and click save.</p>
+<ul>
+<li><strong>Filter</strong><ul>
+<li>Apply filters (True or False)</li>
+</ul>
+</li>
+<li><p><strong>Port Filter</strong>  </p>
+<ul>
+<li>Port filterg in comma delimited format.<br>New line per port.  </li>
+</ul>
+</li>
+<li><p><strong>Port Filter Exclusive</strong></p>
+<ul>
+<li>Exclusive filter (True or False)<br>True = Exclusive<br>False = Inclusive  </li>
+</ul>
+</li>
+<li><p><strong>Source IP Filter</strong>  </p>
+<ul>
+<li>Source IP filtering in comma delimited format.<br>New line per port.&lt;br</li>
+</ul>
+</li>
+<li><p><strong>Source IP Filter Exclusive</strong></p>
+<ul>
+<li>Exclusive filter (True or False)<br>True = Exclusive<br>False = Inclusive  </li>
+</ul>
+</li>
+<li><p><strong>Destination IP Filter</strong>  </p>
+<ul>
+<li>Destination IP filtering in comma delimited format.<br>New line per port.&lt;br</li>
+</ul>
+</li>
+<li><strong>Destination IP Filter Exclusive</strong><ul>
+<li>Exclusive filter (True or False)<br>True = Exclusive<br>False = Inclusive  </li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>#</p>
+<h2 id="-light-dark-mode-"><strong>Light/Dark Mode</strong></h2>
+<p>Beacon Huntress has a light and dark mode. To toggle between light and dark modes, click on the MODE button.</p>
+<h3 id="light-to-dark-mode">Light to Dark Mode</h3>
+<p><img src="/static/documentation/images/image-25.png" alt="Alt text"></p>
+<h3 id="dark-to-light-mode">Dark to Light Mode</h3>
+<p><img src="/static/documentation/images/image-26.png" alt="Alt text"></p>
+
+{% endblock %}
