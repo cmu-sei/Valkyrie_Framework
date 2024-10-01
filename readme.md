@@ -21,7 +21,7 @@ Beacons can be difficult to spot with traditional security tools -- especially t
 Beacon Huntress uses a combination of Python and Machine Learning to find potential beacons.
 
 > 
-> For more details see the Beacon Huntress [read me](beacon_huntress/readme.md) file.
+> For more details see the Beacon Huntress [read me](bh_web/beacon_huntress/readme.md) file.
 
 
 #
