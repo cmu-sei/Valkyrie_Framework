@@ -4,7 +4,7 @@
 
 > * [Overview](#overview)
 > * [Products]()
->   * [Beacon Huntress](beacon_huntress/readme.md)
+>   * [Beacon Huntress](bh_web/beacon_huntress/readme.md)
 #
 ## <a name="overview"></a>__Overview__
 
