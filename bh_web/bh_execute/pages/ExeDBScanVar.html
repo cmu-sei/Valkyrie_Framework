@@ -1,15 +1,22 @@
-{% extends 'index.html' %}
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Beacon Huntress: Quick Cluster Search</h1>
+<p class="header-subtitle">Search / Quick Cluster Search</p>
 
-{% block content %}
-<h1>Execute Beacon Huntress</h1>
-<h2>Quick Cluster Search </i></h2><br>
-
-{% load crispy_forms_tags %}
-<form action = "" method = "post">
-    <script type="text/javascript" src="/static/cursor.js"></script>
-    {% csrf_token %}
-    {{form | crispy }}
-    <input type="submit" value="Run" class="r-button" onclick="document.body.style.cursor='wait'">
+{% endblock %} {% block content %} {% load crispy_forms_tags %}
+<h4>Execute a New Quick Cluster Search</h4>
+<form action="" method="post">
+  <script type="text/javascript" src="/static/cursor.js"></script>
+  {% csrf_token %} {{form | crispy }}
+  <div class="mt-3">
+    <button
+      type="submit"
+      value="Run"
+      class="btn btn-primary"
+      onclick="document.body.style.cursor='wait'"
+    >
+      Run
+    </button>
+  </div>
 </form>
 
 {% endblock %}

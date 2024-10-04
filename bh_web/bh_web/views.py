@@ -18,13 +18,13 @@ def _get_context(df):
     df_html = df.to_html(escape=False, 
                          index=False, 
                          #justify="left",
-                         classes="display", 
+                         classes="table table-striped", 
                          table_id="grid"
                          )
 
     # replace dataframe class
     df_html = df_html.replace('class="dataframe ', 'class="')
-    df_html = df_html.replace('<tr style="text-align: right;">','<tr>')
+    df_html = df_html.replace('<tr class="text-end">','<tr>')
     context = {"files": df_html}
 
     return context

@@ -1,8 +1,4 @@
-{% extends 'index.html' %}
-
-{% block content %}
-<h1>Beacon Huntress Results</h1>
-
-{{ files|safe }}
-
-{% endblock %}
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Beacon Huntress Results</h1>
+<p class="header-subtitle"></p>
+{% endblock %} {% block content %} {{ files|safe }} {% endblock %}

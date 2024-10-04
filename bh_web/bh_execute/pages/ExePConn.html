@@ -1,16 +1,17 @@
-{% extends 'index.html' %}
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Beacon Huntress: Persistent Connections</h1>
+<p class="header-subtitle">Setup / Persistent Connections</p>
 
-{% block content %}
-<h1>Execute Beacon Huntress</h1>
-<h2>Persistent Connections</h2><br>
+{% endblock %} {% block content %} {% load crispy_forms_tags %}
+<h4>Persistent Connections</h4>
+<p>
+  In order to run Persistent Connections you must use the correct logs. Default
+  Zeek logs will not work!
+</p>
+<form action="" method="post">
+  {% csrf_token %} {{form | crispy }}
 
-<p>In order to run Persistent Connections you must use the correct logs.  Default Zeek logs will not work!</p>
-
-{% load crispy_forms_tags %}
-<form action = "" method = "post">
-    {% csrf_token %}
-    {{form | crispy }}
-    <input type="submit" value="Run" class="r-button">
+  <button type="submit" value="Run" class="btn btn-primary">Run</button>
 </form>
 
 {% endblock %}

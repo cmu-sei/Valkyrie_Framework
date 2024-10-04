@@ -1,14 +1,12 @@
-{% extends 'index.html' %}
-
-{% block content %}
+{% extends 'index.html' %} {% block content %}
 <h1>Execute Beacon Huntress</h1>
-<h2>Connection Grouping</h2><br>
+<h2>Connection Grouping</h2>
+<br />
 
 {% load crispy_forms_tags %}
-<form action = "" method = "post">
-    {% csrf_token %}
-    {{form | crispy }}
-    <input type="submit" value="Run" class="r-button">
+<form action="" method="post">
+  {% csrf_token %} {{form | crispy }}
+  <button type="submit" value="Run" class="btn btn-primary">Run</button>
 </form>
 
 {% endblock %}

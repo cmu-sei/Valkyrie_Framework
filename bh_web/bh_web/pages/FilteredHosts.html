@@ -1,18 +1,16 @@
-{% extends 'index.html' %}
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Beacon Huntress: Filtered Hosts</h1>
+<p class="header-subtitle">Settings / Filtered Hosts</p>
 
-{% block content %}
-
-<h1>Filtered Hosts</h1>
-
-{% if messages %}
-    {% for message in messages %}
-    <div class="alert">
-        <span class="alert_closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        {{ message }}
-    </div>
-    {% endfor %}
-{% endif %}
-
-{{ files|safe }}
-
-{% endblock %}
+{% endblock %} {% block content %}
+<h4>Filtered Hosts</h4>
+{% if messages %} {% for message in messages %}
+<div class="alert alert-success">
+  <span
+    class="alert_closebtn"
+    onclick="this.parentElement.style.display='none';"
+    >&times;</span
+  >
+  {{ message }}
+</div>
+{% endfor %} {% endif %} {{ files|safe }} {% endblock %}
