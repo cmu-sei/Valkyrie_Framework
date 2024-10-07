@@ -24,7 +24,7 @@ def _get_context(df):
 
     # replace dataframe class
     df_html = df_html.replace('class="dataframe ', 'class="')
-    df_html = df_html.replace('<tr class="text-end">','<tr>')
+    df_html = df_html.replace('<tr>','<tr class="text-end">')
     context = {"files": df_html}
 
     return context

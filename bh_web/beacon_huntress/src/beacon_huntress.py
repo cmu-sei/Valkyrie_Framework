@@ -74,7 +74,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 def _load_config(conf):
 
     try:
-        print("DEBUG: Opening config {}".format(conf))
+        abs_conf_path = os.path.abspath(conf)
+        print("DEBUG: Opening config {} {}".format(conf, abs_conf_path))
+
 
         with open(conf) as conf_file:
             config = yaml.safe_load(conf_file)
