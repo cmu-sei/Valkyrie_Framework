@@ -5,12 +5,17 @@
 {% endblock %} {% block content %}
 <h4>Filtered Hosts</h4>
 {% if messages %} {% for message in messages %}
-<div class="alert alert-success">
-  <span
-    class="alert_closebtn"
-    onclick="this.parentElement.style.display='none';"
-    >&times;</span
-  >
+<div
+  class="alert alert-success alert-dismissible fade show"
+  role="alert"
+  style="padding: 15px"
+>
   {{ message }}
+  <button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
 </div>
 {% endfor %} {% endif %} {{ files|safe }} {% endblock %}
