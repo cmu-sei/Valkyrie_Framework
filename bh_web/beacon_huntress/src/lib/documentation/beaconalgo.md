@@ -5,7 +5,7 @@
 > * [Home](../../../readme.md)
 > * [Overview](#overview)
 > * [Beacons Algorithms](#searchforbeacons)
->   * [Cluster Search](#clustersearch)
+>   * [Detailed Cluster Search](#clustersearch)
 >   * [Hierarchical Search](#hierarchicalsearch)
 >   * [Quick Cluster Search](#quickcluster)
 
@@ -19,7 +19,7 @@ Beacon Huntress can be configured to search for beacons using the algorithms bel
 
 Below are the current algorithms that can be used when searching for beacons.  
 
-* [Cluster Search](#clustersearch)
+* [Detailed Cluster Search](#clustersearch)
     * Use with Fast or Slow Beacons
 * [Hierarchical Search](#hierarchicalsearch)
     * Use with Fast Beacons
@@ -34,7 +34,7 @@ Below are the current algorithms that can be used when searching for beacons.
 ## <a name="beaconssearch"></a>__Beacon Searches__
 
 
-### <a name="clustersearch"></a>__Cluster Search__
+### <a name="clustersearch"></a>__Detailed Cluster Search__
 
 Cluster Search is also known as DBScan, which stands for Density-Based Spatial Clustering of Applications with Noise.  DBScan can identify clusters of different sizes within large data samples that contain noise and outliers.  DBScan primarily uses two parameters: Minimum Points and EPS (Epsilion).  The Minimum Points parameter represents the minimum number of data points (the threshold) that must be clustered together for a region to be considered dense.  EPS is the maximum distance between two data points for them to be considered part of the same cluster.
 
@@ -145,7 +145,7 @@ Minimum Callback Time (ms) = 900000
 #
 ### <a name="quickclustersearch"></a>__Quick Cluster Search__
 
-Quick Cluster Search uses the same principals as [Cluster Search](#clustersearch) but some records will be filtered out before the scan if they surpass the user-set variance percentage. If the variance is above the configured threshold, it is excluded from the scan.  This feature provides all the benefits of a DBScan without the performance overhead.
+Quick Cluster Search uses the same principals as [Detailed Cluster Search](#clustersearch) but some records will be filtered out before the scan if they surpass the user-set variance percentage. If the variance is above the configured threshold, it is excluded from the scan.  This feature provides all the benefits of a DBScan without the performance overhead.
 
 * DBScan by Variance cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon). 
   * This provides a perfomance increase over Cluster Search, because some connections will be pre-filtered by the variance setting.

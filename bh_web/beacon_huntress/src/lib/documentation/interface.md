@@ -14,8 +14,8 @@
 >      * [Filters](#)
 >      * [Filtered Hosts](#)
 > * [Logs](#)
-> * [Documentation](#)
-> * [Mode](#)
+
+
 #
 # <a name="home"></a>__Overview__
 This page outlines the usage and functionalities of the Beacon Huntress GUI.
@@ -33,7 +33,7 @@ The General section contains the basic configuration for Beacon Huntress. These 
 
 1. Navigate to the Settings tab and click on General.
 
-    ![](/bh_web/static/documentation/images/general.png)
+    ![](/bh_web/static/documentation/images/gen_settings.png)
 
 2. The following settings are available:
 
@@ -100,7 +100,7 @@ Default Filtered Hosts is a premade list of popular websites that are automatica
 
 You can navigate through results found by Beacon Huntress using the options on the Results page. Click on the "Group ID" to view potential beacons. Select "Dashboard" to display those results in a Grafana dashboard. Click on "Log File" to view the run logs. Choose "Config" to display the runtime configuration. Select "Delete" to <i><b>PERMANENTLY</b></i> remove the result set.
 
-![ui_results](../../../src/lib/images/tutorial/ui_results.png)
+![ui_results](/bh_web/static/documentation/images/results_quick_cluster.png)
 
 #
 # <a name="logs"></a>__Logs__
@@ -109,23 +109,8 @@ The Logs section holds the runtime logs for each Beacon Huntress execution. Logs
 
 1. Navigate to Logs.
 
-    ![](/bh_web/static/documentation/images/logs.png)
+    ![](/bh_web/static/documentation/images/log_highlighted.png)
 
 2. Click on "File Name" to pull the details.
 
     ![](/bh_web/static/documentation/images/log_details.png)
-
-#
-# <a name="documenation"></a>__Documentation__
-
-A single page form of the documentation can be found here.
-
-XXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-#
-# <a name="mode"></a>__Mode__
-
-
-Beacon Huntress has a light and dark mode. To toggle between light and dark modes, click on "Mode".
-
-![bh_ld](../images/ui_light_dark.png)

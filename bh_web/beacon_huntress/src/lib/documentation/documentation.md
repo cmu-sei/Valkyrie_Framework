@@ -1,5 +1,3 @@
-{% extends 'index.html' %} {% block content %}
-
 ![Beacon Huntress](../../../../static/images/beacon_huntress.png)
 
 **Table of Contents**
@@ -55,7 +53,7 @@ To get started
 2.  Go to 127.0.0.1:8000
 3.  You will now see Beacon Huntress loaded.
 
-![Alt text](../../../../static/documentation/images/image.png)
+![Alt text](../../../../static/documentation/images/home_page.png)
 
 **Configure**
 -------------
@@ -64,7 +62,7 @@ How to configure Beacon Huntress to run a search.
 
 1.  Navigate to Settings and click on General.
 
-![Alt text](../../../../static/documentation/images/image-1.png)
+![Alt text](../../../../static/documentation/images/gen_settings.png)
 
 2.  You will have the following settings.
     
@@ -84,11 +82,11 @@ This test run is using Quick Cluster Search with some test data.
 
 1.  To run a test use the test dataset located in /tutorial. From the General Settings page change the Raw Log Location to /tutorial and click the save button.
 
-![Alt text](../../../../static/documentation/images/image-3.png)
+![Alt text](../../../../static/documentation/images/set_tutorial.png)
 
 2.  Navigate to Execute and select Quick Cluster Search.
 
-![Alt text](../../../../static/documentation/images/image-4.png)
+![Alt text](../../../../static/documentation/images/search_quick_cluster.png)
 
 1.  Quick Cluster Search expects the parameters below. In this example do not change anything, just click the run button. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
     
@@ -125,7 +123,7 @@ This test run is using Quick Cluster Search with some test data.
     *   **Delete**
         *   Permanently delete the beacon search.
 
-![Alt text](../../../../static/documentation/images/image-5.png)
+![Alt text](../../../../static/documentation/images/results_quick_cluster.png)
 
 **Result Details**
 ------------------
@@ -134,7 +132,7 @@ From the Result Details page you can further investigate or filter potential bea
 
 1.  Click on the Group ID.
 
-![Alt text](../../../../static/documentation/images/image-6.png)
+![Alt text](../../../../static/documentation/images/results_quick_cluster_highlight.png)
 
 1.  The result details page will display the following columns.
     
@@ -155,7 +153,7 @@ From the Result Details page you can further investigate or filter potential bea
     *   **Filter**
         *   Remove destination IP from future beacon results.
 
-![Alt text](../../../../static/documentation/images/image-7.png)
+![Alt text](../../../../static/documentation/images/results_details.png)
 
 **Filter Beacons**
 ------------------
@@ -164,7 +162,7 @@ You can filter out any falsely identified beacons from the Result Details page.
 
 1.  To filter a destination ip click on the filter button. The destination ip will have be filtered from all beacon results. The ip will be excluded in any future results.
 
-![Alt text](../../../../static/documentation/images/image-8.png)
+![Alt text](../../../../static/documentation/images/results_details_highlight.png)
 
 1.  To view or remove filtered beacons navigate to Settings, then Filtered Hosts. Click on the trash can to remove an IP from filtered host. Once remove the IP will show in beacon results.
     
@@ -179,7 +177,7 @@ You can filter out any falsely identified beacons from the Result Details page.
     *   **Option**
         *   Delete the IP from the filtered beacons.
 
-![Alt text](../../../../static/documentation/images/image-9.png)
+![Alt text](../../../../static/documentation/images/filtered_hosts.png)
 
 **Dashboard**
 -------------
@@ -191,42 +189,42 @@ You can access the Grafana Dashboard via the Dashboard button on the Result Deta
 > For addtional details related to the Granfana Dashboard navigate to the github site.  
 > [https://github.com/cmu-sei/Valkyrie\_Framework/blob/main/beacon\_huntress/src/lib/documentation/dashboard.md](https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md)
 
-![Alt text](../../../../static/documentation/images/image-10.png)
+![Alt text](../../../../static/documentation/images/result_dash_highlighted.png)
 
 The dashboard will open in another window.
 
 
-![Alt text](../../../../static/documentation/images/image-12.png)
+![Alt text](../../../../static/documentation/images/dash_main.png)
 
 **Logs**
 --------
 
-You can access the Grafana Dashboard via the Dashboard button on the Result Details page. The log files are used for troubleshooting a beacon search.
+You can access the Logs via the Log button on the Result Details page. The log files are used for troubleshooting a beacon search.
 
-![Alt text](../../../../static/documentation/images/image-14.png)
+![Alt text](../../../../static/documentation/images/result_log_highlighted.png)
 
-![Alt text](../../../../static/documentation/images/image-15.png)
+![Alt text](../../../../static/documentation/images/log_details.png)
 
 All logs files are available via the Logs button on the navigation pane. You can open the log by clicking on the log file link. To delete log files permanently click on the trash can.
 
-![Alt text](../../../../static/documentation/images/image-17.png)
+![Alt text](../../../../static/documentation/images/log_highlighted.png)
 
 **Run Configuration Details**
 -----------------------------
 
 Beacon results configurations can be access via the Config link.
 
-![Alt text](../../../../static/documentation/images/image-18.png)
+![Alt text](../../../../static/documentation/images/result_config_highlight.png)
 
-![Alt text](../../../../static/documentation/images/image-19.png)
+![Alt text](../../../../static/documentation/images/config_details.png)
 
 To find the algorithm used in the search, use the general.cluster type configuration.  The cluster_type algorithm names are below.
 
 >   * dbscan_var = Quick Cluster Search
->   * dbscan = Cluster Search
+>   * dbscan = Detailed Cluster Search
 >   * agg = Hierarchical
 
-![Alt text](../../../../static/documentation/images/image-20.png)
+![Alt text](../../../../static/documentation/images/config_highlight.png)
 
 **Quick Cluster Search**
 ------------------------
@@ -235,7 +233,7 @@ Quick Cluster Search uses the same principals as Cluster Search but will exclude
 
 1.  Navigate to Execute and select Quick Cluster Search.
 
-![Alt text](../../../../static/documentation/images/image-4.png)
+![Alt text](../../../../static/documentation/images/search_quick_cluster.png)
 
 1.  Quick Cluster Search expects the parameters below. In this example do not change anything, just click the run button. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
     
@@ -256,14 +254,14 @@ Quick Cluster Search uses the same principals as Cluster Search but will exclude
     *   **Minimum Likelihood Percentage**
         *   Minimum likelihood value to identify a beacon.
 
-**Cluster Search**
+**Detailed Cluster Search**
 ------------------
 
-Cluster Search uses DBScan to search for beacons. DBScan stands for Density-Based Spatial Clustering of Applications with Noise. DBScan discovers clusters of different sizes from a large amount of data that contains noise and outliers, see image below. DBScan primarily uses two parameter Minimum Points and ESP (Epsilion). Minimum points are the minimum number of points (a threshold) clustered together for a region to be considered dense. EPS is the distance measure that will be used to locate the points for a cluster.
+Detailed Cluster Search uses DBScan to search for beacons. DBScan stands for Density-Based Spatial Clustering of Applications with Noise. DBScan discovers clusters of different sizes from a large amount of data that contains noise and outliers, see image below. DBScan primarily uses two parameter Minimum Points and ESP (Epsilion). Minimum points are the minimum number of points (a threshold) clustered together for a region to be considered dense. EPS is the distance measure that will be used to locate the points for a cluster.
 
 1.  Navigate to Execute and select Cluster Search.
 
-![Alt text](../../../../static/documentation/images/image-22.png)
+![Alt text](../../../../static/documentation/images/cluster_search.png)
 
 1.  Cluster Search expects the parameters below. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
     
@@ -291,7 +289,7 @@ Hierarchical Search uses Agglomerative clustering to find beacons. Agglomerative
 
 1.  Navigate to Execute and select Hierarchical Search.
 
-![Alt text](../../../../static/documentation/images/image-21.png)
+![Alt text](../../../../static/documentation/images/hierarchical_search.png)
 
 1.  Hierarchical Search expects the parameters below. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
     
@@ -313,7 +311,7 @@ Configuration for additional filtering. Filtering at this level will exclude/inc
 
 1.  Navigate to Settings and click on Filters.
 
-![Alt text](../../../../static/documentation/images/image-23.png)
+![Alt text](../../../../static/documentation/images/filter_settings.png)
 
 1.  Filter expects the parameters below. Change the parameter/s and click save.
     
@@ -350,14 +348,4 @@ Configuration for additional filtering. Filtering at this level will exclude/inc
 **Light/Dark Mode**
 -------------------
 
-Beacon Huntress has a light and dark mode. To toggle between light and dark modes, click on the MODE button.
-
-### Light to Dark Mode
-
-![Alt text](../../../../static/documentation/images/image-25.png)
-
-### Dark to Light Mode
-
-![Alt text](../../../../static/documentation/images/image-26.png)
-
-{% endblock %}
+Coming Soon!

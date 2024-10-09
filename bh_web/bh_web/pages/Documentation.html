@@ -4,7 +4,7 @@
 
 {% endblock %} {% block content %}
 
-<h2 id="-table-of-contents-"><strong>Table of Contents</strong></h2>
+<h2 id="table-of-contents"><strong>Table of Contents</strong></h2>
 <blockquote>
   <ul>
     <li><a href="#overview">Overview</a></li>
@@ -20,9 +20,9 @@
     <li>
       Algorithms
       <ul>
-        <li><a href="#dbscanvar">Quick Cluster Search</a></li>
-        <li><a href="#dbscan">Cluster Search</a></li>
-        <li><a href="#agg">Hierarchical</a></li>
+        <li><a href="#quickcluster">Quick Cluster Search</a></li>
+        <li><a href="#clustersearch">Detailed Cluster Search</a></li>
+        <li><a href="#hierarchical">Hierarchical</a></li>
       </ul>
     </li>
     <li>
@@ -34,12 +34,12 @@
     <li><a href="#lightdark">Light/Dark Mode</a></li>
   </ul>
 </blockquote>
-<h2 id="-overview-"><strong>Overview</strong></h2>
+<h2 id="overview"><strong>Overview</strong></h2>
 <p>
   Beacon Huntress uses a combination of Python and Machine Learning to find
   potential beacons.
 </p>
-<h2 id="-copy-zeek-logs-"><strong>Copy Zeek Logs</strong></h2>
+<h2 id="zeek"><strong>Copy Zeek Logs</strong></h2>
 <p>
   Zeek Connection Logs are required to run Beacon Huntress. Follow the steps
   below to copy the Zeek Connection Logs. It&#39;s recommended to organize the
@@ -63,20 +63,20 @@
 </code></pre>
   </li>
 </ol>
-<h2 id="-open-web-page-"><strong>Open Web Page</strong></h2>
+<h2 id="web-page"><strong>Open Web Page</strong></h2>
 <p>To get started</p>
 <ol>
   <li>Open a browser window</li>
   <li>Go to 127.0.0.1:8000</li>
   <li>You will now see Beacon Huntress loaded.</li>
 </ol>
-<p><img src="/static/documentation/images/image.png" alt="Alt text" /></p>
-<h2 id="-configure-"><strong>Configure</strong></h2>
+<p><img src="/static/documentation/images/home_page.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="config"><strong>Configure</strong></h2>
 <p>How to configure Beacon Huntress to run a search.</p>
 <ol>
   <li>Navigate to Settings and click on General.</li>
 </ol>
-<p><img src="/static/documentation/images/image-1.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/gen_settings.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>You will have the following settings.</p>
@@ -111,7 +111,7 @@
     </ul>
   </li>
 </ol>
-<h2 id="-example-run-"><strong>Example Run</strong></h2>
+<h2 id="examplerun"><strong>Example Run</strong></h2>
 <p>This test run is using Quick Cluster Search with some test data.</p>
 <ol>
   <li>
@@ -120,11 +120,11 @@
     button.
   </li>
 </ol>
-<p><img src="/static/documentation/images/image-3.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/set_tutorial.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
-  <li>Navigate to Execute and select Quick Cluster Search.</li>
+  <li>Navigate to Search For Beacons and select Quick Cluster.</li>
 </ol>
-<p><img src="/static/documentation/images/image-4.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/search_quick_cluster.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>
@@ -236,8 +236,8 @@
     </ul>
   </li>
 </ol>
-<p><img src="/static/documentation/images/image-5.png" alt="Alt text" /></p>
-<h2 id="-result-details-"><strong>Result Details</strong></h2>
+<p><img src="/static/documentation/images/results_quick_cluster.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="resultdetails"><strong>Result Details</strong></h2>
 <p>
   From the Result Details page you can further investigate or filter potential
   beacons. You will need to investigate these ips to determine if they are
@@ -246,7 +246,7 @@
 <ol>
   <li>Click on the Group ID.</li>
 </ol>
-<p><img src="/static/documentation/images/image-6.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/results_quick_cluster_highlight.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>The result details page will display the following columns.</p>
@@ -305,8 +305,8 @@
     </ul>
   </li>
 </ol>
-<p><img src="/static/documentation/images/image-7.png" alt="Alt text" /></p>
-<h2 id="-filter-beacons-"><strong>Filter Beacons</strong></h2>
+<p><img src="/static/documentation/images/results_details.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="filterbeacons"><strong>Filter Beacons</strong></h2>
 <p>
   You can filter out any falsely identified beacons from the Result Details
   page.
@@ -318,7 +318,7 @@
     any future results.
   </li>
 </ol>
-<p><img src="/static/documentation/images/image-8.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/results_details_highlight.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>
@@ -363,44 +363,44 @@
     </ul>
   </li>
 </ol>
-<p><img src="/static/documentation/images/image-9.png" alt="Alt text" /></p>
-<h2 id="-dashboard-"><strong>Dashboard</strong></h2>
+<p><img src="/static/documentation/images/filtered_hosts.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="dashboard"><strong>Dashboard</strong></h2>
 <p>
   You can access the Grafana Dashboard via the Dashboard button on the Result
   Details page.
 </p>
 <blockquote>
-  <h3 id="-note-"><strong>Note</strong></h3>
+  <h3 id="note"><strong>Note</strong></h3>
   <p>
-    For addtional details related to the Granfana Dashboard navigate to the
+    For additional details related to the Granfana Dashboard navigate to the
     github site.<br /><a
       href="https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md"
       >https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md</a
     >
   </p>
 </blockquote>
-<p><img src="/static/documentation/images/image-10.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/result_dash_highlighted.png" alt="Alt text" style="width:900px;"/></p>
 <p>The dashboard will open in another window.</p>
-<p><img src="/static/documentation/images/image-12.png" alt="Alt text" /></p>
-<h2 id="-logs-"><strong>Logs</strong></h2>
+<p><img src="/static/documentation/images/dash_main.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="logs"><strong>Logs</strong></h2>
 <p>
-  You can access the Grafana Dashboard via the Dashboard button on the Result
+  You can access the Logs via the Log button on the Result
   Details page. The log files are used for troubleshooting a beacon search.
 </p>
-<p><img src="/static/documentation/images/image-14.png" alt="Alt text" /></p>
-<p><img src="/static/documentation/images/image-15.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/result_log_highlighted.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/log_details.png" alt="Alt text" style="width:900px;"/></p>
 <p>
   All logs files are available via the Logs button on the navigation pane. You
   can open the log by clicking on the log file link. To delete log files
   permanently click on the trash can.
 </p>
-<p><img src="/static/documentation/images/image-17.png" alt="Alt text" /></p>
-<h2 id="-run-configuration-details-">
+<p><img src="/static/documentation/images/log_highlighted.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="rcdetails">
   <strong>Run Configuration Details</strong>
 </h2>
 <p>Beacon results configurations can be access via the Config link.</p>
-<p><img src="/static/documentation/images/image-18.png" alt="Alt text" /></p>
-<p><img src="/static/documentation/images/image-19.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/result_config_highlight.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/config_details.png" alt="Alt text" style="width:900px;"/></p>
 <p>
   To find the algorithm used in the search, use the general.cluster type
   configuration. The cluster_type algorithm names are below.
@@ -408,14 +408,14 @@
 <blockquote>
   <ul>
     <li>dbscan_var = Quick Cluster Search</li>
-    <li>dbscan = Cluster Search</li>
+    <li>dbscan = Detailed Cluster Search</li>
     <li>agg = Hierarchical</li>
   </ul>
 </blockquote>
-<p><img src="/static/documentation/images/image-20.png" alt="Alt text" /></p>
-<h2 id="-quick-cluster-search-"><strong>Quick Cluster Search</strong></h2>
+<p><img src="/static/documentation/images/config_highlight.png" alt="Alt text" style="width:900px;"/></p>
+<h2 id="quickcluster"><strong>Quick Cluster Search</strong></h2>
 <p>
-  Quick Cluster Search uses the same principals as Cluster Search but will
+  Quick Cluster Search uses the same principals as Detailed Cluster Search but will
   exclude the amount of records that is needed to be scanned by variance and
   spans are generated based upon the percentage given. If the variance is
   outside of the configured threshold it is excluded from the scan. This feature
@@ -424,7 +424,7 @@
 <ol>
   <li>Navigate to Execute and select Quick Cluster Search.</li>
 </ol>
-<p><img src="/static/documentation/images/image-4.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/search_quick_cluster.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>
@@ -484,9 +484,9 @@
     </ul>
   </li>
 </ol>
-<h2 id="-cluster-search-"><strong>Cluster Search</strong></h2>
+<h2 id="clustersearch"><strong>Detailed Cluster Search</strong></h2>
 <p>
-  Cluster Search uses DBScan to search for beacons. DBScan stands for
+  Detailed Cluster Search uses DBScan to search for beacons. DBScan stands for
   Density-Based Spatial Clustering of Applications with Noise. DBScan discovers
   clusters of different sizes from a large amount of data that contains noise
   and outliers, see image below. DBScan primarily uses two parameter Minimum
@@ -495,13 +495,13 @@
   distance measure that will be used to locate the points for a cluster.
 </p>
 <ol>
-  <li>Navigate to Execute and select Cluster Search.</li>
+  <li>Navigate to Execute and select Detailed Cluster.</li>
 </ol>
-<p><img src="/static/documentation/images/image-22.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/cluster_search.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>
-      Cluster Search expects the parameters below.
+      Detailed Cluster expects the parameters below.
       <strong
         ><em
           >PLEASE NOTE: Do not exit this page, you will be directed to the
@@ -543,7 +543,7 @@
     </ul>
   </li>
 </ol>
-<h2 id="-hierarchical-search-"><strong>Hierarchical Search</strong></h2>
+<h2 id="hierarchical"><strong>Hierarchical Search</strong></h2>
 <p>
   Hierarchical Search uses Agglomerative clustering to find beacons.
   Agglomerative clustering is a Hierarchical clustering used to group objects in
@@ -555,7 +555,7 @@
 <ol>
   <li>Navigate to Execute and select Hierarchical Search.</li>
 </ol>
-<p><img src="/static/documentation/images/image-21.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/hierarchical_search.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>
@@ -601,7 +601,7 @@
     </ul>
   </li>
 </ol>
-<h2 id="-filter-ips-"><strong>Filter IPs</strong></h2>
+<h2 id="filterips"><strong>Filter IPs</strong></h2>
 <p>
   Configuration for additional filtering. Filtering at this level will
   exclude/include prior to the beacon algorithm. Filtered beacons are post
@@ -610,7 +610,7 @@
 <ol>
   <li>Navigate to Settings and click on Filters.</li>
 </ol>
-<p><img src="/static/documentation/images/image-23.png" alt="Alt text" /></p>
+<p><img src="/static/documentation/images/filter_settings.png" alt="Alt text" style="width:900px;"/></p>
 <ol>
   <li>
     <p>
@@ -680,15 +680,10 @@
     </ul>
   </li>
 </ol>
-<p>#</p>
-<h2 id="-light-dark-mode-"><strong>Light/Dark Mode</strong></h2>
+<h2 id="lightdark"><strong>Light/Dark Mode</strong></h2>
 <p>
-  Beacon Huntress has a light and dark mode. To toggle between light and dark
-  modes, click on the MODE button.
+  Coming Soon!
 </p>
-<h3 id="light-to-dark-mode">Light to Dark Mode</h3>
-<p><img src="/static/documentation/images/image-25.png" alt="Alt text" /></p>
-<h3 id="dark-to-light-mode">Dark to Light Mode</h3>
-<p><img src="/static/documentation/images/image-26.png" alt="Alt text" /></p>
+
 
 {% endblock %}
