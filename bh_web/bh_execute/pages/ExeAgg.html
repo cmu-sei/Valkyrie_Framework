@@ -4,10 +4,30 @@
   <a href="/">Home</a> / Search / Hierarchical Search
 </p>
 
-{% endblock %} {% block content %} {% load crispy_forms_tags %}
-<h4>Execute New Hierarchical Search</h4>
+<script type="text/javascript" src="/static/script/ds_form.js"></script>
+<script type="text/javascript" src="/static/script/bootstrap.bundle.min.js"></script>
+
+{% endblock %} 
+{% block content %} {% load crispy_forms_tags %}
+<h4>Execute a New Hierarchical Search</h4>
+<br>
 <form action="" method="post">
+
+  <label for="formFile" class="form-label">Data Source*</label>
+  <select id="ds_droplist" name="ds_id" class="form-select" data-bs-toggle="dropdown" aria-expanded="Default select example" onchange="addFieldsRun()">
+    <option selected>Select a Data Source</option>
+    {% for option in options %}
+      <option class="dropdown-item" value="{{ option.rowid}}" data_type="{{ option.ds_type }}" ds_name="{{ option.ds_name }}">{{ option.ds_name }}</option>
+    {% endfor %}
+  </select>
+  <div id="additional-fields"></div>
+
+  <!--Hidden value for Data Type-->
+  <input type="hidden" name="data_type" id="data_type_field" value="">
+
+
   {% csrf_token %} {{form | crispy }}
+
   <div class="mt-3">
     <button
       type="submit"

@@ -8,7 +8,7 @@ import os
 import time
 import pandas as pd
 from settings.models import conf_general, conf_filter
-from beacon_huntress.src.bin.data import get_data, del_data, add_data, get_run_conf, get_group_id
+from beacon_huntress.src.bin.data import get_data, del_data, add_data, get_run_conf, get_group_id, del_logfile
 from beacon_huntress.src.bin.beacon import get_dns
 
 # BASE DIRECTORY
@@ -62,10 +62,17 @@ def log_view(request):
 def log_detail_view(request):
 
     fname = request.GET.get("filename")
-    with open(os.path.join(BASE_DIR, "log", fname), "r") as f:
-        log_txt = f.read()
+    full_path = os.path.join(BASE_DIR, "log", fname)
 
-    context = {"file_content": log_txt}
+    if os.path.exists(full_path):
+        with open(full_path, "r") as f:
+            log_txt = f.read()
+
+        context = {"file_content": log_txt}    
+    else:
+        context = {"file_content": "{} does not exist!".format(fname)}
+
+    
     return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "LogDetails.html"), context)
     
 def walk_dir(walk_dir,page):
@@ -113,16 +120,36 @@ def result_grid_group(request):
     # GET Results Group
     df = get_data("group")
 
-    # DELETE NULL VALUES OR MISSING VALUES
-    df.dropna(inplace=True)
+    # ADD LINKS IF DATA IS PRESENT
+    if df.empty:
+        df["Dashboard"] = ""
+        df["Config"] = ""
+        df["Delete"] = ""
+    else:
+        # DELETE NULL VALUES OR MISSING VALUES
+        df.dropna(inplace=True)
 
-    #df["Dashboard"] =  df["uid"].apply(lambda x: '<a href="/Dashboard.html?uid={}"><i class="fas fa-chart-line"></i></a>'.format(x))
-    df["Dashboard"] =  df["uid"].apply(lambda x: '<a href="http://127.0.0.1:3000/d/UK-8Ve_7z/beacon?orgId=1&var-uid={}&from=now-2y&to=now&refresh=5s" target="_blank"><i class="fas fa-chart-line"></i></a>'.format(x))
-    df["Config"] = df["uid"].apply(lambda x: '<a href="/RunConfig?uid={}"><i class="fa-solid fa-gears"></i></a>'.format(x))
-    df["log_file"] = df["log_file"].apply(lambda x: '<a href="/LogDetails.html?filename={}"><i class="fas fa-file"></i></a>'.format(x))
-    df["Delete"] = df["uid"].apply(lambda x: '<a href="/DelDetail?uid={}"><i class="fa-regular fa-trash-can"></i></a>'.format(x))
-    df["uid"] = df["uid"].apply(lambda x: '<a href="{1}.html?uid={0}">{0}</a>'.format(x,"ResultDetails"))
+        # LINKS FOR DASH, CONFIG & DELETE BUTTON
+        df["Dashboard"] =  df["uid"].apply(lambda x: '<a href="http://127.0.0.1:3000/d/UK-8Ve_7z/beacon?orgId=1&var-uid={}&from=now-2y&to=now&refresh=5s" target="_blank"><i class="fas fa-chart-line"></i></a>'.format(x))
+        df["Config"] = df["uid"].apply(lambda x: '<a href="/RunConfig?uid={}"><i class="fa-solid fa-gears"></i></a>'.format(x))
+        df["Delete"] = df.apply(
+            lambda row: '<a href="/DelDetail?uid={}&log={}"><i class="fa-regular fa-trash-can"></i></a>'.format(row["uid"], row["log_file"]),
+            axis =1
+        )
+        df["log_file"] = df["log_file"].apply(lambda x: '<a href="/LogDetails.html?filename={}"><i class="fas fa-file"></i></a>'.format(x))
+        
+        # ADD NEW COLUMN FOR NEW VALUES
+        df["new"] = False
+        if pd.to_datetime(df.iloc[0]["dt"],utc=True) > pd.Timestamp.utcnow() - pd.Timedelta(minutes=5):
+            df.iloc[0, df.columns.get_loc('new')] = True
 
+        # SET NEW BADGE FOR LASTEST RECORD IF WITHIN 5 MINS
+        df["uid"] = df.apply(
+            lambda row: '<span class="badge text-bg-secondary">New</span><a href="{1}.html?uid={0}"> {0}</a>'.format(row["uid"],"ResultDetails") if row["new"] else '<a href="{1}.html?uid={0}"> {0}</a>'.format(row["uid"],"ResultDetails"),
+            axis=1
+        )
+
+    # FINAL DATAFRAME
     df = df[["uid", "dt", "beacons", "Dashboard", "log_file", "Config", "Delete"]].rename(columns={"uid": "Group ID", "dt": "Date", "beacons": "Beacon Count", "log_file": "Log File"})
 
     context = _get_context(df)
@@ -155,7 +182,6 @@ def doc_view(request):
     return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "Documentation.html"))
 
 def del_log(request):
-
     log = request.GET.get("log")
 
     full_path = os.path.join(BASE_DIR, "log", log)
@@ -171,10 +197,14 @@ def del_log(request):
 def del_result(request):
     uid = request.GET.get("uid")
 
+    # DELETE DATA
     del_data("detail",uid)
+
+    # DELETE LOGS
+    del_logfile(request,BASE_DIR)
     
     # RELOAD RESULTS VIEW
-    return HttpResponseRedirect("/Results.html")    
+    return HttpResponseRedirect("/Results.html")
 
 def filter_beacon(request):
     dest_ip = request.GET.get("dest_ip")
