@@ -1,9 +1,9 @@
 FROM python:3.10-bullseye
 
 # FOR PROXY UNCOMMENT BELOW AND ADD YOUR PROXY
-ENV HTTP_PROXY "http://cloudproxy.sei.cmu.edu:80"
-ENV HTTPS_PROXY "http://cloudproxy.sei.cmu.edu:80"
-ENV NO_PROXY ".sei.cmu.edu,cert.org,localhost,127.0.0.1"
+#ENV HTTP_PROXY ""
+#ENV HTTPS_PROXY ""
+#ENV NO_PROXY ""
 
 # ADD DIRECTORIES
 RUN mkdir /app && mkdir /app/log && mkdir /tmp/raw && mkdir /tmp/raw/data
