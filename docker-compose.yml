@@ -57,6 +57,7 @@ services:
       - .:/app
       - /tmp:/tmp
       - ./bh_web/datasets/tutorial:/tutorial
+      - ./bh_web/datasets/elastic:/elastic
     ports:
       - "8000:8000"
     networks:
