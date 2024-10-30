@@ -16,6 +16,7 @@ from datetime import datetime
 from sqlalchemy import create_engine
 import json
 import platform
+from pathlib import Path
 
 #####################################################################################
 ##  LOGGING
@@ -70,6 +71,14 @@ def get_conn_str(conf = CONF, conf_hash = "", option = "get"):
 
     return my_conn
 
+def data_to_json(df):
+    # CONVERT TO 
+    #df_json = df.to_json(orient="records", lines=True)
+    df_json = df.to_json(orient="records")
+    df_json = json.loads(df_json)
+
+    return df_json
+
 def get_data(type,value = None):
     
     #####################################################################################
@@ -82,6 +91,13 @@ def get_data(type,value = None):
         df = pd.read_sql("select * from vw_beacon_group order by dt desc;", my_conn)
     elif type == "filtered_beacons":
         df = pd.read_sql("select * from vw_filtered_beacons", my_conn)
+    elif type == "data_sources":
+        if value == None:
+            df = pd.read_sql("select * from vw_datasources", my_conn)
+        else:
+            df = pd.read_sql("select * from vw_datasources where rowid = {}".format(value), my_conn)
+    elif type == "data_type":
+        df = pd.read_sql("select * from ds_type order by ds_type", my_conn)
     else:
         if value == None:
             df = pd.read_sql("select * from vw_beacon", my_conn)
@@ -99,6 +115,9 @@ def add_data(type,value=None):
         my_conn.connect().execute(query)
     elif type == "dns":
         query = "insert into dns (ip,dns) values('{}','{}')".format(value[0],value[1])
+        my_conn.connect().execute(query)
+    elif type == "ds":
+        query = "insert into datasource (ds_name,ds_type_id,data) values('{}','{}','{}')".format(value[0],value[1],value[2])
         my_conn.connect().execute(query)
 
     return None
@@ -131,7 +150,23 @@ def del_data(type,value=None):
         query = "delete from beacon_filter where ip = '{}'".format(value)
         my_conn.connect().execute(query)
 
+    elif type == "data_source":
+        if int(value) != 1:
+            query = "delete from datasource where rowid = {}".format(value)
+            my_conn.connect().execute(query)
+
     return None
+
+def del_logfile(request,dir):
+    
+    log = request.GET.get("log")
+
+    full_path = os.path.join(dir, "log", log)
+
+    if os.path.exists(full_path):
+        os.remove(full_path)
+    else:
+        print("File {} does not exist".format(full_path))
 
 def get_run_conf(uid):
 
@@ -260,3 +295,54 @@ def add_dns(http_log_dir):
             drop table tmp_dns;"
     
     my_conn.connect().execute(query)
+
+def add_ds(post_data):
+
+    print(post_data)
+
+    if post_data["data_type"] == "Zeek Connection Logs":
+        data = {"raw_log_loc": post_data["raw_log_loc"]}
+
+        query = "insert into datasource \
+                (ds_name,ds_type_id,data) \
+                select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
+        
+    elif post_data["data_type"] == "Security Onion":
+        data = {"host": post_data["es_host"], "port": post_data["es_port"], "api_key": post_data["api_key"]}
+
+        query = "insert into datasource \
+                (ds_name,ds_type_id,data) \
+                select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
+    elif post_data["data_type"] == "Elastic":
+        data = {"host": post_data["es_host"], "port": post_data["es_port"], "api_key": post_data["api_key"], "index": post_data["es_index"]}
+
+        query = "insert into datasource \
+                (ds_name,ds_type_id,data) \
+                select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
+    else:
+        pass
+
+
+    my_conn = get_conn_str(CONF)
+    my_conn.connect().execute(query)
+
+def upd_ds(post_data):
+
+    data = {}
+
+    # BUILD DATA JSON
+    for key, value in post_data.POST.items():
+        if key in ["rowid", "csrfmiddlewaretoken"]:
+            pass
+        elif key == "ds_name":
+            ds_name = value
+        else:
+            data[key] = value
+
+    query = "update datasource \
+        set ds_name = '{}',\
+        data = '{}'\
+        where rowid = {}".format(ds_name,str(data).replace("'","''"),post_data.GET.get("rowid"))
+        
+    my_conn = get_conn_str(CONF)
+    my_conn.connect().execute(query)    
