@@ -135,6 +135,25 @@ CREATE TABLE IF NOT EXISTS `beacon`.`dns`
 PRIMARY KEY (`rowid`),
 CONSTRAINT `ux_dns` UNIQUE (`ip`,`dns`));
 
+CREATE TABLE IF NOT EXISTS `beacon`.`ds_type`
+(`rowid` int NOT NULL AUTO_INCREMENT,
+`ds_type` varchar(256) DEFAULT NULL,
+`create_date` datetime DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`rowid`),
+CONSTRAINT `ux_ds_type` UNIQUE (`ds_type`)
+);
+
+CREATE TABLE IF NOT EXISTS `beacon`.`datasource`
+(`rowid` int NOT NULL AUTO_INCREMENT,
+`ds_name` varchar(256),
+`ds_type_id` int,
+`data` text,
+`create_date` datetime DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`rowid`),
+CONSTRAINT `fk_dstype_typeid` FOREIGN KEY (`ds_type_id`) REFERENCES `beacon`.`ds_type` (`rowid`),
+CONSTRAINT `ux_ds` UNIQUE (`ds_name`, `ds_type_id`)
+);
+
 /*********************************************************************
 **  Views 
 *********************************************************************/
@@ -184,6 +203,14 @@ left join `beacon`.`dns` d on
 	f.ip = d.ip
 where f.is_user = True;
 
+CREATE OR REPLACE DEFINER = 'root'@'localhost' 
+SQL SECURITY DEFINER VIEW `beacon`.`vw_datasources`
+as
+select distinct ds.rowid,ds.ds_name,dt.ds_type,ds.data,ds.create_date
+from `beacon`.`datasource` ds
+inner join `beacon`.`ds_type` dt on
+ds.ds_type_id = dt.rowid;
+
 /*********************************************************************
 **  PRIVILEGES 
 *********************************************************************/
@@ -201,6 +228,19 @@ FLUSH PRIVILEGES;
 /*********************************************************************
 **  DATA
 *********************************************************************/
+
+insert into `beacon`.`ds_type`
+(ds_type)
+values
+('Zeek Connection Logs'),
+('Elastic'),
+('Security Onion');
+
+insert into `beacon`.`datasource`
+(`ds_name`,`ds_type_id`,`data`)
+select distinct 'Zeek Connection Logs',`rowid`,''
+from `beacon`.`ds_type`
+where `ds_type` = 'Zeek Connection Logs';
 
 insert into `beacon`.`dns`
 (dns,ip)
