@@ -144,7 +144,9 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
             df = pd.read_parquet(x)
             file_type = "beacon"
 
-            if len(df) > 0:
+            if df.empty:
+                logger.debug("Nothing to load for {}".format(file_type))
+            else:
                 logger.debug("Loading {} data".format(file_type))
                 #del_records(t_names = [file_type], conf = conf, verbose = verbose)
 
@@ -161,15 +163,15 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
                 "delta_mins", "dt", "group_id", "likelihood"]]
                 
                 final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
-            else:
-                logger.debug("Nothing to load for {}".file_type)
 
         # LOAD DELTA DATA
         elif "delta" in os.path.basename(x):
             df = pd.read_parquet(x)
             file_type = "delta"        
 
-            if len(df) > 0:
+            if df.empty:
+                logger.debug("Nothing to load for {}".format(file_type))  
+            else:
                 logger.info("Loading {} data".format(file_type))
                 #del_records(t_names = [file_type], conf = conf, verbose = verbose)
 
@@ -181,18 +183,17 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
                 # CREATE FINAL DATAFRAME
                 final_df = df[["connection_id", "sip", "dip", "port", "proto", "dt" , "delta_ms", "delta_mins", "source_file", "src_row_id", "group_id"]]                           
 
-                final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)   
-            else:
-                logger.debug("Nothing to load for {}".file_type)                
+                final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)                             
         
         # LOAD RAW DATA
         else:
             df = pd.read_parquet(x)
             file_type = "raw_source"        
 
-            if len(df) > 0:
+            if df.empty:
+                logger.debug("Nothing to load for {}".format(file_type))
+            else:
                 logger.info("Loading {} data".format(file_type))
-                #del_records(t_names = [file_type], conf = conf, verbose = verbose)
 
                 df_cnt = df['source_file'].value_counts()
                 df_2 = pd.DataFrame(df_cnt).reset_index()
@@ -207,8 +208,6 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
                 final_df = df_2[["source_file", "count", "group_id"]]                  
 
                 final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
-            else:
-                logger.debug("Nothing to load for {}".file_type)                
 
     # CLOSE ENGINE
     my_conn.dispose()
@@ -278,70 +277,6 @@ def del_records(t_names, conf = DB_CONF, verbose = False):
     logger.info("Total runtime {}".format(endtime))    
 
 
-# MARKED FOR REMOVAL
-# def beacon_filter(ips = None, f_type = "add", conf = DB_CONF, verbose = False ):
-#     '''
-#     Add/Remove record to filter a beacon in the Grafana Dashboard.\n
-
-#     Parameters:
-#         ips - IPs you wish to un/filter in list format.\n
-#             default = None
-#         f_type - Filter type options.\n
-#             options\n
-#             =======\n
-#             add\n
-#             clear\n
-#             del\n
-
-#             default = add\n
-#         conf - DB configuration file location. File must be json format.\n
-#             default = ../conf/mysql.json\n
-#         verbose - Verbose logger.  True or False (case-sensistive). \n
-#             default = False
-
-#     Returns
-#         Nothing
-#     '''
-#     from sqlalchemy import create_engine
-#     import json
-
-#     starttime = datetime.now()
-#     logger.info("{} option for ip/s {}".format(f_type, ips))
-
-#     try:
-#         logger.debug("Opening config {}".format(conf))
-
-#         with open(conf) as conf_file:
-#             #conf_data = json.load(conf_file)
-#             conf_data = yaml.safe_load(conf_file)
-
-#     except BaseException as err:
-#         logger.error("Issue with config {}".format(conf))
-#         logger.error(err)
-
-#     #####################################################################################
-#     ##  
-#     #####################################################################################   
-
-#     if ips == None:
-#         ips = []
-
-#     t_name = "beacon_filter"
-
-#     my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]))
-
-#     if f_type == "add":
-#         for x in ips:
-#             my_conn.execute("insert ignore into {} (ip) value ('{}')".format(t_name,x))
-#     elif f_type == "del":
-#         for x in ips:
-#             my_conn.execute("delete from {} where ip = '{}'".format(t_name,x))
-#     elif f_type == "clear":
-#         logger.debug("Truncate table data {}".format(t_name))
-
-#         my_conn.execute("truncate table {}".format(t_name))
-
-#BACK HERE
 def load_dashboard(file_loc, dash_config, dash_type, group_id, is_new = False, overwrite = False, verbose = False):
 
     # DELETE DASHBOARD DATA OR SKIP ALREADY LOADED DATA
@@ -383,12 +318,6 @@ def load_dashboard(file_loc, dash_config, dash_type, group_id, is_new = False, o
             # DELETE DASHBOARD DATA
             bar = Bar("\t* Loading Dashboard (Gold/Beacons)", max=3, suffix="%(elapsed_td)s")
             bar.next()     
-                       
-            # del_records(
-            #     t_names = ["beacon"], 
-            #     conf = dash_config, 
-            #     verbose = verbose
-            #     )
 
             # NO GOLD FILE FINISH
             # GOLD FILE CONTINUE THE PROCESS
