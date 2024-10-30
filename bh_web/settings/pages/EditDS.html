@@ -1,0 +1,87 @@
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Edit Data Source</h1>
+<p class="header-subtitle"><a href="/">Home</a> / <a href="DataSources.html">Data Sources</a> / Edit </p>
+{% endblock %} {% block content %}
+
+<script type="text/javascript" src="/static/script/ds_form.js"></script>
+<script type="text/javascript" src="/static/script/bootstrap.bundle.min.js"></script>
+
+
+<form id="edit_ds" action="" method="post">
+
+    {% csrf_token %}
+
+    {% for field in options %}
+        {% if field.label == 'Data Source Type' %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id }}">{{ field.label }}</label>
+            <input disabled class="form-control" type="{{ field.type }}" id="{{ field.id }}" name="{{ field.id }}" value="{{ field.value }}">
+        </div>
+        {% elif field.label == 'api_key' %}
+                <div class="mb-3">
+                    <label for="api_key" class="form-label">API Key</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="api_key" name="api_key" value="{{ field.value }}">
+                        <button class="btn btn-secondary" type="button" id="togglePassword" onclick="toggleAPI()">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </button>
+                    </div>
+                    <div id="textHelp" class="form-text">Elastic API Key.</div>
+                </div>
+        {% elif field.label == 'index' %}
+            <div class="mb-3">
+                <label for="es_index" class="form-label">Index</label>
+                <div class="d-flex align-items-center">
+                    <select id="es_index" name="es_index" class="form-select me-2" data-bs-toggle="dropdown" aria-expanded="false">
+                        <option value="">Button to Load Indices</option>
+                    </select>
+                    <button class="btn btn-secondary ms-auto" type="button" id="esindex" onclick="loadElasticIndex()">
+                        <i class="fa-solid fa-file-import"></i>
+                    </button>
+                </div>
+                <div id="textHelp" class="form-text">Elastic Index Name.</div>
+            </div>                
+        {% else %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id }}">{{ field.label }}</label>
+                <input class="form-control" type="{{ field.type }}" id="{{ field.id }}" name="{{ field.id }}" value="{{ field.value }}">
+                <div id="textHelp" class="form-text">{{ field.desc }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}   
+    
+    <div class="mt-3">
+        <button
+          id="btn_sub"
+          type="submit"
+          value="Update"
+          class="btn btn-primary"
+          onclick="document.body.style.cursor='wait'"
+          disabled
+        >
+          Update
+        </button>
+      </div>
+
+</form>
+
+<script>
+    // FORM ELEMENTS
+    const form = document.getElementById('edit_ds');
+    const submitButton = document.getElementById('btn_sub');
+
+    console.log("HERE")
+
+    // ENABLE BUTTON FUCTION
+    function enableButton() {
+        submitButton.disabled = false;
+    }
+
+    // ADD EVENT LISTENERS FOR ALL INPUTS
+    form.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', enableButton);
+    });
+</script>
+
+
+{% endblock %}
