@@ -21,14 +21,14 @@ theme:
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-      primary: blue
+      primary: #00bac1
 
     # Palette toggle for dark mode
     - scheme: slate
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-      primary: blue
+      primary: #00bac1
 markdown_extensions:
   # Python Markdown
   - abbr
