@@ -9,10 +9,10 @@
 
 ## <a name="jupyter"></a>__Jupyter Notebook__
 
-Complete the steps below to setup Beacon Huntress on Jupyter.
+Complete the steps below to set up Beacon Huntress on Jupyter.
 
 > ### __Note__<br>
-> Beacon Huntress has python dependancies that are required for operation.  __Do not skip steps 5 & 6 from the setup!__
+> Beacon Huntress has Python dependencies that are required for operation.  __Do not skip steps 5 & 6 from the setup!__
 
 ### <a name="setup"></a>__Juptyer Notebook Setup__
 1) Create a folder in Jupyter called `beacon_huntress`.<br>
@@ -48,7 +48,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook. Run the steps below.
     * __src_loc__ <i>(string) </i><br>
     Raw Bro/Zeek logs folder.
     * __bronze_loc__ <i>(string)</i><br>
-    Bronze folder location.  Folder where data will compressed and converted to parquet format.
+    Bronze folder location.  Folder where data will be compressed and converted to Parquet format.
 
     ```python
     import ingest
@@ -65,10 +65,10 @@ Open beacon_huntress.ipynb inside a Jupyter notebook. Run the steps below.
     Raw Bro/Zeek logs folder.
     * __dest_exclude_file__ <i>(string)</i><br>
     Destination folder location for non-matching filters.  __Matches are excluded from the results.__.<br>
-    Use a unique folder name at the end to identify your filter, a data folder will appended automatically.<br>
+    Use a unique folder name at the end to identify your filter - a data folder will be appended automatically.<br>
     Pass a blank double quote ("") to skip the creation of an exclude file.<br>
     * __port_filter__ <i>(list)</i><br>
-    Ports you want to include, in list format.
+    Ports that you want to include, in list format.
 
     ```python
     # CREATE FILTERED FILES
@@ -92,7 +92,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook. Run the steps below.
                          delta_file_loc = "data/silver/delta")
     ```
 
-4) Choose the algorithm you want to run and configure the settings. Some examples are included below, but see the [Beacon Algorithms](../documentation/beaconalgo.md) page for more details.
+4) Choose the algorithm that you want to run and configure the settings. Some examples are included below, but see the [Beacon Algorithms](../documentation/beaconalgo.md) page for more details.
 
     * Agglomerative Clustering
          ```python
@@ -111,7 +111,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook. Run the steps below.
         )
         ```
     
-    * DBScan Clustering
+    * DBSCAN Clustering
 
         ```python
         import beacon
@@ -128,7 +128,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook. Run the steps below.
         )
         ```
 
-    * DBScan by Variance
+    * DBSCAN by Variance
 
         ```python
         import beacon

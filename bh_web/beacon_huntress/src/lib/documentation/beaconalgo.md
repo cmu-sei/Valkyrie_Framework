@@ -36,9 +36,9 @@ Below are the current algorithms that can be used when searching for beacons.
 
 ### <a name="clustersearch"></a>__Detailed Cluster Search__
 
-Cluster Search is also known as DBScan, which stands for Density-Based Spatial Clustering of Applications with Noise.  DBScan can identify clusters of different sizes within large data samples that contain noise and outliers.  DBScan primarily uses two parameters: Minimum Points and EPS (Epsilion).  The Minimum Points parameter represents the minimum number of data points (the threshold) that must be clustered together for a region to be considered dense.  EPS is the maximum distance between two data points for them to be considered part of the same cluster.
+Cluster Search is also known as DBSCAN, which stands for Density-Based Spatial Clustering of Applications with Noise.  DBSCAN can identify clusters of different sizes within large data samples that contain noise and outliers.  DBSCAN primarily uses two parameters: Minimum Points and EPS (Epsilon).  The Minimum Points parameter represents the minimum number of data points (the threshold) that must be clustered together for a region to be considered dense.  EPS is the maximum distance between two data points for them to be considered part of the same cluster.
 
-* DBScan cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).  However, this is the slowest running algorithim.
+* DBSCAN clustering is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).  However, this is the slowest running algorithm.
  
 
 ![](../images/dbscan.png)
@@ -46,23 +46,23 @@ Cluster Search is also known as DBScan, which stands for Density-Based Spatial C
 
 ### __Parameters__
 * __Minimum Delta Time__ <i>(int)</i><br>
-The minimum time interval in minutes for your search.<br>
+The minimum time interval between connection requests (in minutes) for your search.<br>
 
 * __Time Spans__ <i>(list)</i> <br>
 Spans of time that you wish to search, in list format. <br>
-<i>EXAMPLE: To search within two time spans, 0-5 mins and 5-10 mins:<br>
+<i>Example: Will search within two time spans, 0-5 mins and 5-10 mins:<br>
     <t>[[0, 5], [5, 10]]</i><br>
 
 * __Minimum Cluster Points__ <i>(int)</i><br>
 The minimum number of cluster points/connections needed to identify a potential beacon.<br>
 
 * __Likelihood Percentage__ <i>(int)</i> <br>
-The minimum likelihood percentage from the Machine Learning algorithm needed to flag a potential beacon.<br>
+The likelihood percentage used as a threshold by the Machine Learning algorithm in order to flag a potential beacon.<br>
 
-Below are two examples for finding fast and slow beacons using DBScan clustering.
+Below are two examples for finding fast and slow beacons using DBSCAN clustering.
 
 #### __Fast Beacon Search__
-Searching for beacons with 70% likelihood, time spans (0-5 mins, 2-15 mins, 15-35 mins, 30-60 mins), at least 10 connections, and min delta time of 1 minute.
+Searching for beacons with 70% likelihood, time spans (0-5 mins, 2-15 mins, 15-35 mins, 30-60 mins), at least 10 connections, and minimum delta time of 1 minute.
 ```
 Minimum Delta Time = 1
 Time Spans = [[0, 5], [2, 15], [15, 35], [30, 60]]
@@ -73,7 +73,7 @@ Likelihood Percentage = 70
 ![](../../../../../bh_web/static/documentation/images/cluster_fast.png)
 
 #### __Slow Beacon Search__
-Searching for beacons with 70% likelihood, time spans (0-5 mins, 2-15 mins, 15-35 mins, 30-60 mins), at least 10 connections, and min delta time of 20 minutes.
+Searching for beacons with 70% likelihood, time spans (0-5 mins, 2-15 mins, 15-35 mins, 30-60 mins), at least 10 connections, and minimum delta time of 20 minutes.
 
 ```
 Minimum Delta Time = 20
@@ -86,7 +86,7 @@ Likelihood Percentage = 70
 #
 ### <a name="hierarchicalsearch"></a>__Hierarchical Search__
 
-Hierarchical Search uses agglomerative clustering, which is a hierarchical clustering technique used to group objects based on similarity.  Each item is treated as a singleton cluster, and clusters that are sufficiently similar are merged together into a larger cluster, working from the bottom up.  This process continues until all the clusters are placed into a single large cluster, see image below.  
+Hierarchical Search uses agglomerative clustering, which is a hierarchical clustering technique used to group objects based on similarity.  Each item is treated as a singleton cluster, and clusters that are sufficiently similar are merged together into a larger cluster, working from the bottom up.  This process continues until all of the clusters are placed into a single large cluster (see image below).  
 
 * Agglomerative clustering works well when searching for [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).
  
@@ -109,7 +109,7 @@ Line amounts to process at a time, in list format.<br>
 * __Minimum Callback Time (ms)__ <i>(int)</i><br>
 Minimum delta time to search by, in milliseconds.<br>
 
-Below are two examples for finding fast and slow beacons using Agglomerative clustering.
+Below are two examples for finding fast and slow beacons using agglomerative clustering.
 
 > ### __Note__<br>
 > 
@@ -145,37 +145,37 @@ Minimum Callback Time (ms) = 900000
 #
 ### <a name="quickclustersearch"></a>__Quick Cluster Search__
 
-Quick Cluster Search uses the same principals as [Detailed Cluster Search](#clustersearch) but some records will be filtered out before the scan if they surpass the user-set variance percentage. If the variance is above the configured threshold, it is excluded from the scan.  This feature provides all the benefits of a DBScan without the performance overhead.
+Quick Cluster Search uses the same principles as [Detailed Cluster Search](#clustersearch) but some records will be filtered out before the scan if they surpass the user-set variance percentage. If the variance is above the configured threshold, it is excluded from the scan.  This feature provides all of the benefits of a DBSCAN without the performance overhead.
 
-* DBScan by Variance cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon). 
-  * This provides a perfomance increase over Cluster Search, because some connections will be pre-filtered by the variance setting.
+* DBSCAN by Variance clustering is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon). 
+  * This provides a performance increase over Detailed Cluster Search because some connections will be pre-filtered by the variance setting.
 
 ### __Parameters__
 * __Average Delta Time__ <i>(int)</i><br>
-Average delta time to include in the search using your delta column. Less than equal (<>=).<br>
+Average delta time to include in the search using your delta column. Less than or equal (<=).<br>
 
 * __Connection Count__ <i>(int)</i><br>
-Total connection count for filtering. Greater than equal (>=).<br>
+Total connection count for filtering. Greater than or equal (>=).<br>
 
 * __Time Span Average__ <i>(int)</i> <br>
 The percentage to increase and decrease from the connections total delta span.<br>
-<i>EXAMPLE: 15 will decrease 15% from the minimum and maximum delta span.<br>
-    <t>min delta = 5<br>
-    <t>max delta = 10<br>
+<i>Example: 15 will decrease 15% from the minimum and maximum delta span.<br>
+    <t>delta min = 5<br>
+    <t>delta max = 10<br>
     <t>span min = 4.25 (5 - (5 * 15%))<br>
     <t>span max = 11.5 (10 + (10 * 15%))</i><br>
 
 * __Variance Percentage__ <i>(int)</i><br>
-Total variance perctage for filtering. Greater than equal (>=).<br>
+Total variance percentage for filtering. Greater than or equal (>=).<br>
 __Default__ = 4<br>
 
 * __Minimum Likelihood Percentage__ <i>(int)</i> <br>
-Minimum likelihood value to identify a beacon.<br>
+Likelihood value (threshold) used to identify a potential beacon.<br>
 
-Below are two examples for finding fast and slow beacons using DBScan by variance clustering. 
+Below are two examples for finding fast and slow beacons using DBSCAN by variance clustering (Quick Cluster). 
 
 #### __Fast Beacon Search__
-Searching for beacons with 70% likelihood, at least 10 connections, 15% span average, min variance 15% and min delta time of 5 minutes.
+Searching for beacons with 70% likelihood, at least 10 connections, 15% time span average, minimum variance of 15% and minimum delta time of 5 minutes.
 ```
 Average Delta Time = 5
 Connection Count = 10
@@ -187,8 +187,8 @@ Minimum Likelihood Percentage = 70
 ![](../../../../../bh_web/static/documentation/images/quickcluster_fast.png)
 
 #### __Slow Beacon Search__
-Searching for beacons with 70% likelihood, at least 10 connections, 15% span average, min variance 15% and min delta time of 20 minutes.<br>
-Note this will also search for fast beacons as avg_delta <=
+Searching for beacons with 70% likelihood, at least 10 connections, 15% time span average, minimum variance of 15% and minimum delta time of 20 minutes.<br>
+Note that this will also search for fast beacons, as avg_delta <= value encompasses both fast and slow.
 ```
 Average Delta Time = 20
 Connection Count = 10

@@ -3,7 +3,6 @@
 ## __Table of Contents__
 
 > * [Home](../../../readme.md)
-> * [How to use](#howtouse)
 >   * [Tutorial](#bh_tutorial)
 >   * [Zeek Logs](#zeek)
 
@@ -20,39 +19,33 @@ This tutorial will provide an example for running Beacon Huntress using a generi
 
     ![bh_ui](/bh_web/static/documentation/images/home_page.png)
 
-2. Go to the "Settings" tab and select "General".
+2. Go to the "Search For Beacons" tab and select "Quick Cluster".
 
-    ![ui_set_gen](/bh_web/static/documentation/images/gen_settings.png)
-
-3. Change the "Raw Log Location" to ```/tutorial``` and click "Save".
-
-    ![ui_raw_loc](/bh_web/static/documentation/images/set_tutorial.png)
-
-4. Go to the "Execute" tab and select "Quick Cluster Search". Keeping the default settings, click "Run". The execution will take a moment.
+3. Change the "Data Source" to "Zeek Connection Logs" and set the "Raw Log Location" to ```/tutorial```. Click "Run" to perform a beacon search. The execution will take a moment.
 
     ![ui_set](/bh_web/static/documentation/images/search_quick_cluster.png)
-
-5. After the execution is finished, you'll be redirected to the results page. For this dataset, the "Beacon Count" column shows that two potential beacons have been identified. Several options are now available. Click on the "Group ID" to view the potential beacons. Click the "Dashboard" icon to display results in a Grafana dashboard. Click on the "Log File" icon to view the run logs. Click the "Config" icon to display runtime configuration. Click the "Delete" icon to <i><b>PERMANENTLY</b></i> remove this result set.
+   
+4. After the execution is finished, you'll be redirected to the results page. For this dataset, the "Beacon Count" column shows that two potential beacons have been identified. Several options are now available. Click on "Group ID" to view the potential beacons. Click the "Dashboard" icon to display results in a Grafana dashboard. Click on the "Log File" icon to view the run logs. Click the "Config" icon to display runtime configuration. Click the "Delete" icon to <i><b>PERMANENTLY</b></i> remove this result set.
 
     ![ui_results](/bh_web/static/documentation/images/results_quick_cluster.png)
 
-6. For now, click the "Group ID" to view potential beacons. In this example, Beacon Huntress has identified two potential beacons: 7.7.7.1 and 2.17.188.84, or "fandango.com". The 7.7.7.1 connection is our target test beacon, but the connections to "fandango.com" are benign traffic. Since the identification of "fandango.com" is incorrect, we will exclude this result from the current and future runs by clicking the "Filter" icon.
+5. Click "Group ID" to view potential beacons. In this example, Beacon Huntress has identified two potential beacons: 7.7.7.1 and 2.17.188.84 ("fandango.com"). The 7.7.7.1 connection is our target test beacon, but the connections to "fandango.com" are benign traffic. Since the identification of "fandango.com" as a beacon is incorrect, we will exclude this result from the current and future runs by clicking the "Filter" icon.
 
     ![ui_result_detail](/bh_web/static/documentation/images/results_details_highlight.png)
 
-7. Now, the results from "fandango.com" are filtered out.
+6. Now, the results from "fandango.com" are filtered out.
 
     ![ui_results_filter](/bh_web/static/documentation/images/results_details_filtered.png)
 
-8. To view all your filtered hosts, go to the "Settings" tab and select "Filtered Hosts". Filtered hosts can be removed from this list by clicking the "Trash Can" icon in the "Option" column, which will cause them to once again appear in the results. 
+7. To view all of your filtered hosts, go to the "Settings" tab and select "Filtered Hosts". Filtered hosts can be removed from this list by clicking the "Trash Can" icon in the "Option" column, which will cause them to once again appear in the results. 
 
     ![ui_fil_host](/bh_web/static/documentation/images/filtered_hosts.png)
 
-9. Go back to the "Results" tab and click on the "Dashboard" icon.
+8. Go back to the "Results" tab and click on the "Dashboard" icon.
 
     ![ui_results_click](/bh_web/static/documentation/images/result_dash_highlighted.png)
 
-10. A Grafana dashboard will open in a new browser tab. See [Dashboard]() for more details on dashboard usage and functionalities.
+9. A Grafana dashboard will open in a new browser tab. See [Dashboard]() for more details on dashboard usage and functionality.
 
     ![ui_dash](/bh_web/static/documentation/images/dash_main.png)
 
@@ -64,26 +57,25 @@ This tutorial will provide an example for running Beacon Huntress using a generi
 
 ## <a name="zeek"></a>__Zeek Logs__
 
-Zeek Connection Logs must be provided for Beacon Huntress to analyze. Follow the steps below to copy your Zeek logs from their initial location to a local directory that can be accessed by Beacon Huntress. It's recommended to organize the logs into separate directories, with each directory corresponding to a single day.
+Zeek Connection Logs must be provided for Beacon Huntress to analyze. Follow the steps below to copy your Zeek logs from their initial location to a local directory that can be accessed by Beacon Huntress. It's recommended that you organize the logs into separate directories, with each directory corresponding to a single day.
 
-1. In this example, we will copy Zeek conn logs to the ```/tmp``` directory. The ```/tmp``` directory is mounted to the Docker container beacon_huntress.
+1. In this example, we will copy Zeek connection logs to the ```/zeek``` directory. The ```/zeek``` directory is mounted to the Docker container beacon_huntress.
 
     ```bash
     # CREATE DIRECTORY (REPLACE YYYY-MM-DD WITH DATE)
-    mkdir -p /tmp/raw/data/YYYY-MM-DD
+    mkdir -p /zeek/raw/data/YYYY-MM-DD
 
     # START SFTP SHELL
     sftp root@YOUR_FTP_SERVER
 
     # SFTP COMMAND EXAMPLE (REPLACE YYYY-MM-DD WITH DATE)
-    get -R zeek/logs/YYYY-MM-DD/conn.* /tmp/raw/data/YYYY-MM-DD
+    get -R zeek/logs/YYYY-MM-DD/conn.* /zeek/raw/data/YYYY-MM-DD
     ```
 
-2. In the Beacon Huntress Web UI, go to "Settings" and select "General". Change the "Raw Log Location" to ```/tmp/raw/data``` and click "Save".
+2. When you run a beacon search, select "Zeek Connection Logs" as a "Data Source" and then change the "Raw Log Location" to ```/zeek```. This will run the search on the Zeek connection logs.
 
-    ![ui_set_gen](/bh_web/static/documentation/images/gen_settings.png)
+    ![ui_set_gen](/bh_web/static/documentation/images/zeek_ds.png)
 
-3. Now when you execute Beacon Huntress, it will return results for potential beacons found in any log files located in ```/tmp/raw/data```. See [tutorial](#tutorial) for more details on understanding Beacon Huntress results.
 
 #
 Valkyrie Framework<br>
