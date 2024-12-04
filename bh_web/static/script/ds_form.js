@@ -59,7 +59,6 @@ function addFieldsRun() {
         `;
     }
     else if (selectedType == "Zeek Connection Logs" && selectedDSName != "Zeek Connection Logs") {  
-        console.log("HERE")
         additionalFieldsContainer.innerHTML = `
             <div class="mb-3">
                 <label for="start_dte">Start Datetime</label><br>
@@ -76,8 +75,7 @@ function addFieldsRun() {
 
     //ADD THE DATA_TYPE TO THE REQUEST
     document.getElementById('data_type_field').value = selectedType;
-    
-    // ENABLE OR DISABLE BUTTON
+
     buttonSelect();
 }
 
@@ -98,23 +96,23 @@ function addFieldsDS() {
         additionalFieldsContainer.innerHTML = `
         <div class="mb-3">
             <label for="ds_name" class="form-label">Data Source Name</label>
-            <input type="text" class="form-control" id="ds_name" name="ds_name">
+            <input type="text" class="form-control" id="ds_name" name="ds_name" required>
             <div id="textHelp" class="form-text">Give a unique name to your data source.</div>
         </div>
         <div class="mb-3">
             <label for="es_host" class="form-label">Host</label>
-            <input type="text" class="form-control" id="es_host" name="es_host">
+            <input type="text" class="form-control" id="es_host" name="es_host" required>
             <div id="textHelp" class="form-text">Elastic Host Name.</div>
         </div>
         <div class="mb-3">
             <label for="es_port" class="form-label">Port</label>
-            <input type="text" class="form-control" id="es_port" name="es_port">
+            <input type="text" class="form-control" id="es_port" name="es_port" required>
             <div id="textHelp" class="form-text">Elastic Port Number.</div>
         </div>    
         <div class="mb-3">
             <label for="es_port" class="form-label">API Key</label>
             <div class="input-group">
-                <input type="password" class="form-control" id="api_key" name="api_key">
+                <input type="password" class="form-control" id="api_key" name="api_key" required>
                 <button class="btn btn-secondary" type="button" id="togglePassword" onclick="toggleAPI()">
                     <i class="fa-solid fa-eye-slash"></i>
                 </button>
@@ -124,14 +122,14 @@ function addFieldsDS() {
         <div class="mb-3">
             <label for="es_index" class="form-label">Index</label>
             <div class="d-flex align-items-center">
-                <select id="es_index" name="es_index" class="form-select me-2" data-bs-toggle="dropdown" aria-expanded="false">
-                    <option value="">Button to Load Indices</option>
+                <select id="es_index" name="es_index" class="form-select me-2" data-bs-toggle="dropdown" aria-expanded="false" required multiple>
+                    <option value="">Use button to load indices</option>
                 </select>
                 <button class="btn btn-secondary ms-auto" type="button" id="esindex" onclick="loadElasticIndex()">
                     <i class="fa-solid fa-file-import"></i>
                 </button>
             </div>
-            <div id="textHelp" class="form-text">Elastic Index Name.</div>
+            <div id="textHelp" class="form-text">Elastic Index Name (Multi-Select).</div>
         </div>        
 
         `;
@@ -139,28 +137,28 @@ function addFieldsDS() {
         additionalFieldsContainer.innerHTML = `
         <div class="mb-3">
             <label for="ds_name" class="form-label">Data Source Name</label>
-            <input type="text" class="form-control" id="ds_name" name="ds_name">
+            <input type="text" class="form-control" id="ds_name" name="ds_name" required>
             <div id="textHelp" class="form-text">Give a unique name to your data source.</div>
         </div>
         <div class="mb-3">
             <label for="es_host" class="form-label">Host</label>
-            <input type="text" class="form-control" id="es_host" name="es_host">
-            <div id="textHelp" class="form-text">Elastic Host Name.</div>
+            <input type="text" class="form-control" id="es_host" name="es_host" required>
+            <div id="textHelp" class="form-text">Security Onion Elastic Host Name.</div>
         </div>
         <div class="mb-3">
             <label for="es_port" class="form-label">Port</label>
-            <input type="text" class="form-control" id="es_port" name="es_port">
-            <div id="textHelp" class="form-text">Elastic Port Number.</div>
+            <input type="text" class="form-control" id="es_port" name="es_port" required>
+            <div id="textHelp" class="form-text">Security Onion Elastic Port Number.</div>
             </div>                
         <div class="mb-3">
             <label for="es_port" class="form-label">API Key</label>
             <div class="input-group">
-                <input type="password" class="form-control" id="api_key" name="api_key">
+                <input type="password" class="form-control" id="api_key" name="api_key" required>
                 <button class="btn btn-secondary" type="button" id="togglePassword" onclick="toggleAPI()">
                     <i class="fa-solid fa-eye-slash"></i>
                 </button>
             </div>
-            <div id="textHelp" class="form-text">Elastic API Key.</div> 
+            <div id="textHelp" class="form-text">Security Onion Elastic API Key.</div> 
         </div>
         `;
 
@@ -169,12 +167,12 @@ function addFieldsDS() {
         additionalFieldsContainer.innerHTML = `
         <div class="mb-3">
             <label for="ds_name" class="form-label">Data Source Name</label>
-            <input type="text" id="ds_name" name="ds_name" class="form-control">
+            <input type="text" id="ds_name" name="ds_name" class="form-control" required>
             <div id="textHelp" class="form-text">Give a unique name to your data source.</div>
         </div>        
         <div class="mb-3">
             <label for="raw_log_loc">Raw Log Location</label><br>
-            <input type="text" id="raw_log_loc" name="raw_log_loc" class="form-control">
+            <input type="text" id="raw_log_loc" name="raw_log_loc" class="form-control" required>
             <div id="textHelp" class="form-text">Raw Zeek file location.</div>
         </div>
         `;
@@ -183,8 +181,12 @@ function addFieldsDS() {
     //ADD THE DATA_TYPE TO THE REQUEST
     document.getElementById('data_type_field').value = selectedType;
 
-    // ENABLE OR DISABLE BUTTON
-    buttonSelect();
+    // Re-attach event listeners to the new input fields
+    attachInputListeners();
+    checkFields();  // Check fields immediately after updating
+
+    getSelectedOptions();
+
 }
 
 function toggleAPI(){
@@ -212,6 +214,7 @@ function loadElasticIndex(){
     const host = document.getElementById('es_host').value;
     const port = document.getElementById('es_port').value;
     const api = document.getElementById('api_key').value;
+    const dt_val = "Elastic"
 
     $.ajax({
         url: "GetIndex",
@@ -219,7 +222,8 @@ function loadElasticIndex(){
         data: {
             host: host,
             port: port,
-            api: api
+            api: api,
+            data_type: dt_val
         },
         success: function(response) {
             document.body.style.cursor = 'default';
@@ -258,4 +262,40 @@ function loadElasticIndex(){
         }
     })
 
+}
+
+function attachInputListeners() {
+    const form = document.getElementById('new_ds');
+    const inputs = form.querySelectorAll('input, select');
+
+    inputs.forEach(input => {
+        if (input.tagName === 'SELECT') {
+            input.addEventListener('change', checkFields); // Use 'change' for select
+        } else {
+            input.addEventListener('input', checkFields); // Use 'input' for other fields
+        }
+    });
+}
+
+// Function to check if all required fields are filled
+function checkFields() {
+    const form = document.getElementById('new_ds');
+    const allFilled = [...form.querySelectorAll('input, select')].every(input => {
+        if (input.required) {
+            if (input.tagName === "SELECT") {
+                return input.value !== ""; // Check for non-empty selection
+            }
+            return input.value.trim() !== ""; // Check for non-empty text inputs
+        }
+        return true;
+    });
+
+    // Enable or disable the button based on whether all required fields are filled
+    document.getElementById('btn_sub').disabled = !allFilled;
+}
+
+function getSelectedOptions() {
+    const selectElement = document.getElementById("es_index");
+    const selectedValues = Array.from(selectElement.selectedOptions).map(option => option.value);
+    console.log("Selected options:", selectedValues);
 }
