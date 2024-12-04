@@ -1,0 +1,47 @@
+name: Create Container
+
+on:
+  workflow_dispatch:
+    branches: [ main ]
+  release:
+    types: [ "published" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Extract tag name # Extract tag name based on event type
+        id: tag_name
+        run: |
+          if [[ $GITHUB_EVENT_NAME == 'release' ]]; then
+            echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
+          else
+            echo "##[set-output name=tag;]latest"
+          fi
+        shell: bash
+        
+      #- name: Login to dockerhub
+      #  uses: docker/login-action@v1
+      #  with:
+      #    username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v2
+        with:
+          tags: dustinupdyke/ipmaven:${{ steps.tag_name.outputs.tag }}
+          push: false
+          context: ./
+          file: ./Dockerfile
+
+      
+      - name: Save Docker image as tar
+        run: | 
+          docker save dustinupdyke/ipmaven:latest > ipmaven.tar
+
+      - name: Upload TAR file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipmaven
+          path: ipmaven.tar

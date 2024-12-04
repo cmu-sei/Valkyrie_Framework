@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - My Site{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        
+        
+       <h3>Current Server Stats</h3>
+        <ul>
+            <li>Whois records: <span id="whois"><div class="spinner-grow spinner-grow-sm text-dark me-2" role="status"></div></span></li>
+            <li>Mapping records: <span id="mappings"><div class="spinner-grow spinner-grow-sm text-dark me-2" role="status"></div></span></li>
+        </ul>
+        <hr/>
+        <h3>Recent updates</h3>
+        
+        <div id="history-container"></div>
+        
+        <small class="d-blockmt-3">
+            <a href="#">All Updates...</a>
+        </small>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    async function fetchStats() {
+        try {
+            const response = await fetch('/api/stats/'); // Adjust the URL if needed
+            const data = await response.json();
+            // Ensure data is a number
+            const whoisCount = Number(data.whois) || 0;
+            const mappingsCount = Number(data.mappings) || 0;
+
+            // Format the numbers with commas
+            const whoisFormatted = whoisCount.toLocaleString();
+            const mappingsFormatted = mappingsCount.toLocaleString();
+
+            // Display the stats in the HTML
+            document.getElementById('whois').innerText = whoisFormatted;
+            document.getElementById('mappings').innerText = mappingsFormatted;
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+            document.getElementById('whois').innerText = 'Whois: Error';
+            document.getElementById('mappings').innerText = 'Mappings: Error';
+        }
+    }
+
+    async function loadHistory() {
+        fetchStats();
+        try {
+            const response = await fetch('/api/logs'); // Ensure this endpoint returns only INFO logs
+            if (!response.ok) {
+                throw new Error('Failed to fetch history data');
+            }
+            const historyData = await response.json();
+            console.log(historyData);
+
+            const historyContainer = document.getElementById('history-container');
+
+            // Clear previous history entries
+            historyContainer.innerHTML = '';
+            let i = 0;
+            historyData.logs.forEach(item => {
+                i++;
+                if(i > 6) return;
+                let iconColor = 'green'; // Default color
+                if (item.level === 'ERROR') {
+                    iconColor = 'darkred';
+                } else if (item.level === 'WARNING') {
+                    iconColor = 'gold';
+                } else if (item.level === 'INFO') {
+                    iconColor = 'darkred';
+                }
+
+                // Format the timestamp
+                const timestamp = new Date(item.timestamp).toLocaleString();
+
+                // Create the history entry
+                const historyEntry = document.createElement('div');
+                historyEntry.classList.add('d-flex', 'text-body-secondary', 'pt-3');
+
+                historyEntry.innerHTML = `
+                    <div class="bd-placeholder-img flex-shrink-0 me-2 rounded">
+                        <i class="fa-solid fa-circle" style="color:${iconColor}"></i>
+                    </div>
+                    <p class="pb-3 mb-0 small lh-sm border-bottom">
+                        <strong class="d-block text-gray-dark">${item.source}</strong>
+                        <span class="text-muted">${timestamp}</span><br/>
+                        ${item.message}
+                    </p>
+                `;
+
+                historyContainer.appendChild(historyEntry);
+            });
+        } catch (error) {
+            console.error('Error loading history:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadHistory);
+    </script>
+{%  endblock %}

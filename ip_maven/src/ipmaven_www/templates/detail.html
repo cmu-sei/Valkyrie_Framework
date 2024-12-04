@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - My Site{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+        height: 300px; /* Smaller height */
+        width: 100%; /* Adjust width as needed */
+
+    }
+
+    @media (max-width: 768px) {
+        #map {
+            height: 200px; /* Make it even smaller for mobile screens */
+        }
+    }
+    </style>
+
+<div class="row">
+    <h3>IP Detail for {{ detail }}</h3>
+    <div class="col-12">
+        <input class="form-control mb-3" id="searchInput" type="text" placeholder="Search for...">
+        <input class="form-control mb-3" id="searchBy" type="text" placeholder="Search by... (optional comma-separated list)">
+    </div>        
+</div>
+<div class="row">
+    <div class="col-6"></div>
+    <div class="col-6">
+        <div id="map"></div>
+    </div>
+</div>
+<div class="row">
+    <h3>DNS Servers</h3>
+    <div class="col-12">
+        <table class="table">
+            <tr><td class="col-md-4">NSAUTH1.NET.cmu.edu</td><td class="col-md-3">128.2.1.8</td><td class="col-md-3"> CMU-ROUTER</td><td>United States</td></tr>
+            <tr><td class="col-md-4">NSAUTH2.NET.cmu.edu</td><td class="col-md-3">128.237.148.168</td><td class="col-md-3"> CMU-ROUTER</td><td>United States</td></tr>
+            <tr><td class="col-md-4">NSAUTH3.NET.cmu.edu</td><td class="col-md-3">23.20.155.125</td><td class="col-md-3">AMAZON-AES</td><td>United States</td></tr>
+        </table>
+        <h3>Host (A) Records</h3>
+        <table class="table table-sm">
+            <tr><td class="col-md-4">COE-WEB-PROD-VIP.ANDREW.cmu.edu</td><td class="col-md-3">128.2.43.228<br><span></span></td><td class="col-md-3">CMU-ROUTER</td><td>United States</td></tr>
+            <tr><td class="col-md-4">FMCS-SVN-01.ANDREW.cmu.edu</td><td class="col-md-3">128.237.92.28<br><span></span></td><td class="col-md-3">CMU-ROUTER</td><td>United States</td></tr>
+            <tr><td class="col-md-4">PGH-UAA-04.ANDREW.cmu.edu</td><td class="col-md-3">128.2.105.54<br><span></span></td><td class="col-md-3">CMU-ROUTER</td><td>United States</td></tr>
+            <tr><td class="col-md-4">PGH-UAA-D04.ANDREW.cmu.edu</td><td class="col-md-3">128.2.107.160<br><span></span></td><td class="col-md-3">CMU-ROUTER</td><td>United States</td></tr>
+        </table>
+        <h3>TXT Records</h3>
+        <table class="table table-sm">
+            <tr><td>"[NRDR 34437_IN_TXT_google-site-verification=m3lUupwhWqjbGCA6JswqWyBi7tkzh-BjbRiYuC6EXTg Or5AmLIb59AN+oiEMjOqoA]"</td></tr>
+            <tr><td>"zoho-verification=zb38550127.zmverify.zoho.com"</td></tr>
+            <tr><td>"00df4000000231leaa"</td></tr>
+            <tr><td>"[NRDR 34436_IN_TXT_google-site-verification=MYZf5OssFVvgYQF1snvJdiFbMjHy53WzLrnsVGkgpFU C0YNNkwQ5Qfm8taSZKc+1A]"</td></tr>
+            <tr><td>"[NRDR 36125_IN_TXT_e2ma-verification=fu2 tn9dGsCpd6YZrmWG6O9dqw]"</td></tr>
+            <tr><td>"google-site-verification=m3lUupwhWqjbGCA6JswqWyBi7tkzh-BjbRiYuC6EXTg"</td></tr>
+            <tr><td>"[NRDR 34068_IN_TXT_atlassian-domain-verification=H4RHVEsTq5YZaRen7VBly2a3AqWhfLMxAL3wBScS8EB0Pg5x1vaPhj3eXsGaUOGi ePUw4Mw9giYZRVzpV/ysvQ]"</td></tr>
+            <tr><td>"[NRDR 35457_IN_MX_5.ALT2.ASPMX.L.GOOGLE.COM. pzqzxDk39X4PeiVpV+EvZQ]"</td></tr>
+            <tr><td>"MS=ms17583017"</td></tr>
+            <tr><td>"[NRDR 33356_IN_TXT_MS=ms17583017 io8/1MnXyp5PTqiijD8s0Q]"</td></tr>
+        </table>
+    </div>        
+</div>
+{% endblock %}
+
+{% block scripts %}
+ <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<script>
+        var map = L.map('map').setView([20, 0], 1);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 16,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // country names or country codes to highlight - example
+        const highlightCountries = ["US"];
+
+        // Fetch the GeoJSON data and add it to the map
+        fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
+            .then(response => response.json())
+            .then(data => {
+                // Add GeoJSON data to the map
+                L.geoJSON(data, {
+                    style: function(feature) {
+                        // highlight countries in the array
+                        if (highlightCountries.includes(feature.properties.ISO_A2)) {
+                            return { color: "#ff7800", weight: 2, fillColor: "red", fillOpacity: 0.5 };
+                        } else {
+                            return { color: "#3388ff", weight: 1, fillColor: "#3388ff", fillOpacity: 0.2 };
+                        }
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error("Error loading GeoJSON:", error));
+    </script>
+{% endblock %}

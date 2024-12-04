@@ -1,0 +1,47 @@
+.very-small {
+    font-size: 0.75rem;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.table {
+    font-size: small;
+}
+
+th.sortable:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.pagination * {
+    font-size: small;
+}
+
+.pagination li {
+    margin: 1px
+}
+
+.page-info {
+    margin: 5px 0 0 5px;
+}
+
+.page-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.whois-record {
+    border: solid 1px silver;
+}
+
+.whois-record table {
+    margin-bottom: 0
+}
+
+a,
+a:hover {
+    color: darkred;
+}

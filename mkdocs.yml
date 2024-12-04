@@ -1,0 +1,109 @@
+site_name: Valkyrie Framework Documentation
+site_description: "Valkyrie Framework is an open source suite of tools that enable hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic."
+site_author: "VF Team"
+copyright: >
+  Copyright &copy; 2023 Carnegie Mellon University. All rights reserved.
+extra_css:
+  - stylesheets/extra.css
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - toc.integrate
+  logo: assets/img/vf.png
+  favicon: assets/img/vf.png
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: #00bac1
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+      primary: #00bac1
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  # - pymdownx.emoji:
+  #     emoji_index: !!python/name:material.extensions.emoji.twemoji
+  #     emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+# extra:
+# analytics:
+#   provider: google
+#   property: TODO get new analytics id
+# social:
+#   - icon: material/message-question
+#     link: https://github.com/cmu-sei/GHOSTS/issues/new?template=question.md
+#     name: Ask a Question
+#   - icon: fontawesome/solid/bug
+#     link: https://github.com/cmu-sei/GHOSTS/issues/new?template=bug_report.md
+#     name: Report a Problem
+#   - icon: material/lightbulb-on
+#     link: https://github.com/cmu-sei/GHOSTS/issues/new?template=feature_request.md
+#     name: Request a Feature
+#   - icon: fontawesome/regular/comments
+#     link: https://github.com/cmu-sei/GHOSTS/discussions
+#     name: SSVC Community Discussions
+#   - icon: fontawesome/brands/github
+#     link: https://github.com/cmu-sei/GHOSTS
+#     name: cmu-sei/GHOSTS on Github
+#   - icon: fontawesome/regular/envelope
+#     link: mailto:info@sei.cmu.edu?subject=GHOSTS%20Feedback
+#     name: Email GHOSTS Team
+#   - icon: fontawesome/solid/house
+#     link: https://www.sei.cmu.edu/
+#     name: Software Engineering Institute
+nav:
+  - Home: index.md
+  # - What's New: new.md
+  # - Quick Start: quickstart.md
+  - Beacon Huntress:
+      - Main: beacon_huntress/index.md
+      - Algorithm: beacon_huntress/beaconalgo.md
+      - Dashboard: beacon_huntress/dashboard.md
+      - Default Filtered Hosts: beacon_huntress/defaultfilteredhosts.md
+      - Documentation: beacon_huntress/documentation.md
+      - Installation: beacon_huntress/installation.md
+      - Interface: beacon_huntress/interface.md
+      - Juptyer Notebook: beacon_huntress/jupyter.md
+      - Modules: beacon_huntress/modules.md
+      - Tutorial: beacon_huntress/tutorial.md
+  - IP Maven:
+      - Main: ip_maven/index.md
+
+repo_url: "https://github.com/cmu-sei/Valkyrie_Framework"
+repo_name: "cmu-sei/Valkyrie_Framework"
