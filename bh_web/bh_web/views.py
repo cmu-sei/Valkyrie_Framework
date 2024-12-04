@@ -7,6 +7,7 @@ from django.contrib import messages
 import os
 import time
 import pandas as pd
+import numpy as np
 from settings.models import conf_general, conf_filter
 from beacon_huntress.src.bin.data import get_data, del_data, add_data, get_run_conf, get_group_id, del_logfile
 from beacon_huntress.src.bin.beacon import get_dns
@@ -51,9 +52,6 @@ def index(request):
 
 def log_view(request):
 
-    df = pd.DataFrame()
-    cnt = 0
-
     # WALK DIR
     context = walk_dir(os.path.join(BASE_DIR, "log"),"LogDetails")
 
@@ -80,6 +78,9 @@ def walk_dir(walk_dir,page):
     df = pd.DataFrame()
     cnt = 0
 
+    # GET GROUP DATA FOR HYPER LINK
+    df_group = get_data("group")
+
     # WALK DIR FOR GOLD FILES
     for root, dir, dir_f in os.walk(walk_dir):
         # NESTED LOOP FOR FILES
@@ -98,18 +99,25 @@ def walk_dir(walk_dir,page):
             df = pd.concat([df, df2])
 
     if df.empty:
-        df = pd.DataFrame(columns=["ID", "File Name", "Created Date", "File Size (KB)", "Option"])
+        df = pd.DataFrame(columns=["ID", "File Name", "Created Date", "File Size (KB)", "Beacon Results", "Option"])
     else:
-        # # ADD HYPER LINK FOR THE LOG FILENAME & DELETE FILE
+        # ADD HYPER LINK FOR THE LOG FILENAME & DELETE FILE
         df["Option"] = df["File Name"].apply(lambda x: '<a href="/DelFile?log={}"><i class="fa-regular fa-trash-can"></i></a>'.format(x))
+        df["log_file"] = df["File Name"]
         df["File Name"] = df["File Name"].apply(lambda x: '<a href="{1}.html?filename={0}">{0}</a>'.format(x,page))
         df["Created Date"] = pd.to_datetime(df["Created Date"])
+
+        # ADD HYPER LINK FOR BEACON RESULTS
+        df_new = df.merge(df_group,on="log_file",how="left")
+        df_new["Beacon Results"] = np.where(df_new["uid"].isna(), "",df_new["uid"].apply(lambda x: '<a href="/ResultDetails.html?uid={}"><i class="fas fa-solid fa-chart-pie"></i></a>'.format(x)))      
+
+        df = df_new
 
         # REORDER BY LOG CREATED DATE & REINDEX
         df.sort_values(by=["Created Date"], ascending=False, inplace=True)
         df = df.reset_index(drop=True)
         df["ID"] = (df.index) + 1
-        df = df[["ID", "File Name", "Created Date", "File Size (KB)", "Option"]]
+        df = df[["ID", "File Name", "Created Date", "File Size (KB)", "Beacon Results", "Option"]]
 
     context = _get_context(df)
 
@@ -140,7 +148,7 @@ def result_grid_group(request):
         
         # ADD NEW COLUMN FOR NEW VALUES
         df["new"] = False
-        if pd.to_datetime(df.iloc[0]["dt"],utc=True) > pd.Timestamp.utcnow() - pd.Timedelta(minutes=5):
+        if pd.to_datetime(df.iloc[0]["dt"],utc=True) > pd.Timestamp.utcnow() - pd.Timedelta(minutes=30):
             df.iloc[0, df.columns.get_loc('new')] = True
 
         # SET NEW BADGE FOR LASTEST RECORD IF WITHIN 5 MINS

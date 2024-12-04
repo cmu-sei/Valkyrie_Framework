@@ -144,7 +144,7 @@ def get_datasources(request, mask = True):
 
     # SET DELETE LINK FOR ALL BUT THE DEFAULT
     df["Delete"] = np.where(df["ds_name"] == "Zeek Connection Logs", "",df["rowid"].apply(lambda x: '<a href="/DelDS?rowid={}"><i class="fa-regular fa-trash-can"></i></a>'.format(x)))
-    df["Edit"] = np.where(df["ds_name"] == "Zeek Connection Logs", "",df["rowid"].apply(lambda x: '<a href="/EditDS?rowid={}"><i class="fa-solid fa-pen-to-square"></i></a>'.format(x)))
+    df["Edit"] = np.where(((df["ds_name"] == "Zeek Connection Logs") | (df["ds_type"] == "Elastic")), "",df["rowid"].apply(lambda x: '<a href="/EditDS?rowid={}"><i class="fa-solid fa-pen-to-square"></i></a>'.format(x)))
 
     # MASK API KEY FROM DATA SOURCES PAGES
     if mask == True:
@@ -163,6 +163,8 @@ def get_datasources(request, mask = True):
 def new_ds(request):
 
     if request.method == "POST":
+
+        print(request.POST)
 
         try:
             add_ds(request.POST)
@@ -202,7 +204,6 @@ def edit_ds(request):
 
             print("rowid: {}".format(request.GET.get("rowid")))
             upd_ds(request)
-            #messages.info(request, "Updated Data Source {}".format(request.POST.get("ds_name")))
 
         except BaseException as err:
             messages.error(request, "ERROR: {}".format(err))
@@ -229,18 +230,25 @@ def get_elasticindex(request):
                 "port": request.GET.get("port"),
                 "auth": "api",
                 "api": request.GET.get("api"),
+                "data_type": request.GET.get("data_type"),
                 "timeout": 10}
         try:
-            es = elastic_client(data)
-            df = elastic_index(es)
+            # UNCOMMENT AFTER WORKING OUT THE KINKS
+            #es = elastic_client(data)
+            #df = elastic_index(es)
+            #df = data_to_json(df)
+
+            import pandas as pd
+            data = {"index_name": ["Test Index 1", "Test Index 2", "Test Index 3"], 
+                              "cnt": [1712, 312523, 12461]}
+            df = pd.DataFrame(data)
             df = data_to_json(df)
 
             return JsonResponse(df,safe=False)
         except BaseException as err:
 
             # UNCOMMENT TO THE RANGE
-            #df = [{"index_name": "beacon_huntress_error", "cnt": 0}]
-            df = [{"index_name": "Test Index", "cnt": 0}]
+            df = [{"index_name": "beacon_huntress_error", "cnt": 0}]
 
             messages.error(request, "ERROR: {}".format(err))
             return JsonResponse(df,safe=False)
