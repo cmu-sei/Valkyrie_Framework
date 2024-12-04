@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - My Site{% endblock %}
+
+{% block content %}
+<div class="row">
+    <h3>IP Block Records (Whois)</h3>
+    <div class="col-12">
+        <input class="form-control mb-3" id="searchInput" type="text" placeholder="Search for...">
+        <input class="form-control mb-3" id="searchBy" type="text" placeholder="Search by... (optional comma-separated list)">
+        
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="requiresAll">
+            <label class="form-check-label" for="requiresAll">Requires All</label>
+        </div>
+
+        <div id="loading">Loading data, please wait...</div>
+        <table id="items" class="table table-sm table-striped" style="display:none;">
+            <thead>
+                <tr>
+                    <th class="sortable" onclick="sortTable(0)">Id</th>
+                    <th class="sortable" onclick="sortTable(1)">Start Address</th>
+                    <th class="sortable" onclick="sortTable(2)">End Address</th>
+                    <th class="sortable" onclick="sortTable(3)">Handle</th>
+                    <th class="sortable" onclick="sortTable(4)">Name</th>
+                    <th class="sortable" onclick="sortTable(5)">Org Handle</th>
+                    <th class="sortable" onclick="sortTable(6)">City</th>
+                    <th class="sortable" onclick="sortTable(7)">State</th>
+                    <th class="sortable" onclick="sortTable(8)">Country</th>
+                    <th class="sortable" onclick="sortTable(10)">Customer Name</th>
+                    <th class="sortable" onclick="sortTable(11)">E164</th>
+                    <th class="sortable nowrap text-end" onclick="sortTable(12)">Updated</th>
+                </tr>
+            </thead>
+            <tbody id="body">
+            </tbody>
+        </table>
+        <nav>
+            <ul class="pagination" id="whois-pagination">
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let sortDirection = true;
+    let currentPage = 1;
+    const pageSize = 100;
+
+    let fetchedSearchValue = '';
+    let fetchedSearchBy = '';
+
+    function parseSearchValue(searchValue = fetchedSearchValue) {
+        // Step 1: Split the searchValue into an array of strings based on commas
+        let searchValuesArray = searchValue.split(',');
+        // Step 2: Map through each value, trim the spaces, and replace inner whitespaces with '%20'
+        let parsedValues = searchValuesArray.map(value => value.trim().replace(/\s+/g, '%20'));
+        // Step 3: Join the array back into a single string, separated by commas
+        return parsedValues.join(',');
+    }
+
+    function parseSearchBy(searchBy = fetchedSearchBy) {
+        let searchByArray = searchBy.split(',');
+        let parsedByValues = searchByArray.map(value => {
+            // Trim and replace spaces with underscores
+            let trimmedValue = value.trim().replace(/\s+/g, '_');
+            // Check for the special case where 'country' should be mapped to 'code3'
+            return trimmedValue.toLowerCase() === 'country' ? 'code3' : trimmedValue;
+        });
+        return parsedByValues.join(',');
+    }
+
+    function loadTable(searchValue = fetchedSearchValue, searchBy = fetchedSearchBy, pageNumber = 1) {
+        const loadingDiv = document.getElementById("loading");
+        loadingDiv.textContent = "Loading data, please wait...";
+
+        const table = document.getElementById("items");
+        const pagination = document.getElementById("whois-pagination");
+        const tbody = document.getElementById("body");
+
+        loadingDiv.style.display = "block";
+        table.style.display = "none";
+        pagination.innerHTML = "";
+        
+        let pageInfo = `&page_number=${pageNumber}&page_size=${pageSize}`;
+        let searchQueryInfo = `?search_query=${parseSearchValue()}`;
+        let searchByInfo = searchBy.length > 0 ? `&search_by=${parseSearchBy()}` : ``;
+        const requiresAll = document.getElementById('requiresAll').checked ? 'True' : 'False';
+        let requiresInfo = `&requires_all=${requiresAll}`;
+
+        let url = `/api/whois/${searchQueryInfo}${searchByInfo}${requiresInfo}${pageInfo}`;
+        console.log(url);
+        fetch(url)
+            .then(response => {
+                const responseJson = response.json();
+                if (!response.ok) {
+                    // If the response status is not ok, throw an error with the message
+                    return responseJson.then(data => {
+                        console.log(data.error);
+                        const errorMessage = data.error || "An error occurred";
+                        throw new Error(errorMessage);
+                    });
+                }
+                return responseJson;
+            })
+            .then(data => {
+                console.log(data.items.length);
+                tbody.innerHTML = "";
+                data.items.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.id}</td>
+                        <td>${item.start_address}</td>
+                        <td>${item.end_address}</td>
+                        <td>${item.handle}</td>
+                        <td>${item.name}</td>
+                        <td>${item.org_handle || ''}</td>
+                        <td>${item.city || ''}</td>
+                        <td>${item.state.replace("NaN", '') || ''}</td>
+                        <td>${item.code2 ? `<span class="fi fi-${item.code2.toLowerCase()}"></span>` : ''} ${item.code2 || ''}</td>
+                        <td>${item.customer_name || ''}</td>
+                        <td>${item.e164 || ''}</td>
+                        <td class="text-end">${new Date(item.updated).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Update pagination
+                updatePagination(data.totalPages, data.pageNumber);
+                loadingDiv.style.display = "none";
+                table.style.display = "table";
+            })
+            .catch(error => {
+                console.error('Error fetching whois information:', error);
+                loadingDiv.textContent = `Failed to load data. ${error}`;
+            });
+    }
+
+    function handleSearchEvent() {
+        fetchedSearchValue = document.getElementById('searchInput').value.toLowerCase();
+        fetchedSearchBy = document.getElementById('searchBy').value.toLowerCase();
+        currentPage = 1; // Reset to first page on new search
+        loadTable(fetchedSearchValue, fetchedSearchBy, currentPage);
+    }
+
+    document.getElementById('searchInput').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter' || event.keyCode === 13) {
+            handleSearchEvent();
+        }
+    });
+
+    document.getElementById('searchBy').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter' || event.keyCode === 13) {
+            handleSearchEvent();
+        }
+    });
+
+    document.getElementById('requiresAll').addEventListener('change', function() {
+        handleSearchEvent();
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadTable();
+    });
+
+    function updatePagination(totalPages, currentPage) {
+        const pagination = document.getElementById("whois-pagination");
+        pagination.innerHTML = ""; // Clear pagination
+
+        const maxPagesToShow = 11; // Max number of pagination links to show
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages, currentPage + Math.floor(maxPagesToShow / 2));
+
+        if (totalPages > maxPagesToShow) {
+            if (currentPage <= Math.floor(maxPagesToShow / 2)) {
+                endPage = maxPagesToShow;
+            } else if (currentPage + Math.floor(maxPagesToShow / 2) >= totalPages) {
+                startPage = totalPages - maxPagesToShow + 1;
+                endPage = totalPages;
+            }
+        }
+
+        // "Previous" button
+        if (currentPage > 1) {
+            const prevItem = document.createElement("li");
+            prevItem.classList.add("page-item");
+            prevItem.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+            prevItem.addEventListener("click", function() {
+                loadTable(fetchedSearchValue, fetchedSearchBy, currentPage - 1);
+            });
+            pagination.appendChild(prevItem);
+        }
+
+        // Add page links
+        for (let i = startPage; i <= endPage; i++) {
+            const pageItem = document.createElement("li");
+            pageItem.classList.add("page-item");
+            if (i === currentPage) pageItem.classList.add("active");
+            pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+            pageItem.addEventListener("click", function() {
+                loadTable(fetchedSearchValue, fetchedSearchBy, i);
+            });
+            pagination.appendChild(pageItem);
+        }
+
+        // "Next" button
+        if (currentPage < totalPages) {
+            const nextItem = document.createElement("li");
+            nextItem.classList.add("page-item");
+            nextItem.innerHTML = `<a class="page-link" href="#">Next</a>`;
+            nextItem.addEventListener("click", function() {
+                loadTable(fetchedSearchValue, fetchedSearchBy, currentPage + 1);
+            });
+            pagination.appendChild(nextItem);
+        }
+
+        // Input field for specific page number and "Go" button
+        const inputWrapper = document.createElement("div");
+        inputWrapper.classList.add("page-input-wrapper");
+
+        const pageInput = document.createElement("input");
+        pageInput.setAttribute("type", "number");
+        pageInput.setAttribute("min", 1);
+        pageInput.setAttribute("max", totalPages);
+        pageInput.setAttribute("value", currentPage);
+        pageInput.classList.add("page-input");
+
+        const goButton = document.createElement("button");
+        goButton.textContent = "Go";
+        goButton.classList.add("btn", "btn-primary");
+        goButton.addEventListener("click", function() {
+            const inputValue = parseInt(pageInput.value);
+            if (!isNaN(inputValue) && inputValue >= 1 && inputValue <= totalPages) {
+                loadTable(fetchedSearchValue, fetchedSearchBy, inputValue);
+            }
+        });
+
+        inputWrapper.appendChild(pageInput);
+        inputWrapper.appendChild(goButton);
+        pagination.appendChild(inputWrapper);
+
+        // Display total number of pages
+        const pageInfo = document.createElement("div");
+        pageInfo.classList.add("page-info");
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        pagination.appendChild(pageInfo);
+    }
+
+    function sortTable(columnIndex) {
+        const table = document.querySelector('table tbody');
+        const rows = Array.from(table.rows);
+
+        sortDirection = !sortDirection; // Toggle the sort direction
+
+        const sortedRows = rows.sort((a, b) => {
+            const aText = a.cells[columnIndex].textContent.trim();
+            const bText = b.cells[columnIndex].textContent.trim();
+            return sortDirection
+                ? aText.localeCompare(bText, undefined, {numeric: true})
+                : bText.localeCompare(aText, undefined, {numeric: true});
+        });
+
+        sortedRows.forEach(row => table.appendChild(row));
+    }
+</script>
+{% endblock %}

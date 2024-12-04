@@ -1,0 +1,46 @@
+networks:
+  valkyrie-network:
+    driver: bridge
+services:
+  # ipmaven:
+  #   image: dustinupdyke/ipmaven
+  #   container_name: ipmaven
+  #   ports:
+  #     - '8888:8000'
+  #   networks:
+  #     - valkyrie-network
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ipmaven
+      POSTGRES_USER: ipmaven
+      POSTGRES_PASSWORD: scotty@1
+    volumes:
+      - ./_data/db:/var/lib/postgresql/data
+    logging:
+      options:
+        max-size: '100m'
+        max-file: '5'
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U valkyrie']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - valkyrie-network
+    restart: always
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: valkyrie-grafana
+  #   depends_on:
+  #     - postgres
+  #   ports:
+  #     - '3000:3000'
+  #   networks:
+  #     - valkyrie-network
+  #   restart: always
+  #   volumes:
+  #     - ./_g:/var/lib/grafana
