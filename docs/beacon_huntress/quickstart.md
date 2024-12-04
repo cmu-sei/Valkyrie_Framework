@@ -25,7 +25,7 @@ To get started
 2.  Go to 127.0.0.1:8000
 3.  You will now see Beacon Huntress loaded.
 
-![Alt text](/assets/img/bh/home_page.png)
+![Alt text](../assets/img/bh/home_page.png)
 
 ## **Configure**
 
@@ -33,7 +33,7 @@ How to configure Beacon Huntress to run a search.
 
 1.  Navigate to Settings and click on General.
 
-![Alt text](/assets/img/bh//gen_settings.png)
+![Alt text](../assets/img/bh//gen_settings.png)
 
 2.  You will have the following settings.
 
@@ -52,11 +52,11 @@ This test run is using Quick Cluster Search with some test data.
 
 1.  To run a test use the test dataset located in /tutorial. From the General Settings page change the Raw Log Location to /tutorial and click the save button.
 
-![Alt text](/assets/img/bh/set_tutorial.png)
+![Alt text](../assets/img/bh/set_tutorial.png)
 
 2.  Navigate to Execute and select Quick Cluster Search.
 
-![Alt text](/assets/img/bh/search_quick_cluster.png)
+![Alt text](../assets/img/bh/search_quick_cluster.png)
 
 1.  Quick Cluster Search expects the parameters below. In this example do not change anything, just click the run button. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
 
@@ -93,7 +93,7 @@ This test run is using Quick Cluster Search with some test data.
     - **Delete**
       - Permanently delete the beacon search.
 
-![Alt text](/assets/img/bh/results_quick_cluster.png)
+![Alt text](../assets/img/bh/results_quick_cluster.png)
 
 ## **Result Details**
 
@@ -101,7 +101,7 @@ From the Result Details page you can further investigate or filter potential bea
 
 1.  Click on the Group ID.
 
-![Alt text](/assets/img/bh/results_quick_cluster_highlight.png)
+![Alt text](../assets/img/bh/results_quick_cluster_highlight.png)
 
 1.  The result details page will display the following columns.
 
@@ -122,7 +122,7 @@ From the Result Details page you can further investigate or filter potential bea
     - **Filter**
       - Remove destination IP from future beacon results.
 
-![Alt text](/assets/img/bh/results_details.png)
+![Alt text](../assets/img/bh/results_details.png)
 
 ## **Filter Beacons**
 
@@ -130,7 +130,7 @@ You can filter out any falsely identified beacons from the Result Details page.
 
 1.  To filter a destination ip click on the filter button. The destination ip will have be filtered from all beacon results. The ip will be excluded in any future results.
 
-![Alt text](/assets/img/bh/results_details_highlight.png)
+![Alt text](../assets/img/bh/results_details_highlight.png)
 
 1.  To view or remove filtered beacons navigate to Settings, then Filtered Hosts. Click on the trash can to remove an IP from filtered host. Once remove the IP will show in beacon results.
 
@@ -145,7 +145,7 @@ You can filter out any falsely identified beacons from the Result Details page.
     - **Option**
       - Delete the IP from the filtered beacons.
 
-![Alt text](/assets/img/bh/filtered_hosts.png)
+![Alt text](../assets/img/bh/filtered_hosts.png)
 
 ## **Dashboard**
 
@@ -156,31 +156,31 @@ You can access the Grafana Dashboard via the Dashboard button on the Result Deta
 > For addtional details related to the Granfana Dashboard navigate to the github site.  
 > [https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md](https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md)
 
-![Alt text](/assets/img/bh/result_dash_highlighted.png)
+![Alt text](../assets/img/bh/result_dash_highlighted.png)
 
 The dashboard will open in another window.
 
-![Alt text](/assets/img/bh/dash_main.png)
+![Alt text](../assets/img/bh/dash_main.png)
 
 ## **Logs**
 
 You can access the Logs via the Log button on the Result Details page. The log files are used for troubleshooting a beacon search.
 
-![Alt text](/assets/img/bh/result_log_highlighted.png)
+![Alt text](../assets/img/bh/result_log_highlighted.png)
 
-![Alt text](/assets/img/bh/log_details.png)
+![Alt text](../assets/img/bh/log_details.png)
 
 All logs files are available via the Logs button on the navigation pane. You can open the log by clicking on the log file link. To delete log files permanently click on the trash can.
 
-![Alt text](/assets/img/bh/log_highlighted.png)
+![Alt text](../assets/img/bh/log_highlighted.png)
 
 ## **Run Configuration Details**
 
 Beacon results configurations can be access via the Config link.
 
-![Alt text](/assets/img/bh/result_config_highlight.png)
+![Alt text](../assets/img/bh/result_config_highlight.png)
 
-![Alt text](/assets/img/bh/config_details.png)
+![Alt text](../assets/img/bh/config_details.png)
 
 To find the algorithm used in the search, use the general.cluster type configuration. The cluster_type algorithm names are below.
 
@@ -188,7 +188,7 @@ To find the algorithm used in the search, use the general.cluster type configura
 > - dbscan = Detailed Cluster Search
 > - agg = Hierarchical
 
-![Alt text](/assets/img/bh/config_highlight.png)
+![Alt text](../assets/img/bh/config_highlight.png)
 
 ## **Quick Cluster Search**
 
@@ -196,7 +196,7 @@ Quick Cluster Search uses the same principals as Cluster Search but will exclude
 
 1.  Navigate to Execute and select Quick Cluster Search.
 
-![Alt text](/assets/img/bh/search_quick_cluster.png)
+![Alt text](../assets/img/bh/search_quick_cluster.png)
 
 1.  Quick Cluster Search expects the parameters below. In this example do not change anything, just click the run button. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
 
@@ -222,7 +222,7 @@ Detailed Cluster Search uses DBScan to search for beacons. DBScan stands for Den
 
 1.  Navigate to Execute and select Cluster Search.
 
-![Alt text](/assets/img/bh/cluster_search.png)
+![Alt text](../assets/img/bh/cluster_search.png)
 
 1.  Cluster Search expects the parameters below. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
 
@@ -250,7 +250,7 @@ Hierarchical Search uses Agglomerative clustering to find beacons. Agglomerative
 
 1.  Navigate to Execute and select Hierarchical Search.
 
-![Alt text](/assets/img/bh/hierarchical_search.png)
+![Alt text](../assets/img/bh/hierarchical_search.png)
 
 1.  Hierarchical Search expects the parameters below. **_PLEASE NOTE: Do not exit this page, you will be directed to the results page once it is completed._**
 
@@ -271,7 +271,7 @@ Configuration for additional filtering. Filtering at this level will exclude/inc
 
 1.  Navigate to Settings and click on Filters.
 
-![Alt text](/assets/img/bh/filter_settings.png)
+![Alt text](../assets/img/bh/filter_settings.png)
 
 1.  Filter expects the parameters below. Change the parameter/s and click save.
 
