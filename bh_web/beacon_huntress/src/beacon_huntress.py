@@ -322,31 +322,39 @@ def pipeline(conf):
     # ELASTIC DATASOURCE
     elif config["general"]["ds_type"] in ["Elastic", "Security Onion"]:
 
-        es_starttime = datetime.now()
+        try:
+            es_starttime = datetime.now()
 
-        # VARIABLE INIT
-        is_new_bronze = True
+            # VARIABLE INIT
+            is_new_bronze = True
 
-        logger.info("Elastic datasource selected")
-        logger.info("Connecting to Elastic")
+            logger.info("Elastic datasource selected")
+            logger.info("Connecting to Elastic")
 
-        es_client = datasource.elastic_client(config["data"])
-        logger.info("Collecting data")
+            es_client = datasource.elastic_client(config["data"])
+            logger.info("Collecting data")
 
-        df_bronze = datasource.get_elastic_data(es_client,config["data"], start_dte, end_dte)
-        logger.info("Elastic data collected")
+            df_bronze = datasource.get_elastic_data(es_client,config["data"], start_dte, end_dte)
+            logger.info("Elastic data collected")
 
-        #df_bronze["source_file"] = "/elastic/elastic.parquet"
-        df_bronze["source_file"] = os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch))
-        df_bronze["src_row_id"] = df_bronze.index
+            #df_bronze["source_file"] = "/elastic/elastic.parquet"
+            df_bronze["source_file"] = os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch))
+            df_bronze["src_row_id"] = df_bronze.index
 
-        Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
+            Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
 
-        df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))            
+            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))            
 
-        endtime = datetime.now() - es_starttime
-        logger.debug("Elastic runtime {}".format(endtime))
+            endtime = datetime.now() - es_starttime
+            logger.info("Elastic runtime {}".format(endtime))
+        except BaseException as err:
+            logger.error("{} issue.".format(config["general"]["ds_type"]))
+            logger.error(err)
+            
+            beacon_results["cnt"] = 0
+            beacon_results["log_file"] = log_file_name
 
+            return beacon_results
 
     # IF DATA FALLS IN THE DATE RANGE CONTINUE
     if len(df_bronze) > 0:
