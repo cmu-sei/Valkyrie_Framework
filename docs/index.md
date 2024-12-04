@@ -29,4 +29,4 @@ Have a feature request? Submit new ideas through the [issue tracker](https://git
 ## :material-license: License
 
 [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  
-Copyright 2023 Carnegie Mellon University. See the [LICENSE.md](https://github.com/cmu-sei/valkyrie_framework/blob/master/license.txt) for more details.
+Copyright 2023 Carnegie Mellon University. See the [license file](https://github.com/cmu-sei/valkyrie_framework/blob/master/license.txt) for more details.
