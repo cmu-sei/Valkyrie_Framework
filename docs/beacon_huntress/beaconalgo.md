@@ -24,7 +24,7 @@ Cluster Search is also known as DBScan, which stands for Density-Based Spatial C
 
 - DBScan cluster is a good choice for searching either [Fast Beacons](../#fs_beacons) or [Slow Beacons](../#fs_beacons). However, this is the slowest running algorithim.
 
-![](/assets/img/bh/dbscan.png)
+![](../assets/img/bh/dbscan.png)
 <br>image source: https://www.kdnuggets.com/2020/04/dbscan-clustering-algorithm-machine-learning.html
 
 ### **Parameters**
@@ -56,7 +56,7 @@ Minimum Cluster Points = 10
 Likelihood Percentage = 70
 ```
 
-![](/assets/img/bh/cluster_fast.png)
+![](../assets/img/bh/cluster_fast.png)
 
 #### **Slow Beacon Search**
 
@@ -69,7 +69,7 @@ Minimum Cluster Points = 10
 Likelihood Percentage = 70
 ```
 
-![](/assets/img/bh/cluster_slow.png)
+![](../assets/img/bh/cluster_slow.png)
 
 ### <a name="hierarchicalsearch"></a>**Hierarchical Search**
 
@@ -77,7 +77,7 @@ Hierarchical Search uses agglomerative clustering, which is a hierarchical clust
 
 - Agglomerative clustering works well when searching for [Fast Beacons](../#fs_beacons).
 
-![](/assets/img/bh/agg_cluster.png)
+![](../assets/img/bh/agg_cluster.png)
 <br>image source: https://www.geeksforgeeks.org/hierarchical-clustering-in-data-mining/
 
 ### **Parameters**
@@ -114,7 +114,7 @@ Process Lines = 1
 Minimum Callback Time (ms) = 60000
 ```
 
-![](/assets/img/bh/agg_fast.png)
+![](../assets/img/bh/agg_fast.png)
 
 #### **Slow Beacon Search**
 
@@ -128,7 +128,7 @@ Process Lines = 1
 Minimum Callback Time (ms) = 900000
 ```
 
-![](/assets/img/bh/agg_slow.png)
+![](../assets/img/bh/agg_slow.png)
 
 ### <a name="quickclustersearch"></a>**Quick Cluster Search**
 
@@ -174,7 +174,7 @@ Variance Percentage = 15
 Minimum Likelihood Percentage = 70
 ```
 
-![](/assets/img/bh/quickcluster_fast.png)
+![](../assets/img/bh/quickcluster_fast.png)
 
 #### **Slow Beacon Search**
 
@@ -189,4 +189,4 @@ Variance Percentage = 15
 Minimum Likelihood Percentage = 70
 ```
 
-![](/assets/img/bh/quickcluster_slow.png)
+![](../assets/img/bh/quickcluster_slow.png)

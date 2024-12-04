@@ -14,7 +14,7 @@ The General section contains the basic configuration for Beacon Huntress. These 
 
 1. Navigate to the Settings tab and click on General.
 
-   ![](/assets/img/bh/gen_settings.png)
+   ![](../assets/img/bh/gen_settings.png)
 
 2. The following settings are available:
 
@@ -33,7 +33,7 @@ This section allows for the configuration of additional IP and port filtering. F
 
 1. Navigate to Settings and click on Filters.
 
-   ![](/assets/img/bh/filter_settings.png)
+   ![](../assets/img/bh/filter_settings.png)
 
 2. The following parameters can be changed:
 
@@ -74,7 +74,7 @@ Default Filtered Hosts is a premade list of popular websites that are automatica
 
 You can navigate through results found by Beacon Huntress using the options on the Results page. Click on the "Group ID" to view potential beacons. Select "Dashboard" to display those results in a Grafana dashboard. Click on "Log File" to view the run logs. Choose "Config" to display the runtime configuration. Select "Delete" to <i><b>PERMANENTLY</b></i> remove the result set.
 
-![ui_results](/assets/img/bh/results_quick_cluster.png)
+![ui_results](../assets/img/bh/results_quick_cluster.png)
 
 # <a name="logs"></a>**Logs**
 
@@ -82,8 +82,8 @@ The Logs section holds the runtime logs for each Beacon Huntress execution. Logs
 
 1. Navigate to Logs.
 
-   ![](/assets/img/bh/log_highlighted.png)
+   ![](../assets/img/bh/log_highlighted.png)
 
 2. Click on "File Name" to pull the details.
 
-   ![](/assets/img/bh/log_details.png)
+   ![](../assets/img/bh/log_details.png)
