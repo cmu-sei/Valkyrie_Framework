@@ -1,17 +1,9 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [Jupyter Notebook](#jupyter)
->   - [Setup](#setup)
->   - [Run Jupyter Notebook](#jupyter_run)
-
-## <a name="jupyter"></a>**Jupyter Notebook**
+# <a name="jupyter"></a>**Jupyter Notebook**
 
 Complete the steps below to setup Beacon Huntress on Jupyter.
 
-> ### **Note**<br>
->
-> Beacon Huntress has python dependancies that are required for operation. **Do not skip steps 5 & 6 from the setup!**
+???+ tip "Note"
+    Beacon Huntress has python dependancies that are required for operation. **Do not skip steps 5 & 6 from the setup!**
 
 ### <a name="setup"></a>**Juptyer Notebook Setup**
 

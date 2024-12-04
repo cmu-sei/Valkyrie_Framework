@@ -1,13 +1,4 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [Overview](#overview)
-> - [Beacons Algorithms](#searchforbeacons)
->   - [Detailed Cluster Search](#clustersearch)
->   - [Hierarchical Search](#hierarchicalsearch)
->   - [Quick Cluster Search](#quickcluster)
-
-## <a name="overview"></a>**Overview**
+# Beacon Huntress Algorithms
 
 Beacon Huntress can be configured to search for beacons using the algorithms below. Each Machine Learning (ML) algorithm has its own unique parameters and is used to search for slow or fast beacons based on time intervals.
 
@@ -22,9 +13,8 @@ Below are the current algorithms that can be used when searching for beacons.
 - [Quick Cluster Search](#quickcluster)
   - Use with Fast or Slow Beacons
 
-> ### **Note**
->
-> Algorithms can be set by using the `cluster_type` option in [config.conf](configuration.md). The default algorithm is Quick Cluster Search with Slow Beacon parameters used for [dbscan_by_variance()](#dbscanbyvariance).<br>
+???+ tip "Note"
+    Algorithms can be set by using the `cluster_type` option in [config.conf](../configuration). The default algorithm is Quick Cluster Search with Slow Beacon parameters used for [dbscan_by_variance()](#dbscanbyvariance).<br>
 
 ## <a name="beaconssearch"></a>**Beacon Searches**
 
@@ -32,7 +22,7 @@ Below are the current algorithms that can be used when searching for beacons.
 
 Cluster Search is also known as DBScan, which stands for Density-Based Spatial Clustering of Applications with Noise. DBScan can identify clusters of different sizes within large data samples that contain noise and outliers. DBScan primarily uses two parameters: Minimum Points and EPS (Epsilion). The Minimum Points parameter represents the minimum number of data points (the threshold) that must be clustered together for a region to be considered dense. EPS is the maximum distance between two data points for them to be considered part of the same cluster.
 
-- DBScan cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon). However, this is the slowest running algorithim.
+- DBScan cluster is a good choice for searching either [Fast Beacons](../#fs_beacons) or [Slow Beacons](../#fs_beacons). However, this is the slowest running algorithim.
 
 ![](/assets/img/bh/dbscan.png)
 <br>image source: https://www.kdnuggets.com/2020/04/dbscan-clustering-algorithm-machine-learning.html
@@ -81,13 +71,11 @@ Likelihood Percentage = 70
 
 ![](/assets/img/bh/cluster_slow.png)
 
-#
-
 ### <a name="hierarchicalsearch"></a>**Hierarchical Search**
 
 Hierarchical Search uses agglomerative clustering, which is a hierarchical clustering technique used to group objects based on similarity. Each item is treated as a singleton cluster, and clusters that are sufficiently similar are merged together into a larger cluster, working from the bottom up. This process continues until all the clusters are placed into a single large cluster, see image below.
 
-- Agglomerative clustering works well when searching for [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).
+- Agglomerative clustering works well when searching for [Fast Beacons](../#fs_beacons).
 
 ![](/assets/img/bh/agg_cluster.png)
 <br>image source: https://www.geeksforgeeks.org/hierarchical-clustering-in-data-mining/
@@ -111,9 +99,8 @@ Hierarchical Search uses agglomerative clustering, which is a hierarchical clust
 
 Below are two examples for finding fast and slow beacons using Agglomerative clustering.
 
-> ### **Note**
->
-> Hierarchical Search is **NOT** a recommended algorithm for searching for Slow Beacons.<br>
+???+ warning "Wrning"
+    Hierarchical Search is **NOT** a recommended algorithm for searching for Slow Beacons.<br>
 
 #### **Fast Beacon Search**
 
@@ -143,13 +130,11 @@ Minimum Callback Time (ms) = 900000
 
 ![](/assets/img/bh/agg_slow.png)
 
-#
-
 ### <a name="quickclustersearch"></a>**Quick Cluster Search**
 
 Quick Cluster Search uses the same principals as [Detailed Cluster Search](#clustersearch) but some records will be filtered out before the scan if they surpass the user-set variance percentage. If the variance is above the configured threshold, it is excluded from the scan. This feature provides all the benefits of a DBScan without the performance overhead.
 
-- DBScan by Variance cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).
+- DBScan by Variance cluster is a good choice for searching either [Fast Beacons](../#fs_beacons) or [Slow Beacons](../#fs_beacons).
   - This provides a perfomance increase over Cluster Search, because some connections will be pre-filtered by the variance setting.
 
 ### **Parameters**

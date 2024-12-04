@@ -1,26 +1,4 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [Configuration Overview](#overview)
-> - [Configuration Files](#configfiles)
->   - [config.conf](#configconf)
->     - [General](#general)
->     - [Dashboard](#dashboard)
->     - [Zip](#zip)
->     - [Bronze](#bronze)
->     - [Filter](#filter)
->     - [Beacon](#beacon)
->       - [Agg](#agg)
->       - [DBScan](#dbscan)
->       - [DBScan_Var](#dbscanvar)
->       - [By_Packet](#bypacket)
->       - [By_Conn_Group](#conn_grp)
->   - [dashboard.conf](#dashboardconf)
-> - [Examples](#examples)
->   - [CLI](#cli-example-general-settings)
->   - [Dashboard](#dashboard-example-config)
-
-## <a name="overview"></a>**Configuration Overview**
+# Beacon Huntress Configuration
 
 This will explain how to properly configure Beacon Huntress. Beacon Huntress requires the following questions to be answered.
 
@@ -31,27 +9,21 @@ This will explain how to properly configure Beacon Huntress. Beacon Huntress req
 5. How many connections does a potential beacon/s need to have in order to be reported?
 6. Do I want my results displayed to a dashboard or just output the results.
 
-# <a name="configfiles"></a>**Configuration Files**
+## <a name="configfiles"></a>**Configuration Files**
 
-## <a name="configconf"></a>**Config.conf**
+### <a name="configconf"></a>**Config.conf**
 
 Config.conf is the configuration for Beacon Huntress. This config will tell Beacon Huntress where the Zeek/Bro logs are located and how to process them. By default config.conf is located in src/config/.
 
-### **Default Settings**<br>
+#### **Default Settings**
 
-- Raw Bro/Zeek logs are copied to /tmp/raw/data. <br>
-- All data pipeline files are placed in /tmp/. <br>
-- Connection Filtering is connections that are using ports 80 or 443. <br>
-- DBScan by Variance is the default search algorithm. <br>
-- Slow Beacon search algorithm is used searching for beacon that call back at least ever 20 minutes. <br>
+- Raw Bro/Zeek logs are copied to /tmp/raw/data.
+- All data pipeline files are placed in /tmp/.
+- Connection Filtering is connections that are using ports 80 or 443.
+- DBScan by Variance is the default search algorithm.
+- Slow Beacon search algorithm is used searching for beacon that call back at least ever 20 minutes.
 
-#
-
-### **General**
-
-General is the main section of the config. Below are the configuration options.
-
-### **Configuration Options**
+#### **Configuration Options**
 
 - **refresh_rate** <i>(string)</i><br>
   Length in seconds you want sleep before re-running the process. Seconds must be greater than or equal to 5 seconds.<br>
@@ -95,7 +67,7 @@ General is the main section of the config. Below are the configuration options.
   Verbose logging.
   <br>**Default** = false<br>
 
-- **cluster_type** <i>(string)</i><br>
+- **cluster_type** <i>(string)</i>
   Type of cluster algorithm you want to run.
   **Options**
   _ agg ([Agglomerative Clustering](beaconsearch.md#a-idagglomerativeclusteringaagglomerative-clustering))
@@ -107,9 +79,8 @@ General is the main section of the config. Below are the configuration options.
 
 Configuration for Grafana dashboard.
 
-> ### **Note**<br>
->
-> The dashboard is only available in Docker.
+???+ warning "Warning"
+    The dashboard is only available via Docker.
 
 ### **Configuration Options**
 
@@ -120,7 +91,7 @@ Configuration for Grafana dashboard.
 
 - **conf** <i>(string)</i><br>
   Location of the dashboard configuration file. Do not change from the default without a correct copy of dashboard.conf.
-  <br>**Default** = "config/dashboard"<br>
+  <br>**Default** = "config/dashboard"
 
 ### **Zip**
 
@@ -140,9 +111,8 @@ Configuration for zip file sources.
 
 Configuration that is used for additional bronze settings.
 
-> ### **Note**<br>
->
-> More details will be provided in the future, as we work towards a larger dns source lookup file. For now exclude this option by leaving the default settings.
+???+ tip "Note"
+    More details will be provided in the future, as we work towards a larger dns source lookup file. For now exclude this option by leaving the default settings.
 
 ### **Configuration Options**
 
@@ -154,11 +124,12 @@ Configuration that is used for additional bronze settings.
 
 Configuration for filtering Bro/Zeek data.
 
-> ### **Note**<br>
->
-> For now exclude the options s_dns_file, d_dns_filter and match_filter by leaving the default settings.
-> These options do not work without a source DNS lookup file.
-> More details will be provided in the future, as we work towards a larger DNS source lookup file.
+???+ tip "Note"
+    For now exclude the options s_dns_file, d_dns_filter and match_filter by leaving the default settings.
+    
+    These options do not work without a source DNS lookup file.
+    
+    More details will be provided in the future, as we work towards a larger DNS source lookup file.
 
 ### **Configuration Options**
 

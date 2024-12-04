@@ -1,24 +1,4 @@
-## **Table of Contents**
-
-> - [Overview](#overview)
-> - [Copy Zeek Logs](#zeek)
-> - [Open Beacon Huntress](#webpage)
-> - [Configure](#config)
-> - [Example Run](#examplerun)
-> - [Result Details](#resultdetails)
-> - [Filter Beacons](#filterbeacons)
-> - [Dashboard](#dashboard)
-> - [Logs](#logs)
-> - [Run Configuration Details](#rcdetails)
-> - Algorithms
->   - [Quick Cluster Search](#dbscanvar)
->   - [Cluster Search](#dbscan)
->   - [Hierarchical](#agg)
-> - Other Configurations
->   - [Filter Ips](#filterips)
-> - [Light/Dark Mode](#lightdark)
-
-## **Overview**
+# Beacon Huntress Quick Start
 
 Beacon Huntress uses a combination of Python and Machine Learning to find potential beacons.
 
@@ -319,6 +299,3 @@ Configuration for additional filtering. Filtering at this level will exclude/inc
         True = Exclusive  
         False = Inclusive
 
-## **Light/Dark Mode**
-
-Coming Soon!

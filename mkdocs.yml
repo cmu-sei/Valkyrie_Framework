@@ -92,11 +92,12 @@ nav:
   # - What's New: new.md
   # - Quick Start: quickstart.md
   - Beacon Huntress:
+      - Quick Start: beacon_huntress/quickstart.md
       - Main: beacon_huntress/index.md
       - Algorithm: beacon_huntress/beaconalgo.md
+      - Configuration: beacon_huntress/configuration.md
       - Dashboard: beacon_huntress/dashboard.md
       - Default Filtered Hosts: beacon_huntress/defaultfilteredhosts.md
-      - Documentation: beacon_huntress/documentation.md
       - Installation: beacon_huntress/installation.md
       - Interface: beacon_huntress/interface.md
       - Juptyer Notebook: beacon_huntress/jupyter.md

@@ -1,42 +1,14 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [Overview](#overview)
-> - [beacon.py](#beaconpy)
->   - [agglomerative_clustering()](#agglomerativeclustering)
->   - [cli_results()](#cliresults)
->   - [cluster_conns()](#clusterconn)
->   - [dbscan_clustering()](#dbscanclustering)
->   - [dbscan_by_variance()](#dbscanbyvariance)
->   - [get_dns()](#getdns)
->   - [packet()](#packet)
-> - [ingest.py](#ingestpy)
->   - [add_dns()](#adddns)
->   - [build_bronze_layer()](#buildbronzelayer)
->   - [build_delta_files()](#builddeltafiles)
->   - [build_filter_files()](#buildfilterfiles)
->   - [build_null_files()](#buildnullfiles)
->   - [build_raw()](#buildraw)
->   - [convert_parquet_to_csv()](#convertparquettocsv)
->   - [download_s3_folder()](#downloads3folder)
->   - [filter_dataframe()](#filterdataframe)
->   - [get_latest_file()](#getlatestfile)
->   - [unzip()](#unzip)
-
-#
-
-# **Overview**
+# Beacon Huntress Modules
 
 There are two main modules that can be used for beacon detection data pipeline beacon.py and ingest.py.<br>
 Beacon.py is used for beacon detection. Ingest.py is used for creating the data pipeline. <b><i>Modules should only be used in a Juypter Notebook environment</b></i>.
 
-# **beacon.py**
+## **beacon.py**
 
 Beacon module is used to run various beacon detection algorithm against an ingest created deta file. Currently all delta files used within this module must be a parquet file.<br>
 
-> ### **Note**<br>
->
-> Ensure you have `__pycache__` directory in the location of the beacon.py file.<br>
+???+ tip "Note"
+    Ensure you have `__pycache__` directory in the location of the beacon.py file.
 
 ### **Import Module**
 
@@ -53,10 +25,10 @@ These are the available methods:
 - [dbscan_by_variance()](#dbscanbyvariance)
 - [get_dns()](#getdns)
 
-> ### **Note**<br>
->
-> Any changes done to the beacon.py module within **JuypterLab** will require a reload of the beacon.py module.<br>
-> Use the code below to reload the beacon.py module.
+???+ tip "Note"
+    Any changes done to the beacon.py module within **JuypterLab** will require a reload of the beacon.py module.<br>
+    
+    Use the code below to reload the beacon.py module.
 
 ### **Reload Module**
 
@@ -66,8 +38,6 @@ imported_module = importlib.import_module("beacon")
 importlib.reload(imported_module)
 import beacon
 ```
-
-#
 
 ## <a name="agglomerativeclustering"></a>**agglomerative_clustering(\*\*kwargs)**
 
@@ -158,8 +128,6 @@ gold_file = beacon.agglomerative_clustering(
 print(gold_file)
 ```
 
-#
-
 ## <a name="cliresults"></a>**cli_results(\*\*kwargs)**
 
 Return Command Line Interface (CLI) results from a gold file. Results will be printed to the screen.
@@ -197,8 +165,6 @@ beacon.cli_results(
     gold_file = "/tmp/gold/data/12345678.parquet"
 )
 ```
-
-#
 
 ## <a name="clusterconn"></a>**cluster_conns(\*\*kwargs)**
 
@@ -281,8 +247,6 @@ gold_file = beacon.cluster_conns(
 
 print(gold_file)
 ```
-
-#
 
 ## <a name="dbscanclustering"></a>**dbscan_clustering(\*\*kwargs)**
 
@@ -370,8 +334,6 @@ gold_file = beacon.dbscan_clustering(
 
 print(gold_file)
 ```
-
-#
 
 ## <a name="dbscanbyvariance"></a>**dbscan_by_variance(\*\*kwargs)**
 
@@ -465,8 +427,6 @@ gold_file = beacon.dbscan_by_variance(
 print(gold_file)
 ```
 
-#
-
 ## <a name="getdns"></a>**get_dns(\*\*kwargs)**
 
 Lookup DNS record for an IP.
@@ -502,8 +462,6 @@ dns = beacon.get_dns(
 
 print(dns)
 ```
-
-#
 
 ## <a name="packet"></a>**packet(\*\*kwargs)**
 
@@ -590,7 +548,7 @@ gold_file = beacon.packet(
 print(gold_file)
 ```
 
-# **ingest.py**
+## **ingest.py**
 
 Below is how to load the ingest.py module. Ensure you have `__pycache__` directory in the location of the ingest.py file.
 
@@ -620,8 +578,6 @@ These are the available methods:
 - [filter_dataframe()](#filterdataframe)
 - [get_latest_file()](#getlatestfile)
 - [unzip()](#unzip)
-
-#
 
 ## <a name="adddns"></a>**add_dns(\*\*kwargs)**
 
@@ -690,8 +646,6 @@ ingest.add_dns(
 )
 ```
 
-#
-
 ## <a name="buildbronzelayer"></a>**build_bronze_layer(\*\*kwargs)**
 
 Create a bronze data layer for a source folder location. Bronze data will tcp data only and will include source and destination DNS.
@@ -744,8 +698,6 @@ ingest.build_bronze_layer(
     dns_file = "/tmp/whitelist/whitelist_ip.parquet"
     )
 ```
-
-#
 
 ## <a name="builddeltafiles"></a>**build_delta_files(\*\*kwargs)**
 
@@ -1076,8 +1028,6 @@ ingest.convert_parquet_to_csv(
     csv_file = "/tmp/dest/test.csv"
     )
 ```
-
-#
 
 ## <a name="downloads3folder"></a>**download_s3_folder(\*\*kwargs)**
 

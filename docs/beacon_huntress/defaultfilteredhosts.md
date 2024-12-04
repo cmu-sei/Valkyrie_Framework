@@ -1,9 +1,4 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
->   - [Interface](interface.md)
-
-## <a name="dfh"></a>**Default Filtered Hosts**
+# Default Filtered Hosts
 
 Default Filtered Hosts is a list of popular websites that have been filtered out from Beacon Huntress results. These sites will not appear on the Filtered Hosts page of the Web UI. The complete list is below.
 

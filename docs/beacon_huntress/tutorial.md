@@ -1,19 +1,11 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [How to use](#howtouse)
->   - [Tutorial](#bh_tutorial)
->   - [Zeek Logs](#zeek)
-
-## <a name="bh_tutorial"></a>**Tutorial**
+# Beacon Huntress Tutorial
 
 This tutorial will provide an example for running Beacon Huntress using a generic dataset.
 
-> ### **Note**
->
-> You must complete the [Docker Setup](#docker) prior to running this tutorial.
+???+ warning "Warning"
+    You must complete the [Docker Setup](#docker) prior to running this tutorial.
 
-1. Visit http://127.0.0.1:8000 in your web browser to access the main page of the Beacon Huntress Web UI.
+1. Visit [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser to access the main page of the Beacon Huntress Web UI.
 
    ![bh_ui](/assets/img/bh/home_page.png)
 
@@ -53,9 +45,7 @@ This tutorial will provide an example for running Beacon Huntress using a generi
 
     ![ui_dash](/assets/img/bh/dash_main.png)
 
-### Congratulations! You have completed your first Beacon Huntress test run!
-
-<br>
+### :material-thumb-up: Congratulations! You have completed your first Beacon Huntress test run!
 
 ## <a name="zeek"></a>**Zeek Logs**
 

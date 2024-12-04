@@ -1,31 +1,14 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [Execute](#)
-> - [Settings](#)
->   - [General](#general)
->   - [Filters](#)
->   - [Filtered Hosts](#)
->   - [Default Filtered Hosts](#dfh)
-> - [Results](#)
->   - [Dashboard](#)
->   - [Filters](#)
->   - [Filtered Hosts](#)
-> - [Logs](#)
-
-# <a name="home"></a>**Overview**
+# Interface
 
 This page outlines the usage and functionalities of the Beacon Huntress GUI.
-<br></br>
 
-# <a name="execute"></a>**Execute**
+## <a name="execute"></a>**Execute**
 
 The Execute tab has three sections: Quick Cluster Search, Cluster Search, and Hierarchical Search. For more information on Beacon Huntress algorithm configurations, see [Beacon Huntress Algorithms](../documentation/beaconalgo.md).
-<br></br>
 
-# <a name="execute"></a>**Settings**
+## <a name="execute"></a>**Settings**
 
-## <a name="general"></a>**General**
+### <a name="general"></a>**General**
 
 The General section contains the basic configuration for Beacon Huntress. These settings must be configured in order for Beacon Huntress to run.
 

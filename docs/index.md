@@ -2,7 +2,8 @@
 
 Developed by Carnegie Mellon University's Software Engineering Institute (SEI), the **Valkyrie Framework** is an open source suite of tools that enable hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic using machine learning and other advanced analytics.
 
-There are two tools in the Framework currently, but we expect more in the future.
+???+ tip "Note"
+    There are two tools in the Framework currently, but we expect more in the future.
 
 ## Beacon Huntress
 

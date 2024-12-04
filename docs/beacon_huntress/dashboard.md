@@ -1,17 +1,8 @@
-## **Table of Contents**
-
-> - [Home](../../../readme.md)
-> - [Dashboard Overview](#overview)
->   - [Beacon](#beacon)
->     - [Total Records](#totalrecords)
->     - [Delta Connection](#deltaconnection)
->     - [Potential Beacons](#potentialbeacons)
-
-## <a name="overview"></a>**Dashboard Overview**
+# Beacon Huntress Dashboard
 
 Beacon Huntress provides a Grafana dashboard to assist with finding beacons. When using Docker, the dashboard is the best resource for visualizing and analyzing the details of potential beacons. Login to Grafana by visiting the link below in your web browser. Credentials can be found in the dashboard configuration file located at src/config/dashboard.conf.
 
-Beacon Huntress Dashboard URL: http://127.0.0.1:3000
+Beacon Huntress Dashboard URL: [http://127.0.0.1:3000](http://127.0.0.1:3000)
 
 ## **Beacon**
 
@@ -21,9 +12,7 @@ The main dashboard is called Beacon. Clicking on the panels will provide additio
 2. [Delta Connections](#deltaconnections) <i>(clickable)</i>
 3. [Potential Beacons](#potentialbeacons) <i>(clickable)</i>
 4. Potential Beacons Connections Over Time
-   - Timeline of the beacon connections present in the provided files.
-
-![](/assets/img/bh/tutorial/ui_dash.png)
+      - Timeline of the beacon connections present in the provided files.
 
 ### <a name="totalrecords"></a>**Total Records**
 
