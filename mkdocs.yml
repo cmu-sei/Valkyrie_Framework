@@ -92,8 +92,8 @@ nav:
   # - What's New: new.md
   # - Quick Start: quickstart.md
   - Beacon Huntress:
-      - Quick Start: beacon_huntress/quickstart.md
       - Main: beacon_huntress/index.md
+      - Quick Start: beacon_huntress/quickstart.md
       - Algorithm: beacon_huntress/beaconalgo.md
       - Configuration: beacon_huntress/configuration.md
       - Dashboard: beacon_huntress/dashboard.md
