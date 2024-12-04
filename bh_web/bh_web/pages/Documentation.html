@@ -8,61 +8,40 @@
 <blockquote>
   <ul>
     <li><a href="#overview">Overview</a></li>
-    <li><a href="#zeek">Copy Zeek Logs</a></li>
     <li><a href="#webpage">Open Beacon Huntress</a></li>
-    <li><a href="#config">Configure</a></li>
     <li><a href="#examplerun">Example Run</a></li>
     <li><a href="#resultdetails">Result Details</a></li>
     <li><a href="#filterbeacons">Filter Beacons</a></li>
+    <li>
+      <a href="#datasource">Data Sources</a>
+      <ul>
+        <li><a href="#elastic">Elastic</a></li>
+        <li><a href="#seconion">Security Onion</a></li>
+        <li><a href="#zeek">Zeek Connection Logs</a></li>
+      </ul>
+    </li>    
     <li><a href="#dashboard">Dashboard</a></li>
     <li><a href="#logs">Logs</a></li>
     <li><a href="#rcdetails">Run Configuration Details</a></li>
     <li>
-      Algorithms
+      <a href="algo">Algorithms</a>
       <ul>
         <li><a href="#quickcluster">Quick Cluster Search</a></li>
         <li><a href="#clustersearch">Detailed Cluster Search</a></li>
         <li><a href="#hierarchical">Hierarchical</a></li>
       </ul>
     </li>
-    <li>
-      Other Configurations
-      <ul>
-        <li><a href="#filterips">Filter Ips</a></li>
-      </ul>
-    </li>
+    <li><a href="#filterips">Filter IPs</a></li>
     <li><a href="#lightdark">Light/Dark Mode</a></li>
   </ul>
 </blockquote>
+
 <h2 id="overview"><strong>Overview</strong></h2>
 <p>
   Beacon Huntress uses a combination of Python and Machine Learning to find
   potential beacons.
 </p>
-<h2 id="zeek"><strong>Copy Zeek Logs</strong></h2>
-<p>
-  Zeek Connection Logs are required to run Beacon Huntress. Follow the steps
-  below to copy the Zeek Connection Logs. It&#39;s recommended to organize the
-  logs into directories, with one directory per day.
-</p>
-<ol>
-  <li>
-    <p>
-      Zeek logs can be copied to the <code>/tmp</code> directory. The
-      <code>/tmp</code> directory is mounted to the Docker container
-      beacon_huntress.
-    </p>
-    <pre><code> <span class="hljs-comment"># CREATE DIRECTORY (REPLACE YYYY-MM-DD WITH DATE)</span>
- mkdir -p <span class="hljs-regexp">/tmp/</span>raw<span class="hljs-regexp">/data/</span>YYYY-MM-DD
 
- <span class="hljs-comment"># START SFTP SHELL</span>
- sftp root@YOUR_SFTP_SERVER
-
- <span class="hljs-comment"># SFTP COMMAND EXAMPLE (REPLACE YYYY-MM-DD WITH DATE)</span>
- get -R <span class="hljs-regexp">/nsm/</span>zeek<span class="hljs-regexp">/logs/</span>YYYY-MM-DD<span class="hljs-regexp">/conn.* /</span>tmp<span class="hljs-regexp">/raw/</span>data<span class="hljs-regexp">/YYYY-MM-DD</span>
-</code></pre>
-  </li>
-</ol>
 <h2 id="web-page"><strong>Open Web Page</strong></h2>
 <p>To get started</p>
 <ol>
@@ -70,72 +49,19 @@
   <li>Go to 127.0.0.1:8000</li>
   <li>You will now see Beacon Huntress loaded.</li>
 </ol>
-<p><img src="/static/documentation/images/home_page.png" alt="Alt text" style="width:900px;"/></p>
-<h2 id="config"><strong>Configure</strong></h2>
-<p>How to configure Beacon Huntress to run a search.</p>
-<ol>
-  <li>Navigate to Settings and click on General.</li>
-</ol>
-<p><img src="/static/documentation/images/gen_settings.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
-  <li>
-    <p>You will have the following settings.</p>
-    <ul>
-      <li>
-        <strong>Raw Log Location</strong>
-        <ul>
-          <li>Physical location of the raw Zeek logs</li>
-        </ul>
-      </li>
-      <li>
-        <strong>Working File Type</strong>
-        <ul>
-          <li>
-            The type of files you want to use. Parquet is the recommended
-            setting
-          </li>
-        </ul>
-      </li>
-      <li>
-        <strong>Overwrite Existing Data</strong>
-        <ul>
-          <li>Will overwrite all existing results</li>
-        </ul>
-      </li>
-      <li>
-        <strong>Verbose Logging</strong>
-        <ul>
-          <li>Verbose Logging True/False</li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ol>
+<p><img src="/static/documentation/images/home_page.png" alt="Alt text" style="width:900px;" /></p>
+
 <h2 id="examplerun"><strong>Example Run</strong></h2>
 <p>This test run is using Quick Cluster Search with some test data.</p>
 <ol>
-  <li>
-    To run a test use the test dataset located in /tutorial. From the General
-    Settings page change the Raw Log Location to /tutorial and click the save
-    button.
-  </li>
-</ol>
-<p><img src="/static/documentation/images/set_tutorial.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
   <li>Navigate to Search For Beacons and select Quick Cluster.</li>
-</ol>
-<p><img src="/static/documentation/images/search_quick_cluster.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/search_quick_cluster.png" alt="Alt text" style="width:900px;" /></p>
   <li>
     <p>
       Quick Cluster Search expects the parameters below. In this example do not
       change anything, just click the run button.
-      <strong
-        ><em
-          >PLEASE NOTE: Do not exit this page, you will be directed to the
-          results page once it is completed.</em
-        ></strong
-      >
+      <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the
+          results page once it is completed.</em></strong>
     </p>
     <ul>
       <li>
@@ -143,7 +69,7 @@
         <ul>
           <li>
             Average delta time to include in the search using your delta column.
-            Greater than equal (&lt;=).
+            Greater than equal (&gt;=).
           </li>
         </ul>
       </li>
@@ -236,7 +162,7 @@
     </ul>
   </li>
 </ol>
-<p><img src="/static/documentation/images/results_quick_cluster.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/results_quick_cluster.png" alt="Alt text" style="width:900px;" /></p>
 <h2 id="resultdetails"><strong>Result Details</strong></h2>
 <p>
   From the Result Details page you can further investigate or filter potential
@@ -245,9 +171,8 @@
 </p>
 <ol>
   <li>Click on the Group ID.</li>
-</ol>
-<p><img src="/static/documentation/images/results_quick_cluster_highlight.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/results_quick_cluster_highlight.png" alt="Alt text" style="width:900px;" />
+  </p>
   <li>
     <p>The result details page will display the following columns.</p>
     <ul>
@@ -305,7 +230,7 @@
     </ul>
   </li>
 </ol>
-<p><img src="/static/documentation/images/results_details.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/results_details.png" alt="Alt text" style="width:900px;" /></p>
 <h2 id="filterbeacons"><strong>Filter Beacons</strong></h2>
 <p>
   You can filter out any falsely identified beacons from the Result Details
@@ -317,9 +242,7 @@
     will have be filtered from all beacon results. The ip will be excluded in
     any future results.
   </li>
-</ol>
-<p><img src="/static/documentation/images/results_details_highlight.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/results_details_highlight.png" alt="Alt text" style="width:900px;" /></p>
   <li>
     <p>
       To view or remove filtered beacons navigate to Settings, then Filtered
@@ -363,7 +286,216 @@
     </ul>
   </li>
 </ol>
-<p><img src="/static/documentation/images/filtered_hosts.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/filtered_hosts.png" alt="Alt text" style="width:900px;" /></p>
+
+
+<h2 id="-a-name-datasource-a-__data-sources__"><a name="datasource"></a><strong>Data Sources</strong></h2>
+<p>Beacon Huntress now has the ability to store source data sources to allow repeatable usage. Current data types are
+    Zeek Connection Logs, Elastic Indices, and Security Onion Indicies. By default Beacon Huntress has Zeek Connection
+    Logs data source which will allow the user to select their raw zeek connection logs. For details on setting up an <a
+        href="#api">API Key</a>, click the link.</p>
+
+<h2 id="-a-name-elastic-a-__elastic__"><a name="elastic"></a><strong>Elastic</strong></h2>
+<p>Elastic data source will use Zeek connection logs contained inside of the Application. The indices will be manually
+    selected. Click the link for details on setting up an <a href="#api">API</a>.</p>
+<p>To create an Elastic datasource follow the steps below.</p>
+<ol>
+    <li>Under &quot;Settings&quot; click &quot;Data Sources&quot;.</li>
+    <li>
+        <p>Click the &quot;New&quot; button.</p>
+        <p> <img src="/static/documentation/images/ds_page.png" alt=""></p>
+    </li>
+    <li>
+        <p>Select &quot;Elastic&quot; in the &quot;Data Source Type&quot; drop list.</p>
+        <ul>
+            <li>
+                <p>The following inputs are required for Elastic:</p>
+                <ul>
+                    <li><strong>Data Source Name</strong>
+                        <ul>
+                            <li>Unique Name for your data source.<br></li>
+                        </ul>
+                    </li>
+                    <li><strong>Host</strong>
+                        <ul>
+                            <li>Elastic Host Name.<br></li>
+                        </ul>
+                    </li>
+                    <li><strong>Port</strong>
+                        <ul>
+                            <li>Elastic Port Name.<br></li>
+                        </ul>
+                    </li>
+                    <li><strong>API Key</strong>
+                        <ul>
+                            <li>Elastic API Name.<br>
+                                <ul>
+                                    <li>API Key can be viewed by clicking the eye button.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><strong>Index</strong>
+                        <ul>
+                            <li>Elastic Index Name (Multi-Select).<br>
+                                <ul>
+                                    <li>Click the button to load the indices. <b><i>You must have the Host, Port and API
+                                                Key correct in order to load the indicies.</b></i></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><img src="/static/documentation/images/ds_elastic.png" alt=""></p>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <p>Click &quot;Add&quot; button to create the new data source.</p>
+        <p> <img src="/static/documentation/images/new_es_ds.png" alt=""></p>
+    </li>
+    <li>
+        <p>The new data source will now be available for any &quot;Search For Beacon&quot; data source.</p>
+        <p> <img src="/static/documentation/images/es_search.png" alt=""></p>
+    </li>
+</ol>
+
+<h2 id="-a-name-seconion-a-__security-onion__"><a name="seconion"></a><strong>Security Onion</strong></h2>
+<p>Security Onion data source will use Zeek connection logs contained inside of the Application. The indices will
+    automatically selected. Click the link for details on setting up an <a href="#api">API</a>.</p>
+<ol>
+    <li>Under &quot;Settings&quot; click &quot;Data Sources&quot;.</li>
+    <li>
+        <p>Click the &quot;New&quot; button.</p>
+        <p> <img src="/static/documentation/images/ds_page.png" alt=""></p>
+    </li>
+    <li>
+        <p>Select &quot;Elastic&quot; in the &quot;Data Source Type&quot; drop list.</p>
+        <ul>
+            <li>
+                <p>The following inputs are required for Security Onion:</p>
+                <ul>
+                    <li><strong>Data Source Name</strong>
+                        <ul>
+                            <li>Unique Name for your data source.<br></li>
+                        </ul>
+                    </li>
+                    <li><strong>Host</strong>
+                        <ul>
+                            <li>Security Onion Elastic Host Name.<br></li>
+                        </ul>
+                    </li>
+                    <li><strong>Port</strong>
+                        <ul>
+                            <li>Security Onion Elastic Port Name.<br></li>
+                        </ul>
+                    </li>
+                    <li><strong>API Key</strong>
+                        <ul>
+                            <li>Security Onion Elastic API Name.<br>
+                                <ul>
+                                    <li>API Key can be viewed by clicking the eye button.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><img src="/static/documentation/images/ds_seconion.png" alt=""></p>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <p>Click &quot;Add&quot; button to create the new data source.</p>
+        <p> <img src="/static/documentation/images/new_so_ds.png" alt=""></p>
+    </li>
+    <li>
+        <p>The new data source will now be available for any &quot;Search For Beacon&quot; data source.</p>
+        <p> <img src="/static/documentation/images/so_search.png" alt=""></p>
+    </li>
+</ol>
+
+<h2 id="-a-name-zeek-a-__zeek-logs__"><a name="zeek"></a><strong>Zeek Logs</strong></h2>
+<p>Zeek Connection Logs must be provided for Beacon Huntress to analyze. Follow the steps below to copy your Zeek logs
+    from their initial location to a local directory that can be accessed by Beacon Huntress. It&#39;s recommended to
+    organize the logs into separate directories, with each directory corresponding to a single day.</p>
+<ol>
+    <li>
+        <p>In this example, we will copy Zeek conn logs to the <code>/zeek</code> directory. The <code>/zeek</code>
+            directory is mounted to the Docker container beacon_huntress.</p>
+        <pre><code class="lang-bash"> <span class="hljs-comment"># CREATE DIRECTORY (REPLACE YYYY-MM-DD WITH DATE)</span>
+ mkdir -p <span class="hljs-regexp">/zeek/</span>raw<span class="hljs-regexp">/data/</span>YYYY-MM-DD
+
+ <span class="hljs-comment"># START SFTP SHELL</span>
+ sftp root@YOUR_FTP_SERVER
+
+ <span class="hljs-comment"># SFTP COMMAND EXAMPLE (REPLACE YYYY-MM-DD WITH DATE)</span>
+ get -R zeek<span class="hljs-regexp">/logs/</span>YYYY-MM-DD<span class="hljs-regexp">/conn.* /</span>zeek<span class="hljs-regexp">/raw/</span>data<span class="hljs-regexp">/YYYY-MM-DD</span>
+</code></pre>
+    </li>
+    <li>
+        <p>Under &quot;Settings&quot; click &quot;Data Sources&quot;.</p>
+    </li>
+    <li>
+        <p>Click the &quot;New&quot; button.</p>
+        <p> <img src="/static/documentation/images/ds_zeek.png" alt=""></p>
+    </li>
+    <li>
+        <p>The following inputs are required for Zeek Connection Logs:</p>
+        <ul>
+            <li><strong>Data Source Name</strong>
+                <ul>
+                    <li>Unique Name for your data source.<br></li>
+                </ul>
+            </li>
+            <li><strong>Raw Log Location</strong>
+                <ul>
+                    <li>Raw Zeek file location.<br> </li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li>
+        <p>Click &quot;Add&quot; button to create the new data source.</p>
+        <p> <img src="/static/documentation/images/new_zeek_ds.png" alt=""></p>
+    </li>
+    <li>
+        <p>The new data source will now be available for any &quot;Search For Beacon&quot; data source.</p>
+        <p> <img src="/static/documentation/images/zeek_search.png" alt=""></p>
+    </li>
+</ol>
+
+<h2 id="-a-name-api-a-__create-elastic-api__"><a name="api"></a><strong>Create Elastic API</strong></h2>
+<p>Elastic and Security Onion data sources can be accessed by using the Elastic API. In order you use these data sources
+    you must setup an Elastic API Key.</p>
+<blockquote>
+    <h3 id="__note__-br-"><strong>Note</strong><br></h3>
+    <p>Elastic Indicies must be Zeek Connection Logs. Beacon Huntress only works with Zeek Connection Logs.</p>
+</blockquote>
+<ol>
+    <li>
+        <p>From the Elastic Management Console navigate to &quot;Security&quot; then &quot;API Keys&quot;.</p>
+        <p> <img src="/static/documentation/images/e_api.png" alt=""></p>
+    </li>
+    <li>
+        <p>Click on the &quot;Create API Key&quot; button.</p>
+        <p> <img src="/static/documentation/images/e_api_create.png" alt=""></p>
+    </li>
+    <li>
+        <p>Give the api key a name &quot;bh_api&quot; and restrict permissions according to your organization&#39;s
+            security policies. Finally click the &quot;Create API Key&quot; button.</p>
+        <p> <img src="/static/documentation/images/e_api_name.png" alt=""></p>
+    </li>
+    <li>
+        <p>Copy the api key for Beacon Huntress usage.</p>
+        <blockquote>
+            <h3 id="__note__-br-"><strong>Note</strong><br></h3>
+            <p>Once you leave the screen the API key will not be retrievable. Best practice would be storing the API key
+                in a password safe. </p>
+        </blockquote>
+        <p> <img src="/static/documentation/images/e_api_key.png" alt=""></p>
+    </li>
+</ol>
+
 <h2 id="dashboard"><strong>Dashboard</strong></h2>
 <p>
   You can access the Grafana Dashboard via the Dashboard button on the Result
@@ -374,33 +506,31 @@
   <p>
     For additional details related to the Granfana Dashboard navigate to the
     github site.<br /><a
-      href="https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md"
-      >https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md</a
-    >
+      href="https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md">https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md</a>
   </p>
 </blockquote>
-<p><img src="/static/documentation/images/result_dash_highlighted.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/result_dash_highlighted.png" alt="Alt text" style="width:900px;" /></p>
 <p>The dashboard will open in another window.</p>
-<p><img src="/static/documentation/images/dash_main.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/dash_main.png" alt="Alt text" style="width:900px;" /></p>
 <h2 id="logs"><strong>Logs</strong></h2>
 <p>
   You can access the Logs via the Log button on the Result
   Details page. The log files are used for troubleshooting a beacon search.
 </p>
-<p><img src="/static/documentation/images/result_log_highlighted.png" alt="Alt text" style="width:900px;"/></p>
-<p><img src="/static/documentation/images/log_details.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/result_log_highlighted.png" alt="Alt text" style="width:900px;" /></p>
+<p><img src="/static/documentation/images/log_details.png" alt="Alt text" style="width:900px;" /></p>
 <p>
   All logs files are available via the Logs button on the navigation pane. You
   can open the log by clicking on the log file link. To delete log files
   permanently click on the trash can.
 </p>
-<p><img src="/static/documentation/images/log_highlighted.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/log_highlighted.png" alt="Alt text" style="width:900px;" /></p>
 <h2 id="rcdetails">
   <strong>Run Configuration Details</strong>
 </h2>
 <p>Beacon results configurations can be access via the Config link.</p>
-<p><img src="/static/documentation/images/result_config_highlight.png" alt="Alt text" style="width:900px;"/></p>
-<p><img src="/static/documentation/images/config_details.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/result_config_highlight.png" alt="Alt text" style="width:900px;" /></p>
+<p><img src="/static/documentation/images/config_details.png" alt="Alt text" style="width:900px;" /></p>
 <p>
   To find the algorithm used in the search, use the general.cluster type
   configuration. The cluster_type algorithm names are below.
@@ -412,7 +542,12 @@
     <li>agg = Hierarchical</li>
   </ul>
 </blockquote>
-<p><img src="/static/documentation/images/config_highlight.png" alt="Alt text" style="width:900px;"/></p>
+<p><img src="/static/documentation/images/config_highlight.png" alt="Alt text" style="width:900px;" /></p>
+
+<h2><a name="algo"></a><strong>Data Sources</strong></h2>
+<p>Beacon Huntress can be configured to search for beacons using the algorithms below. Each Machine Learning (ML) algorithm 
+  has its own unique parameters and is used to search for slow or fast beacons based on time intervals.</p>
+
 <h2 id="quickcluster"><strong>Quick Cluster Search</strong></h2>
 <p>
   Quick Cluster Search uses the same principals as Detailed Cluster Search but will
@@ -423,19 +558,13 @@
 </p>
 <ol>
   <li>Navigate to Execute and select Quick Cluster Search.</li>
-</ol>
-<p><img src="/static/documentation/images/search_quick_cluster.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/search_quick_cluster.png" alt="Alt text" style="width:900px;" /></p>
   <li>
     <p>
       Quick Cluster Search expects the parameters below. In this example do not
       change anything, just click the run button.
-      <strong
-        ><em
-          >PLEASE NOTE: Do not exit this page, you will be directed to the
-          results page once it is completed.</em
-        ></strong
-      >
+      <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the
+          results page once it is completed.</em></strong>
     </p>
     <ul>
       <li>
@@ -443,7 +572,7 @@
         <ul>
           <li>
             Average delta time to include in the search using your delta column.
-            Greater than equal (&lt;=).
+            Less than equal (&lt;=).
           </li>
         </ul>
       </li>
@@ -496,18 +625,12 @@
 </p>
 <ol>
   <li>Navigate to Execute and select Detailed Cluster.</li>
-</ol>
-<p><img src="/static/documentation/images/cluster_search.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/cluster_search.png" alt="Alt text" style="width:900px;" /></p>
   <li>
     <p>
       Detailed Cluster expects the parameters below.
-      <strong
-        ><em
-          >PLEASE NOTE: Do not exit this page, you will be directed to the
-          results page once it is completed.</em
-        ></strong
-      >
+      <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the
+          results page once it is completed.</em></strong>
     </p>
     <ul>
       <li>
@@ -554,18 +677,12 @@
 </p>
 <ol>
   <li>Navigate to Execute and select Hierarchical Search.</li>
-</ol>
-<p><img src="/static/documentation/images/hierarchical_search.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/hierarchical_search.png" alt="Alt text" style="width:900px;" /></p>
   <li>
     <p>
       Hierarchical Search expects the parameters below.
-      <strong
-        ><em
-          >PLEASE NOTE: Do not exit this page, you will be directed to the
-          results page once it is completed.</em
-        ></strong
-      >
+      <strong><em>PLEASE NOTE: Do not exit this page, you will be directed to the
+          results page once it is completed.</em></strong>
     </p>
     <ul>
       <li>
@@ -609,9 +726,7 @@
 </p>
 <ol>
   <li>Navigate to Settings and click on Filters.</li>
-</ol>
-<p><img src="/static/documentation/images/filter_settings.png" alt="Alt text" style="width:900px;"/></p>
-<ol>
+  <p><img src="/static/documentation/images/filter_settings.png" alt="Alt text" style="width:900px;" /></p>
   <li>
     <p>
       Filter expects the parameters below. Change the parameter/s and click

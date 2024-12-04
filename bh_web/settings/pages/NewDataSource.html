@@ -29,7 +29,7 @@
     </select>
     <div id="additional-fields"></div>
 
-    <!--Hidden value for Data Type-->
+    <!--HIDDEN VALUE FOR DATA TYPE-->
     <input type="hidden" name="data_type" id="data_type_field" value="">
 
     {% csrf_token %}
@@ -40,11 +40,13 @@
           value="Add"
           class="btn btn-primary"
           onclick="document.body.style.cursor='wait'"
+          disabled
         >
           Add
         </button>
       </div>
 
 </form>
+
 
 {% endblock %}
