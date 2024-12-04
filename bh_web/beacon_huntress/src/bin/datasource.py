@@ -4,14 +4,6 @@ import sys
 from elasticsearch import Elasticsearch
 
 
-# HOST = "https://IPADDRESS:9200"
-# USR = ""
-# PWD = ""
-
-HOST = "https://10.0.11.215:9200"
-USR = "so@hunt.army.mil"
-PWD = "tartans@1"
-
 def safe_load(row):
     try:
         return json.loads(row)
@@ -25,11 +17,11 @@ def elastic_client(data):
     if data["auth"] == "api":
         # API KEY
         es = Elasticsearch(
-            hosts="https://{}:{}".format(data["host"],data["port"]),
+            hosts="http://{}:{}".format(data["host"],data["port"]),
             api_key=data["api"],
             request_timeout=data["timeout"],
             verify_certs=False
-        )
+            )
 
     return es
 
@@ -38,6 +30,7 @@ def elastic_index(client):
     df = pd.DataFrame(columns=["index_name", "cnt"])
 
     index = client.cat.indices(format="json")
+
     for x in index:
         df_2 = pd.DataFrame({"index_name": [x["index"]], "cnt": [x["docs.count"]]})
         df = pd.concat([df_2, df], ignore_index=True)
@@ -85,14 +78,16 @@ def get_elastic_data(client, data, start_dte = "", end_dte = ""):
 
     size = 10000
     total = 0
-    time = "2m"
+    time = "15m"
+
+    print(data)
 
     if data["max_records"] == 0:
         max_rec = sys.maxsize
     else:
         max_rec = data["max_records"]
 
-    response = client.search(index="*-zeek-*", 
+    response = client.search(index=data["index"], 
                         body=query,
                         size=size,
                         scroll=time) 
@@ -102,8 +97,11 @@ def get_elastic_data(client, data, start_dte = "", end_dte = ""):
     conn_data = []
 
     for x in vals:
-        #conn_data.append({"id": x["_id"], "data": x["_source"]})
-        conn_data.append({"data": x["_source"]["message"]})
+        # Check for Sec Onion or Elasic
+        if data["data_type"] == "Elastic":
+            conn_data.append({"data": x["_source"]["zeek"]})
+        else:
+            conn_data.append({"data": x["_source"]["message"]})
 
     total += size
 
@@ -113,8 +111,15 @@ def get_elastic_data(client, data, start_dte = "", end_dte = ""):
         vals = zeek["hits"]["hits"]
 
         for x in vals:
-            #conn_data.append({"id": x["_id"], "data": x["_source"]})
-            conn_data.append({"data": x["_source"]["message"]})
+            # Check for Sec Onion or Elasic
+            # ELASTIC MAKE SURE ZEEK IS IN THE VALUE IF NOT SKIP
+            if data["data_type"] == "Elastic":
+                if "_source" in x and "zeek" in x["_source"]:
+                    conn_data.append({"data": x["_source"]["zeek"]})
+                else:
+                    pass
+            else:
+                conn_data.append({"data": x["_source"]["message"]})
 
         total += size
         print(total)
@@ -127,9 +132,14 @@ def get_elastic_data(client, data, start_dte = "", end_dte = ""):
     if df.empty:
         df_zeek = df
     else:
-        df["data"] = df["data"].apply(safe_load)
-        df = df.dropna(subset=["data"])
-        df_zeek = pd.json_normalize(df["data"])
+        if data["data_type"] == "Elastic":
+            # remove data. columns
+            df.columns = df.columns.str.replace('^data\.', '', regex=True)
+            df_zeek = df
+        else:
+            df["data"] = df["data"].apply(safe_load)
+            df = df.dropna(subset=["data"])
+            df_zeek = pd.json_normalize(df["data"])
 
         # CHECK DATES 
         # TEMPORARY CHANGE TO ELASTIC QUERY IN THE FUTURE

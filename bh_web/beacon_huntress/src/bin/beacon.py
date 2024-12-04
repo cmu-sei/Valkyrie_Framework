@@ -327,7 +327,6 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
 
     # LOAD DATASET
     dataset = pd.read_parquet(delta_file).sort_values(by=["connection_id"])
-    dataset = dataset.query("dip == '1.3.150.200'")
     X = dataset.iloc[:, np.r_[0,6]].values
     Y = dataset.iloc[:, np.r_[0:3,6]].values
 

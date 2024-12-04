@@ -192,20 +192,27 @@ def load_settings(config, type, request = ""):
             config["general"]["ds_type"] = df["ds_type"]
             config["general"]["start_dte"] = request.POST.get("start_dte")
             config["general"]["end_dte"] = request.POST.get("end_dte")
-        elif df["ds_type"] in ["Elastic", "Security Onion"]:
+        elif df["ds_type"] in ["Security Onion", "Elastic"]:
             data = json.loads(df["data"].replace("'","\""))
             config["general"]["raw_loc"] = "/elastic"
             config["general"]["ds_name"] = df["ds_name"]
             config["general"]["ds_type"] = df["ds_type"]
             config["general"]["start_dte"] = request.POST.get("start_dte")
             config["general"]["end_dte"] = request.POST.get("end_dte")            
+
+            if df["ds_type"] == "Security Onion":
+                index = "*-zeek-*"
+            else:
+                index = data["index"]
+
             config["data"] = {"auth": "api",
                               "host": data["host"],
                               "port": data["port"],
                               "api": data["api_key"],
-                              "timeout": 600,
-                              "max_records": 500000}
-
+                              "timeout": 900,
+                              "max_records": 0,
+                              "index": index,
+                              "data_type": df["ds_type"]}
         else:
             pass
 
