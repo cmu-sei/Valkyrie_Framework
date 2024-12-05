@@ -1,37 +1,63 @@
-# Beacon Huntress Modules
+![Beacon Huntress](../images/beacon_huntress.png)
+#
+## __Table of Contents__
 
-There are two main modules that can be used for beacon detection data pipeline beacon.py and ingest.py.<br>
-Beacon.py is used for beacon detection. Ingest.py is used for creating the data pipeline. <b><i>Modules should only be used in a Juypter Notebook environment</b></i>.
+>   * [Home](../../../readme.md)
+>   * [Overview](#overview)
+>   * [beacon.py](#beaconpy)
+>       * [agglomerative_clustering()](#agglomerativeclustering)
+>       * [cli_results()](#cliresults)
+>       * [cluster_conns()](#clusterconn)
+>       * [dbscan_clustering()](#dbscanclustering)
+>       * [dbscan_by_variance()](#dbscanbyvariance)
+>       * [get_dns()](#getdns)
+>       * [packet()](#packet)
+>   * [ingest.py](#ingestpy)
+>       * [add_dns()](#adddns)
+>       * [build_bronze_layer()](#buildbronzelayer)
+>       * [build_delta_files()](#builddeltafiles)
+>       * [build_filter_files()](#buildfilterfiles)
+>       * [build_null_files()](#buildnullfiles)
+>       * [build_raw()](#buildraw)
+>       * [convert_parquet_to_csv()](#convertparquettocsv)
+>       * [download_s3_folder()](#downloads3folder)
+>       * [filter_dataframe()](#filterdataframe)
+>       * [get_latest_file()](#getlatestfile)
+>       * [unzip()](#unzip)
 
-## **beacon.py**
+#
+# __Overview__
 
-Beacon module is used to run various beacon detection algorithm against an ingest created deta file. Currently all delta files used within this module must be a parquet file.<br>
+There are two main modules that can be used for the beacon detection data pipeline: beacon.py and ingest.py.<br>
+Beacon.py is used for beacon detection. Ingest.py is used for creating the data pipeline.  <b><i>Modules should only be used in a Juypter Notebook environment</b></i>.
 
-???+ tip "Note"
-    Ensure you have `__pycache__` directory in the location of the beacon.py file.
+# __beacon.py__
 
-### **Import Module**
+The Beacon module is used to run various beacon detection algorithms against an ingest-created delta file. Currently all delta files used within this module must be in Parquet format.<br>
 
+> ### __Note__<br>
+> Ensure that you have the `__pycache__` directory in the same location as the beacon.py file.<br>
+
+
+### __Import Module__
 ```python
 import beacon
 ```
 
 These are the available methods:
 
-- [agglomerative_clustering()](#agglomerativeclustering)
-- [cli_results()](#cliresults)
-- [cluster_conns()](#clusterconn)
-- [dbscan_clustering()](#dbscanclustering)
-- [dbscan_by_variance()](#dbscanbyvariance)
-- [get_dns()](#getdns)
+* [agglomerative_clustering()](#agglomerativeclustering)
+* [cli_results()](#cliresults)
+* [cluster_conns()](#clusterconn)
+* [dbscan_clustering()](#dbscanclustering)
+* [dbscan_by_variance()](#dbscanbyvariance)
+* [get_dns()](#getdns)
 
-???+ tip "Note"
-    Any changes done to the beacon.py module within **JuypterLab** will require a reload of the beacon.py module.<br>
-    
-    Use the code below to reload the beacon.py module.
+> ### __Note__<br>
+> Any changes made to the beacon.py module within __JuypterLab__ will require a reload of the beacon.py module.<br>
+> Use the code below to reload the beacon.py module.
 
-### **Reload Module**
-
+### __Reload Module__
 ```python
 import importlib
 imported_module = importlib.import_module("beacon")
@@ -39,12 +65,12 @@ importlib.reload(imported_module)
 import beacon
 ```
 
-## <a name="agglomerativeclustering"></a>**agglomerative_clustering(\*\*kwargs)**
+# 
+## <a name="agglomerativeclustering"></a>__agglomerative_clustering(**kwargs)__
 
-Run an agglormerative clustering algorithm against a delta file to identify cluster points to be used to find a beacon.<br>
+Run an agglomerative clustering algorithm against a delta file to identify cluster points to be used to find a beacon.<br>
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -63,54 +89,51 @@ request = beacon.agglomerative_clustering(
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __delta_file__ <i>(string)</i> -- __[REQUIRED]__<br>
+Source delta file.<br>
 
-- **delta_file** <i>(string)</i> -- **[REQUIRED]**<br>
-  Source delta file.<br>
+* __delta_column__ <i>(string)</i><br>
+Source delta column that you want to search.  Options (below) are ms = milliseconds and mins = minutes<br>
+__Options__
+    * delta_ms
+    * delta_mins
 
-- **delta_column** <i>(string)</i><br>
-  Source delta column you want to search. Options below, ms = milliseconds and mins = minutes<br>
-  **Options**
-  _ delta_ms
-  _ delta_mins
+* __max_variance__ <i>(float)</i> -- __[REQUIRED]__<br>
+Variance threshold for any potential beacons.<br>
 
-- **max_variance** <i>(float)</i> -- **[REQUIRED]**<br>
-  Variance threshold for any potential beacons.<br>
+* __min_records__ <i>(int)</i> -- __[REQUIRED]__<br>
+Minimum number of delta records to search.<br>
 
-- **min_records** <i>(int)</i> -- **[REQUIRED]**<br>
-  Minimum number of delta records to search.<br>
+* __cluster_factor__ <i>(float)</i> -- __[REQUIRED]__<br>
+The likelihood percentage for a cluster.<br>
 
-- **cluster_factor** <i>(float)</i> -- **[REQUIRED]**<br>
-  The likelihood percentage for a cluster.<br>
+* __line_amounts__ <i>(list)</i> -- __[REQUIRED]__<br>
+Line amounts to process at a time, in list format.<br>
 
-- **line_amounts** <i>(list)</i> -- **[REQUIRED]**<br>
-  Line amounts to process at a time, in list format.<br>
+* __min_delta_time__ <i>(string)</i> -- __[REQUIRED]__<br>
+Minimum delta time to search by, in milliseconds.<br>
 
-- **min_delta_time** <i>(string)</i> -- **[REQUIRED]**<br>
-  Minimum delta time to search by, in milliseconds.<br>
+* __gold_loc__ <i>(string)</i> <br>
+Results file location.  Blank string ("") for no result file<br>
+__Default__ = ""<br>
 
-- **gold_loc** <i>(string)</i> <br>
-  Results file location. Blank string ("") for no result file<br>
-  **Default** = ""<br>
+* __cli_return__ <i>(boolean)</i> <br>
+Return Command Line Interface (CLI) results.  Will display as a print statement and not a return variable.<br>
+__Default__ = True<br>
 
-- **cli_return** <i>(boolean)</i> <br>
-  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
-  **Default** = True<br>
+* __overwrite__ <i>(boolean)</i> <br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i> <br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i> <br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i> <br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 Gold file (string)
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -128,12 +151,12 @@ gold_file = beacon.agglomerative_clustering(
 print(gold_file)
 ```
 
-## <a name="cliresults"></a>**cli_results(\*\*kwargs)**
+# 
+## <a name="cliresults"></a>__cli_results(**kwargs)__
 
-Return Command Line Interface (CLI) results from a gold file. Results will be printed to the screen.
+Return Command Line Interface (CLI) results from a gold file.  Results will be printed to the screen.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -143,21 +166,18 @@ request = beacon.cli_results(
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __gold_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Gold file location.<br>
 
-- **gold_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Gold file location.<br>
+* __file_type__ <i>(string)</i> --__[REQUIRED]__<br>
+Gold file type (CSV or Parquet).<br>
+__Default__ = "parquet"<br>
 
-- **file_type** <i>(string)</i> --**[REQUIRED]**<br>
-  Gold file type (csv or parquet).<br>
-  **Default** = "parquet"<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -166,12 +186,12 @@ beacon.cli_results(
 )
 ```
 
-## <a name="clusterconn"></a>**cluster_conns(\*\*kwargs)**
+# 
+## <a name="clusterconn"></a>__cluster_conns(**kwargs)__
 
-Return Command Line Interface (CLI) results from a gold file. Results will be printed to the screen.
+Return Command Line Interface (CLI) results from a gold file.  Results will be printed to the screen.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -188,48 +208,46 @@ request = beacon.cluster_conns(
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __delta_file__ <i>(string)</i> -- __[REQUIRED]__<br>
+Source delta file.<br>
 
-- **delta_file** <i>(string)</i> -- **[REQUIRED]**<br>
-  Source delta file.<br>
+* __delta_column__ <i>(string)</i> --__[REQUIRED]__<br>
+Source delta column that you want to search.<br>
 
-- **delta_column** <i>(string)</i> --**[REQUIRED]**<br>
-  Source delta column you want to search.<br>
+* __conn_cnt__ <i>(int)</i><br>
+Total connection count for a group. Greater than or equal (>=).<br>
+__Default__ = 10<br>
 
-- **conn_cnt** <i>(int)</i><br>
-  Total connection count for a group. Greater than equal (>=).<br>
-  **Default** = 10<br>
+* __conn_group__ <i>(int)</i><br>
+Total number of connection groups. Greater than or equal (>=).<br>
+__Default__ = 5<br>
 
-- **conn_group** <i>(int)</i><br>
-  Total number of connections groups. Greater than equal (>=).<br>
-  **Default** = 5<br>
+* __threshold__ <i>(int)</i><br>
+The time threshold in minutes when determining connection groups.<br>
+__Default__ = 60<br>
 
-- **threshold** <i>(int)</i><br>
-  The time threshold in minutes when determining connection groups.<br>
-  **Default** = 60<br>
+* __gold_loc__ <i>(string)</i><br>
+Results file location.  Blank string ("") for no result file<br>
+__Default__ = ""<br>
 
-- **gold_loc** <i>(string)</i><br>
-  Results file location. Blank string ("") for no result file<br>
-  **Default** = ""<br>
+* __cli_return__ <i>(boolean)</i> <br>
+Return Command Line Interface (CLI) results.  Will display as a print statement and not a return variable.<br>
+__Default__ = True<br>
 
-- **cli_return** <i>(boolean)</i> <br>
-  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
-  **Default** = True<br>
+* __overwrite__ <i>(boolean)</i><br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i><br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
 
-### **Returns**
-
+### __Returns__
 Gold file (string)
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -248,12 +266,12 @@ gold_file = beacon.cluster_conns(
 print(gold_file)
 ```
 
-## <a name="dbscanclustering"></a>**dbscan_clustering(\*\*kwargs)**
+# 
+## <a name="dbscanclustering"></a>__dbscan_clustering(**kwargs)__
 
 Run a DBSCAN cluster algorithm against a delta file to identify cluster points to be used to find a beacon.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -267,57 +285,54 @@ request = beacon.dbscan_clustering(
     gold_loc = "string",
     cli_return = True|False,
     overwrite = True|False,
-    verbose = True|False
+    verbose = True|False    
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __delta_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source delta file.<br>
 
-- **delta_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source delta file.<br>
+* __delta_column__ <i>(string)</i> --__[REQUIRED]__<br>
+Source delta column that you want to search.<br>
 
-- **delta_column** <i>(string)</i> --**[REQUIRED]**<br>
-  Source delta column you want to search.<br>
+* __minimum_delta__ <i>(int)</i> --__[REQUIRED]__<br>
+Minimum number of delta records to search using your delta column.<br>
 
-- **minimum_delta** <i>(int)</i> --**[REQUIRED]**<br>
-  Minimum number of delta records to search using your delta column.<br>
+* __spans__ <i>(list)</i> <br>
+Spans of time that you wish to search, in list format.<br>
+<i>Example: Will search within two time spans, 0-5 min and 5-10 min.<br>
+    <t>[[0, 5], [5, 10]]</i><br>
+__Default__ = []<br>
 
-- **spans** <i>(list)</i> <br>
-  Spans you wish to search, in list format. Minimum number of delta records to search using your delta column.<br>
-  <i>EXAMPLE: Will search two spans 0-5 and 5-10.<br>
-  <t>[[0, 5], [5, 10]]</i><br>
-  **Default** = []<br>
+* __minimum_points_in_cluster__ <i>(int)</i><br>
+Destination file type (CSV or Parquet).<br>
+__Default__ = 4<br>
 
-- **minimum_points_in_cluster** <i>(int)</i><br>
-  Destination file type (csv or parquet).<br>
-  **Default** = 4<br>
+* __minimum_likelihood__ <i>(float)</i> <br>
+Likelihood value (threshold) used to identify a potential beacon.<br>
+__Default__ = .70<br>
 
-- **minimum_likelihood** <i>(float)</i> <br>
-  Minimum likelihood value to identify a beacon.<br>
-  **Default** = .70<br>
+* __gold_loc__ <i>(string)</i><br>
+Results file location.  Blank string ("") for no result file<br>
+__Default__ = ""<br>
 
-- **gold_loc** <i>(string)</i><br>
-  Results file location. Blank string ("") for no result file<br>
-  **Default** = ""<br>
+* __cli_return__ <i>(boolean)</i> <br>
+Return Command Line Interface (CLI) results.  Will display as a print statement and not a return variable.<br>
+__Default__ = True<br>
 
-- **cli_return** <i>(boolean)</i> <br>
-  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
-  **Default** = True<br>
+* __overwrite__ <i>(boolean)</i><br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i><br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 Gold file (string)
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -329,18 +344,18 @@ gold_file = beacon.dbscan_clustering(
     minimum_points_in_cluster = 4,
     minimum_likelihood = 0.70,
     gold_loc = "/tmp/gold/beacon/dbscan",
-    cli_return = False
+    cli_return = False  
 )
 
 print(gold_file)
 ```
 
-## <a name="dbscanbyvariance"></a>**dbscan_by_variance(\*\*kwargs)**
+#
+## <a name="dbscanbyvariance"></a>__dbscan_by_variance(**kwargs)__
 
-Run a DBSCAN cluster by filtering out records by delta variance percentage and average delta time. Source delta file must be in parquet format.
+Run a DBSCAN cluster by filtering out records by delta variance percentage and average delta time.  Source delta file must be in Parquet format.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -355,60 +370,57 @@ request = beacon.dbscan_by_variance(
     gold_loc = "string",
     cli_return = True|False,
     overwrite = True|False,
-    verbose = True|False
+    verbose = True|False    
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __delta_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source delta file.<br>
 
-- **delta_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source delta file.<br>
+* __delta_column__ <i>(string)</i> --__[REQUIRED]__<br>
+Source delta column that you want to search.<br>
 
-- **delta_column** <i>(string)</i> --**[REQUIRED]**<br>
-  Source delta column you want to search.<br>
+* __avg_delta__ <i>(int)</i> --__[REQUIRED]__<br>
+Average delta time to include in the search using your delta column. Less than or equal (<=).<br>
 
-- **avg_delta** <i>(int)</i> --**[REQUIRED]**<br>
-  Average delta time to include in the search using your delta column. Greater than equal (>=).<br>
+* __conn_cnt__ <i>(int)</i><br>
+Total connection count for filtering. Greater than or equal (>=).<br>
+__Default__ = 4<br>
 
-- **conn_cnt** <i>(int)</i><br>
-  Total connection count for filtering. Greater than equal (>=).<br>
-  **Default** = 4<br>
+* __span_avg__ <i>(int)</i> <br>
+The percentage to increase and decrease from the connections total delta span.<br>
+<i>Example: 15 will increase/decrease the minimum and maximum of the delta span by 15%.<br>
+    <t>delta min = 5<br>
+    <t>delta max = 10<br>
+    <t>span min = 4.25 (5 - (5 * 15%))<br>
+    <t>span max = 11.5 (10 + (10 * 15%))</i><br>
+__Default__ = 15<br>
 
-- **span_avg** <i>(int)</i> <br>
-  The percentage to increase and decrease from the connections total delta span.<br>
-  <i>EXAMPLE: 15 will decrease 15% from the minimum and maximum delta span.<br>
-  <t>min delta = 5<br>
-  <t>max delta = 10<br>
-  <t>span min = 4.25 (5 - (5 _ 15%))<br>
-  <t>span max = 11.5 (10 + (10 _ 15%))</i><br>
-  **Default** = 15<br>
+* __variance_per__ <i>(int)</i><br>
+Total variance percentage for filtering. Greater than or equal (>=).<br>
+__Default__ = 4<br>
 
-- **variance_per** <i>(int)</i><br>
-  Total variance perctage for filtering. Greater than equal (>=).<br>
-  **Default** = 4<br>
+* __gold_loc__ <i>(string)</i><br>
+Results file location.  Blank string ("") for no result file<br>
+__Default__ = ""<br>
 
-- **gold_loc** <i>(string)</i><br>
-  Results file location. Blank string ("") for no result file<br>
-  **Default** = ""<br>
+* __cli_return__ <i>(boolean)</i> <br>
+Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
+__Default__ = True<br>
 
-- **cli_return** <i>(boolean)</i> <br>
-  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
-  **Default** = True<br>
+* __overwrite__ <i>(boolean)</i> <br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i> <br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 Gold file (string)
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -427,12 +439,12 @@ gold_file = beacon.dbscan_by_variance(
 print(gold_file)
 ```
 
-## <a name="getdns"></a>**get_dns(\*\*kwargs)**
+# 
+## <a name="getdns"></a>__get_dns(**kwargs)__
 
-Lookup DNS record for an IP.
+Look up a DNS record for an IP.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -441,18 +453,15 @@ request = beacon.get_dns(
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __ip__ <i>(list)</i> --__[REQUIRED]__<br>
+IP for which you want to look up a DNS entry.<br>
+__Default__ = None<br>
 
-- **ip** <i>(list)</i> --**[REQUIRED]**<br>
-  IP you want to lookup DNS entry.<br>
-  **Default** = None<br>
-
-### **Returns**
-
+### __Returns__
 DNS Value (string)
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -463,12 +472,12 @@ dns = beacon.get_dns(
 print(dns)
 ```
 
-## <a name="packet"></a>**packet(\*\*kwargs)**
+# 
+## <a name="packet"></a>__packet(**kwargs)__
 
 Run a Beacon search by packet size uniqueness.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import beacon
 
@@ -485,51 +494,49 @@ request = beacon.packet(
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __delta_file__ <i>(string)</i> -- __[REQUIRED]__<br>
+Source delta file.<br>
 
-- **delta_file** <i>(string)</i> -- **[REQUIRED]**<br>
-  Source delta file.<br>
+* __delta_column__ <i>(string)</i> --__[REQUIRED]__<br>
+Source delta column that you want to search.<br>
 
-- **delta_column** <i>(string)</i> --**[REQUIRED]**<br>
-  Source delta column you want to search.<br>
+* __avg_delta__ <i>(int)</i> --__[REQUIRED]__<br>
+Average delta time to include in the search using your delta column. Less than or equal (<=).<br>
 
-- **avg_delta** <i>(int)</i> --**[REQUIRED]**<br>
-  Average delta time to include in the search using your delta column. Greater than equal (>=).<br>
+* __conn_cnt__ <i>(int)</i><br>
+Total connection count for a group. Greater than or equal (>=).<br>
+__Default__ = 5<br>
 
-- **conn_cnt** <i>(int)</i><br>
-  Total connection count for a group. Greater than equal (>=).<br>
-  **Default** = 5<br>
+* __min_unique_percent__ <i>(int)</i><br>
+Lowest packet uniqueness as a percentage. For instance, if you have 10 connections with 9 of them being the same packet size, your unique package size is 10%.<br>
+__Default__ = 5<br>
 
-- **min_unique_percent** <i>(int)</i><br>
-  Lowest packet uniqueness in percentage. For instance if you have 10 connections with 9 of them being the same packet size,\nyour unique package size is 10%.<br>
-  **Default** = 5<br>
+* __threshold__ <i>(int)</i><br>
+The time threshold in minutes for determining connection groups.<br>
+__Default__ = 60<br>
 
-- **threshold** <i>(int)</i><br>
-  The time threshold in minutes when determining connection groups.<br>
-  **Default** = 60<br>
+* __gold_loc__ <i>(string)</i><br>
+Results file location.  Blank string ("") for no result file<br>
+__Default__ = ""<br>
 
-- **gold_loc** <i>(string)</i><br>
-  Results file location. Blank string ("") for no result file<br>
-  **Default** = ""<br>
+* __cli_return__ <i>(boolean)</i> <br>
+Return Command Line Interface (CLI) results.  Will display as a print statement and not a return variable.<br>
+__Default__ = True<br>
 
-- **cli_return** <i>(boolean)</i> <br>
-  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
-  **Default** = True<br>
+* __overwrite__ <i>(boolean)</i><br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i><br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
 
-### **Returns**
-
+### __Returns__
 Gold file (string)
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import beacon
 
@@ -548,15 +555,16 @@ gold_file = beacon.packet(
 print(gold_file)
 ```
 
-## **ingest.py**
 
-Below is how to load the ingest.py module. Ensure you have `__pycache__` directory in the location of the ingest.py file.
+# **ingest.py**
+
+Below are the steps for loading the ingest.py module. Ensure that you have the `__pycache__` directory in the same location as the ingest.py file.
 
 ```python
 import ingest
 ```
 
-Any changes done to the ingest.py module within JuypterLab will require a reload of the ingest.py module. Use the code below to reload the ingest.py module.
+Any changes done to the ingest.py module within JuypterLab will require a reload of the ingest.py module.  Use the code below to reload the ingest.py module.
 
 ```python
 import importlib
@@ -567,24 +575,25 @@ import ingest
 
 These are the available methods:
 
-- [add_dns()](#adddns)
-- [build_bronze_layer()](#buildbronzelayer)
-- [build_delta_files()](#builddeltafiles)
-- [build_filter_files()](#buildfilterfiles)
-- [build_null_files()](#buildnullfiles)
-- [build_raw()](#buildraw)
-- [convert_parquet_to_csv()](#convertparquettocsv)
-- [download_s3_folder()](#downloads3folder)
-- [filter_dataframe()](#filterdataframe)
-- [get_latest_file()](#getlatestfile)
-- [unzip()](#unzip)
+* [add_dns()](#adddns)
+* [build_bronze_layer()](#buildbronzelayer)
+* [build_delta_files()](#builddeltafiles)
+* [build_filter_files()](#buildfilterfiles)
+* [build_null_files()](#buildnullfiles)
+* [build_raw()](#buildraw)
+* [convert_parquet_to_csv()](#convertparquettocsv)
+* [download_s3_folder()](#downloads3folder)
+* [filter_dataframe()](#filterdataframe)
+* [get_latest_file()](#getlatestfile)
+* [unzip()](#unzip)
 
-## <a name="adddns"></a>**add_dns(\*\*kwargs)**
 
-Add source and destination DNS entries to file/s based upon a whitlist parquet file, or Pandas DataFrame. Both the source and destination files need to be in parquet format.
+#
+## <a name="adddns"></a>__add_dns(**kwargs)__
 
-### **Request Syntax**
+Add source and destination DNS entries to file(s) based upon a whitelist Parquet file or Pandas DataFrame. Both the source and destination files need to be in Parquet format.
 
+### __Request Syntax__
 ```python
 import ingest
 
@@ -592,42 +601,39 @@ request = ingest.add_dns(
     src_file = "string",
     dest_loc = "string",
     file_type = "string",
-    dns_file = "string"
+    dns_file = "string" 
     dns_df = Pandas_DataFrame,
     verbose = True|False
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __src_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source folder or file location.<br>
 
-- **src_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source folder or file location.<br>
+* __dest_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination folder or file location.<br>
 
-- **dest_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination folder or file location.<br>
+* __file_type__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination file type (CSV or Parquet).<br>
+<i>Parquet format recommended!</i>
 
-- **file_type** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination file type (csv or parquet).<br>
-  <i>Parquet format recommended!</i>
+* __dns_file__ <i>(string)</i> <br>
+Source DNS lookup file. A blank string is the default. The lookup file must be in Parquet format.<br>
+__Default__ = ""<br>
 
-- **dns_file** <i>(string)</i> <br>
-  Source DNS lookup file. A blank string is default. The lookup file must be in parquet format.<br>
-  **Default** = ""<br>
+* __dns_df__ <i>(Pandas DataFrame)</i> <br>
+Source DNS Pandas DataFrame. A blank string is the default.<br>
+__Default__ = ""<br>
 
-- **dns_df** <i>(Pandas DataFrame)</i> <br>
-  Source DNS Pandas DataFrame. A blank string is default.<br>
-  **Default** = ""<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -635,28 +641,28 @@ import ingest
 ingest.add_dns(
     src_file = "/tmp/source_files",
     dest_loc = "/tmp/dest_files",
-    dns_file = "/tmp/whitelist/whitelist_ip.parquet"
+    dns_file = "/tmp/whitelist/whitelist_ip.parquet" 
 )
 
 # Single File
 ingest.add_dns(
     src_file = "/tmp/source_files/source_file.parquet",
     dest_loc = "/tmp/dest_files",
-    dns_file = "/tmp/whitelist/whitelist_ip.parquet"
+    dns_file = "/tmp/whitelist/whitelist_ip.parquet" 
 )
 ```
 
-## <a name="buildbronzelayer"></a>**build_bronze_layer(\*\*kwargs)**
+#
+## <a name="buildbronzelayer"></a>__build_bronze_layer(**kwargs)__
 
-Create a bronze data layer for a source folder location. Bronze data will tcp data only and will include source and destination DNS.
+Create a bronze data layer for a source folder location. Bronze data will contain TCP data only and will include both source and destination DNS.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
 request = ingest.build_bronze_layer(
-    src_loc = "string",
+    src_loc = "string", 
     bronze_loc = "string",
     dns_file = "string",
     overwrite = True|False,
@@ -664,50 +670,48 @@ request = ingest.build_bronze_layer(
 )
 ```
 
-### **Parameters**
+### __Parameters__
+* __src_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Raw source folder location.<br>
 
-- **src_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Raw source folder location.<br>
+* __bronze_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+Bronze layer folder location. The destination location for all bronze files.<br>
 
-- **bronze_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  Bronze layer folder location. The destination location for all bronze files<br>
+* __dns_file__ <i>(string)</i> <br>
+Source DNS lookup file. The lookup file must be in Parquet format.<br>
 
-- **dns_file** <i>(string)</i> <br>
-  Source DNS lookup file. The lookup file must be in parquet format.<br>
+* __overwrite__ (boolean) <br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** (boolean) <br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
+### __Example Run__
 
 ```python
 import ingest
 
 ingest.build_bronze_layer(
-    src_loc="/tmp/source/",
+    src_loc="/tmp/source/", 
     bronze_loc="/tmp/bronze/zeek/raw/parquet/2022/04/22",
-    dns_file = "/tmp/whitelist/whitelist_ip.parquet"
+    dns_file = "/tmp/whitelist/whitelist_ip.parquet" 
     )
 ```
 
-## <a name="builddeltafiles"></a>**build_delta_files(\*\*kwargs)**
+#
+## <a name="builddeltafiles"></a>__build_delta_files(**kwargs)__
 
-Create a delta file from a parquet folder location or file. Current unit of measuements are milliseconds and minutes. Source and destination files must be parquet. <br>
+Create a delta file from a Parquet folder location or file. Current units of measurement are milliseconds and minutes. Source and destination files must be in Parquet format. <br>
 
-> **Note**<br>
-> Destination file are named <i>delta_epochtime.parquet</i>.
+> __Note__<br>
+> Destination files are named <i>delta_epochtime.parquet</i>.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
@@ -719,29 +723,26 @@ request = ingest.build_delta_files(
     )
 ```
 
-### **Parameters**
+### __Parameters__
+* __src_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source folder or file location.<br>
 
-- **src_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source folder or file location.<br>
+* __delta_file_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination folder or file location for delta files.<br>
 
-- **delta_file_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination folder or file location for delta files.<br>
+* __delta_file_type__ <i>(string)</i><br>
+Destination file type (CSV or Parquet).<br>
+<i>Parquet format is recommended!</i><br>
+__Default__ = parquet<br>
 
-- **delta_file_type** <i>(string)</i><br>
-  Destination file type (csv or parquet).<br>
-  <i>Parquet format is recommended!</i><br>
-  **Default** = parquet<br>
+* __overwrite__ <i>(boolean)</i> <br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i> <br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -751,12 +752,12 @@ ingest.build_delta_files(
     )
 ```
 
-## <a name="buildfilterfiles"></a>**build_filter_files(\*\*kwargs)**
+#
+## <a name="buildfilterfiles"></a>__build_filter_files(**kwargs)__
 
-Create filtered files by searching for Ports, Source/Destination IPs or DNS entries. A default metadata.json will be created for historical filter identification purposes.
+Create filtered files by searching for Ports, Source/Destination IPs or DNS entries. A default metadata.json will be created for historical filter identification purposes.  
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
@@ -777,110 +778,107 @@ request = ingest.build_filter_files(
     match_exclude = True|False,
     file_type = "string",
     overwrite = True|False,
-    verbose = True|False
+    verbose = True|False    
     )
 ```
 
-### **Parameters**
+### __Parameters__
+* __src_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source folder location.<br>
 
-- **src_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source folder location.<br>
+* __dest_file__ <i>(string)</i><br>
+Destination file location for filters.<br>
+Use a unique folder name at the end to identify your filter - a data folder will be appended automatically.<br>
+__Default__ = ""<br>
 
-- **dest_file** <i>(string)</i><br>
-  Destination file location for filters.<br>
-  Use a unique folder name at the end to identify your filter, a data folder will appended automatically.<br>
-  **Default** = ""<br>
+* __port_filter__ <i>(list)</i><br>
+Ports that you want to filter by, in a list format.  __Inclusive results only__.<br>
+__Default__ = None<br>
 
-- **port_filter** <i>(list)</i><br>
-  Ports you want to filter by in a list format. **Inclusive results only**.<br>
-  **Default** = None<br>
+* __port_exclude__ <i>(boolean)</i><br>
+Exclusive or inclusive search on port_filter values.  __True or False (case-sensitive)__.<br>
+Exclusive = True (not in)<br>
+Inclusive = False (in)<br>
+__Default__ = False<br>
 
-- **port_exclude** <i>(boolean)</i><br>
-  Exclusive or inclusive search on port_filter values. **True or False (case-sensistive)**.<br>
-  Exclusive = True (not in)<br>
-  Inclusive = False (in)<br>
-  **Default** = False<br>
+* __src_filter__ <i>(list)</i><br>
+Source IP that you want to filter by, in a list format.<br>
+__Default search__ will look for items equal to match.<br>
+Use of a wildcard (*) will perform a wildcard search.<br>
+__Default__ = None<br>
 
-- **src_filter** <i>(list)</i><br>
-  Source IP you want to filter by, in a list format.<br>
-  **Default search** with look for items ending with the item. **Equal to match**.<br>
-  Use of a wildcard (\*) will perform a wildcard search.<br>
-  **Default** = None<br>
+* __src_exclude__ <i>(boolean)</i><br>
+Exclusive or inclusive search on src_filter values.  __True or False (case-sensitive)__.<br>
+Exclusive = True (not in)<br>
+Inclusive = False (in)<br>
+__Default__ = True<br>
 
-- **src_exclude** <i>(boolean)</i><br>
-  Exclusive or inclusive search on src_filter values. **True or False (case-sensistive)**.<br>
-  Exclusive = True (not in)<br>
-  Inclusive = False (in)<br>
-  **Default** = True<br>
+* __dest_filter__ <i>(list)</i><br>
+Destination DNS that you want to filter by, in a list format.<br>
+__Default search__ will look for items equal to match.<br>
+Use of a wildcard (*) will perform a wildcard search.<br>
+__Default__ = None<br>
 
-- **dest_filter** <i>(list)</i><br>
-  Destination DNS you want to filter by, in a list format.<br>
-  **Default search** with look for items ending with the item. **Equal to match**.<br>
-  Use of a wildcard (\*) will perform a wildcard search.<br>
-  **Default** = None<br>
+* __dest_exclude__ <i>(boolean)</i><br>
+Exclusive or inclusive search on dest_filter values.  __True or False (case-sensitive)__.<br>
+Exclusive = True (not in)<br>
+Inclusive = False (in)<br>
+__Default__ = True<br>
 
-- **dest_exclude** <i>(boolean)</i><br>
-  Exclusive or inclusive search on dest_filter values. **True or False (case-sensistive)**.<br>
-  Exclusive = True (not in)<br>
-  Inclusive = False (in)<br>
-  **Default** = True<br>
+* __s_dns_filter__ <i>(list)</i><br>
+Source DNS that you want to filter by, in a list format.<br>
+__Default search__ will look for items equal to match.<br>
+Use of a wildcard (*) will perform a wildcard search.<br>
+__Default__ = None<br>
 
-- **s_dns_filter** <i>(list)</i><br>
-  Source DNS you want to filter by, in a list format.<br>
-  **Default search** with look for items ending with the item. **Equal to match**.<br>
-  Use of a wildcard (\*) will perform a wildcard search.<br>
-  **Default** = None<br>
+* __s_dns_exclude__ <i>(boolean)</i><br>
+Exclusive or inclusive search on s_dns_filter values.  __True or False (case-sensitive)__.<br>
+Exclusive = True (not in)<br>
+Inclusive = False (in)<br>
+__Default__ = True<br>
 
-- **s_dns_exclude** <i>(boolean)</i><br>
-  Exclusive or inclusive search on s_dns_filter values. **True or False (case-sensistive)**.<br>
-  Exclusive = True (not in)<br>
-  Inclusive = False (in)<br>
-  **Default** = True<br>
+* __d_dns_filter__ <i>(list)</i><br>
+Destination DNS that you want to filter by, in a list format.<br>
+__Default search__ will look for items equal to match.<br>
+Use of a wildcard (*) will perform a wildcard search.<br>
+__Default__ = None<br>
 
-- **d_dns_filter** <i>(list)</i><br>
-  Destination DNS you want to filter by, in a list format.<br>
-  **Default search** with look for items ending with the item. **Equal to match**.<br>
-  Use of a wildcard (\*) will perform a wildcard search.<br>
-  **Default** = None<br>
+* __d_dns_exclude__ <i>(boolean)</i><br>
+Exclusive or inclusive search on d_dns_filter values.  __True or False (case-sensitive)__.<br>
+Exclusive = True (not in)<br>
+Inclusive = False (in)<br>
+__Default__ = True<br>
 
-- **d_dns_exclude** <i>(boolean)</i><br>
-  Exclusive or inclusive search on d_dns_filter values. **True or False (case-sensistive)**.<br>
-  Exclusive = True (not in)<br>
-  Inclusive = False (in)<br>
-  **Default** = True<br>
+* __match_filter__ <i>(list)</i><br>
+Source and Destination DNS that you want to filter by, in a list format.<br>
+__Default search__ will look for items equal to match.<br>
+Use of a wildcard (*) will perform a wildcard search.<br>
+__In order to match, objects must be in both source and destination__.<br>
+__Default__ = None<br>
 
-- **match_filter** <i>(list)</i><br>
-  Source and Destination DNS you want to filter by, in a list format.<br>
-  **Default search** with look for items ending with the item. **Equal to match**.<br>
-  Use of a wildcard (\*) will perform a wildcard search.<br>
-  **In order for a match objects must be in both source and destination**.<br>
-  **Default** = None<br>
+* __match_exclude__ <i>(boolean)</i><br>
+Exclusive or inclusive search on match_filter values.  __True or False (case-sensitive)__.<br>
+Exclusive = True (not in)<br>
+Inclusive = False (in)<br>
+__Default__ = True<br>
 
-- **match_exclude** <i>(boolean)</i><br>
-  Exclusive or inclusive search on match_filter values. **True or False (case-sensistive)**.<br>
-  Exclusive = True (not in)<br>
-  Inclusive = False (in)<br>
-  **Default** = True<br>
+* __file_type__ <i>(string)</i> <br>
+Destination file types. Parquet or CSV.<br>
+<i>Parquet format is recommended!</i><br>
+__Default__ = parquet<br>
 
-- **file_type** <i>(string)</i> <br>
-  Destination file types. Parquet or CSV.<br>
-  <i>Parquet format is recommended!</i><br>
-  **Default** = parquet<br>
+* __overwrite__ <i>(boolean)</i> <br>
+Overwrite existing location.  __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i> <br>
-  Overwrite existing location. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -889,18 +887,18 @@ import ingest
 # EXAMPLE IPS WILL BE REMOVED.
 ingest.build_filter_files(
     src_loc = "/tmp/source",
-    dest_file = "/tmp/dest/filtered/test_filter"
+    dest_file = "/tmp/dest/filtered/test_filter" 
     port_filter = [80, 443],
     src_filter = ["127.0.0.1", "9.9.9.9"],
     dest_filter = ["127.0.0.1", "9.9.9.9"])
 ```
 
-## <a name="buildnullfiles"></a>**build_null_files(\*\*kwargs)**
+#
+## <a name="buildnullfiles"></a>__build_null_files(**kwargs)__
 
-Create files with NULL DNS entries filter files.
+Create filter files with NULL DNS entries.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
@@ -912,29 +910,26 @@ request = ingest.build_null_files(
     )
 ```
 
-### **Parameters**
+### __Parameters__
+* __src_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source folder or file location.<br>
 
-- **src_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source folder or file location.<br>
+* __dest_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination folder location.<br>
 
-- **dest_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination folder location.<br>
+* __overwrite__ <i>(boolean)</i> <br>
+Overwrite existing location.  __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i> <br>
-  Overwrite existing location. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __file_type__ <i>(string)</i> <br>
+Destination file types. Parquet or CSV.<br>
+<i>Parquet format is recommended!</i><br>
+__Default__ = parquet<br>
 
-- **file_type** <i>(string)</i> <br>
-  Destination file types. Parquet or CSV.<br>
-  <i>Parquet format is recommended!</i><br>
-  **Default** = parquet<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -943,12 +938,12 @@ ingest.build_null_files(
     dest_loc = "/tmp/filtered/no_match")
 ```
 
-## <a name="buildraw"></a>**build_raw(\*\*kwargs)**
+#
+## <a name="buildraw"></a>__build_raw(**kwargs)__
 
-Build inital parquet file from raw json zeek file. To be used only for single files. Use [build_bronze_layer()](#buildbronzelayer) for folder level processing.
+Build initial Parquet file from raw JSON Zeek file. To be used only for single files. Use [build_bronze_layer()](#buildbronzelayer) for folder-level processing.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
@@ -960,28 +955,25 @@ ingest.build_raw(
     )
 ```
 
-### **Parameters**
+### __Parameters__
+* __src_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source file.<br>
 
-- **src_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source file.<br>
+* __dest_parquet_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination Parquet file.<br>
 
-- **dest_parquet_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination parquet file.<br>
+* __overwrite__ <i>(boolean)</i> <br>
+Overwrite existing files. __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **overwrite** <i>(boolean)</i> <br>
-  Overwrite existing files. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -991,12 +983,12 @@ ingest.build_raw(
     )
 ```
 
-## <a name="convertparquettocsv"></a>**convert_parquet_to_csv(\*\*kwargs)**
+#
+## <a name="convertparquettocsv"></a>__convert_parquet_to_csv(**kwargs)__
 
-Create a csv file from a parquet file.
+Create a CSV file from a Parquet file.
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
@@ -1006,20 +998,17 @@ request = ingest.convert_parquet_to_csv(
     )
 ```
 
-### **Parameters**
+### __Parameters__
+* __par_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source Parquet file.<br>
 
-- **par_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source parquet file.<br>
+* __csv_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination CSV file.<br>
 
-- **csv_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination CSV file.<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -1029,12 +1018,12 @@ ingest.convert_parquet_to_csv(
     )
 ```
 
-## <a name="downloads3folder"></a>**download_s3_folder(\*\*kwargs)**
+#
+## <a name="downloads3folder"></a>__download_s3_folder(**kwargs)__
 
-Download a AWS s3 folder to a local folder. <i>**Must have a AWS CLI Profile configured**</i>.<br>
+Download an AWS S3 folder to a local folder.  <i>__Must have an AWS CLI Profile configured__</i>.<br>
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -1045,24 +1034,21 @@ request = ingest.download_s3_folder(
     )
 ```
 
-### **Parameters**
+### __Parameters__
+* __s3_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+S3 folder location.<br>
 
-- **s3_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  s3 folder location.<br>
+* __local_dest__ <i>(string)</i> --__[REQUIRED]__<br>
+Local destination folder.<br>
 
-- **local_dest** <i>(string)</i> --**[REQUIRED]**<br>
-  Local destination folder.<br>
+* __profile__ <i>(string)</i><br>
+AWS CLI Profile name.<br>
+__Default__ = default<br>
 
-- **profile** <i>(string)</i><br>
-  AWS CLI Profile name.
-  **Default** = default<br>
-
-### **Returns**
-
+### __Returns__
 None
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -1071,19 +1057,19 @@ ingest.download_s3_folder(
     csv_file = "/tmp/bucketname/foldername")
 ```
 
-## <a name="filterdataframe"></a>**filter_dataframe(\*\*kwargs)**
+#
+## <a name="filterdataframe"></a>__filter_dataframe(**kwargs)__
 
-Filter a Zeek Pandas dataframe for matching values. Returns a Pandas Dataframe.<br>
+Filter a Zeek Pandas Dataframe for matching values. Returns a Pandas Dataframe.<br>
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
 request = ingest.filter_dataframe(
-    df = Pandas_DataFrame,
-    filter_vals = [ "string", ],
-    filter_column = "string",
+    df = Pandas_DataFrame, 
+    filter_vals = [ "string", ], 
+    filter_column = "string", 
     filter_type = "string",
     ret_org = True|False,
     verbose = True|False
@@ -1091,63 +1077,62 @@ request = ingest.filter_dataframe(
 
 ```
 
-### **Parameters**
+### __Parameters__
+* __df__ <i>(pandas dataframe)</i> --__[REQUIRED]__<br>
+Pandas Dataframe.<br>
 
-- **df** <i>(pandas dataframe)</i> --**[REQUIRED]**<br>
-  Pandas Dataframe.<br>
+* __filter_vals__ <i>(list)</i> --__[REQUIRED]__<br>
+Values that you want to filter by, in a list format.<br>
 
-- **filter_vals** <i>(list)</i> --**[REQUIRED]**<br>
-  Values you want to filter by, in a list format.<br>
-  **String values search types**<br>
-  **Default search** with look for items ending with the item. **Equal to match**.<br>
-  Use of a wildcard (\*) will perform a wildcard search.<br>
+    __String values search types:__<br>
+    __Default search__ will look for items equal to match.<br>
+    Use of a wildcard (*) will perform a wildcard search.<br>
 
-- **filter_column** <i>(string)</i> --**[REQUIRED]**<br>
-  Pandas DataFrame column you want to search by. **Case sensistive**.<br>
-  **Valid Options**<br>
-  _ community_id <br>
-  _ conn\*state <br>
+* __filter_column__ <i>(string)</i> --__[REQUIRED]__<br>
+Pandas DataFrame column that you want to search by.  __Case sensitive__.<br>
 
-  - duration <br>
-    _ history <br>
-    _ id.orig\*h <br>
-  - id.orig\*p <br>
-  - id.resp\*h <br>
-  - id.resp\*p <br>
-  - local\*orig <br>
-  - local\*resp <br>
-  - missed\*bytes <br>
-  - orig\*bytes <br>
-  - orig\*ip_bytes <br>
-  - orig\*pkts <br>
-  - proto <br>
-    _ resp_bytes <br>
-    _ resp\*ip_bytes <br>
-  - resp\*pkts <br>
-  - service <br>
-    \_ ts <br> \* uid <br>
-    <br>
+    __Valid Options__<br>
+        * community_id <br>
+        * conn_state <br>
+        * duration <br>
+        * history <br>
+        * id.orig_h <br>
+        * id.orig_p <br>
+        * id.resp_h <br>
+        * id.resp_p <br>
+        * local_orig <br>
+        * local_resp <br>
+        * missed_bytes <br>
+        * orig_bytes <br>
+        * orig_ip_bytes <br>
+        * orig_pkts <br>
+        * proto <br>
+        * resp_bytes <br>
+        * resp_ip_bytes <br>
+        * resp_pkts <br>
+        * service <br>
+        * ts <br>
+        * uid <br>
+<br>
+* __filter_type__ <i>(string)</i> --__[REQUIRED]__<br>
+The type of filter that you are using.<br>
+__Valid Options__<br>
+    * int (integer)<br>
+    * string (string)<br>
+    * match (matching Source and Destination DNS values)<br>
 
-- **filter_type** <i>(string)</i> --**[REQUIRED]**<br>
-  The type of filter you are using.<br>
-  **Valid Options**<br>
-  _ int (integer)<br>
-  _ string (string)<br> \* match (Matching Source and Destination DNS values)<br>
+* __ret_org__ <i>(boolean)</i><br>
+Return original dataframe if no results gathered.  __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **ret_org** <i>(boolean)</i><br>
-  Return original dataframe if no results gathered. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
+* __verbose__ <i>(boolean)</i><br>
+Verbose logging.   __True or False (case-sensitive)__.<br>
+__Default__ = False<br>
 
-- **verbose** <i>(boolean)</i><br>
-  Verbose logging. **True or False (case-sensistive)**.<br>
-  **Default** = False<br>
-
-### **Returns**
-
+### __Returns__
 Pandas Dataframe
 
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 import pandas as pd
@@ -1155,43 +1140,41 @@ import pandas as pd
 src_df = pd.read_parquet("/tmp/dest/test.parquet")
 
 new_df = ingest.filter_dataframe(
-    df = src_df,
-    filter_vals = ["127.0.0.1", "localhost"],
-    filter_column = "id.orig_h",
+    df = src_df, 
+    filter_vals = ["127.0.0.1", "localhost"], 
+    filter_column = "id.orig_h", 
     filter_type = "string"
     )
 
 print(new_df)
 ```
 
-## <a name="getlatestfile"></a>**get_latest_file(\*\*kwargs)**
+#
+## <a name="getlatestfile"></a>__get_latest_file(**kwargs)__
 
-Get the most recent file from a folder location. Method is used to grab the latest delta or gold file. Returns a full path.<br>
+Get the most recent file from a folder location.  Method is used to grab the latest delta or gold file.  Returns a full path.<br>
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
 request = ingest.get_latest_file(
-    folder_loc = "string",
+    folder_loc = "string", 
     file_type = "string"
     )
 
 ```
 
-### **Parameters**
+### __Parameters__
+* __folder_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+Source folder location.<br>
 
-- **folder_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  Source folder location.<br>
+* __file_type__ <i>(string)</i> <br>
+Destination file type that you want to search for. Parquet or CSV.<br>
+<i>Parquet format is recommended!</i><br>
+__Default__ = parquet<br>
 
-- **file_type** <i>(string)</i> <br>
-  Destination file type you want to search for. Parquet or CSV.<br>
-  <i>Parquet format is recommended!</i><br>
-  **Default** = parquet<br>
-
-### **Example Run**
-
+### __Example Run__
 ```python
 import ingest
 
@@ -1203,44 +1186,53 @@ max_file = ingest.filter_dataframe(
 print(max_file)
 ```
 
-## <a name="unzip"></a>**unzip(\*\*kwargs)**
+#
+## <a name="unzip"></a>__unzip(**kwargs)__
 
-Unzip a source raw file. Only tar files are available for unzipping.<br>
+Unzip a raw source file.  Only tar files are available for unzipping.<br>
 
-### **Request Syntax**
-
+### __Request Syntax__
 ```python
 import ingest
 
 request = ingest.unzip(
-    zip_file = "string",
-    dest_loc = "string",
+    zip_file = "string", 
+    dest_loc = "string",     
     file_type = "string"
     )
 
 ```
 
-### **Parameters**
+### __Parameters__
+* __zip_file__ <i>(string)</i> --__[REQUIRED]__<br>
+Source zip file.<br>
 
-- **zip_file** <i>(string)</i> --**[REQUIRED]**<br>
-  Source zip file.<br>
+* __dest_loc__ <i>(string)</i> --__[REQUIRED]__<br>
+Destination folder where the zip file will be extracted.<br>
+<i>Parquet format is recommended!</i><br>
+__Default__ = parquet<br>
 
-- **dest_loc** <i>(string)</i> --**[REQUIRED]**<br>
-  Destination folder where the zip file will be extracted.<br>
-  <i>Parquet format is recommended!</i><br>
-  **Default** = parquet<br>
-
-- **dest_loc** <i>(string)</i> <br>
-  Zip file type.<br>
-  <i>Currently the only valid option is tar</i><br>
-  **Valid Options**<br> \* tar<br>
-  **Default** = tar<br>
+* __dest_loc__ <i>(string)</i> <br>
+Zip file type.<br>
+<i>Currently the only valid option is tar</i><br>
+__Valid Options__<br>
+    * tar<br>
+__Default__ = tar<br>
 
 ```python
 import ingest
 
 ingest.unzip(
-    zip_file = "/tmp/aw_data_file.tar",
+    zip_file = "/tmp/aw_data_file.tar", 
     dest_loc = "/tmp/raw/data"
     )
 ```
+
+#
+Valkyrie Framework<br>
+Copyright 2023 Carnegie Mellon University.<br>
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+Released under a MIT (SEI)-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.<br>
+Carnegie Mellon® and CERT® are registered in the U.S. Patent and Trademark Office by Carnegie Mellon University.<br>
+DM23-0210<br>
