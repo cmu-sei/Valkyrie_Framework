@@ -1,12 +1,13 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.contrib import messages
 from pathlib import Path
-import os
-import yaml
+import os, yaml, json
 import beacon_huntress.src.beacon_huntress as bh
 from settings.models import conf_general, conf_filter
 from bh_execute.models import Agg, DBScan, DBScanVar, ByPacket, ByConnGroup, ByPConn
 from beacon_huntress.src.beacon_huntress import main as beacon_huntress
+from beacon_huntress.src.bin.data import get_data, data_to_json
 
 # REMOVE THIS AFTER DONE
 import sys
@@ -36,35 +37,42 @@ def _fix_list(lst):
         print(err)
     
     return ret_lst
-            
+
+def _get_ds(ds_id):
+    df = get_data("data_sources", ds_id)
+    df = data_to_json(df)
+    df = df[0]
+
+    return df
 
 def exe_bh(request,type):
 
-    # Load Beacon Huntress Config
+    # LOAD BEACON HUNTRESS CONFIG
     conf = bh._load_config(os.path.join(BASE_DIR, "config", "config.conf"))
     db_conf = bh._load_config(os.path.join(BASE_DIR, "config", "dashboard.conf"))
 
+    # BUILD CONFIG
     conf = load_settings(conf, "general")
+    conf = load_settings(conf, "post", request)
     conf = load_settings(conf, "filter")
-    #conf = load_settings(db_conf, "dashboard")
     conf = load_settings(conf, type)
-
-    print(conf)
 
     with open("bh_run.yaml", "w") as file:
         yaml.dump(conf, file, sort_keys=False)
 
-    # UNCOMMENT TO RUN THIS ALGO
-    beacon_huntress("bh_run.yaml")
+    # RUN BEACON HUNTRESS
+    ret_val = beacon_huntress("bh_run.yaml")
 
     # DELETE TEMP YAML
     os.remove("bh_run.yaml")
 
     # UNCOMMENT TO RENDER THE PAGE
-    return render(request,os.path.join(Path(__file__).resolve().parent.parent.parent.parent, "bh_web", "pages", "Results.html"))
+    #return render(request,os.path.join(Path(__file__).resolve().parent.parent.parent.parent, "bh_web", "pages", "Results.html"))
+
+    return ret_val 
 
 
-def load_settings(config, type):
+def load_settings(config, type, request = ""):
 
     if type == "general":
         # GET THE DATA
@@ -75,11 +83,11 @@ def load_settings(config, type):
         lst_path = list(build_path.parts[0:2])      
         
         #SET THE GENERAL DATA
-        config["general"]["raw_loc"] = str(set_data.raw_loc)
+        #config["general"]["raw_loc"] = str(set_data.raw_loc)
         config["general"]["bronze_loc"] = os.path.join(lst_path[0], lst_path[1], "bronze", "data")
         config["general"]["silver_loc"] = os.path.join(lst_path[0], lst_path[1], "silver", "data")
         config["general"]["gold_loc"] = os.path.join(lst_path[0], lst_path[1], "gold", "data")        
-        config["general"]["file_type"] = "parquet" if set_data.file_type == "1" else "csv"
+        config["general"]["file_type"] = "parquet"
         config["general"]["overwrite"] = set_data.overwrite
         config["general"]["verbose"] = set_data.verbose
 
@@ -159,5 +167,53 @@ def load_settings(config, type):
         config["general"]["cluster_type"] = "by_p_conn"
         config["beacon"]["by_p_conn"]["diff_time"] = set_data.diff_time
         config["beacon"]["by_p_conn"]["diff_type"] = set_data.diff_type       
+
+    elif type == "post":
+        
+        # GET DATASOURCE ID FROM POST
+        ds_id = request.POST.get("ds_id")
+
+        # GET DATAFRAME IN JSON FORMAT
+        df = _get_ds(ds_id)
+
+        print(request)
+
+        # BUILD OUT CONFIG FOR DATASOURCES
+        if str(df["ds_name"]) != "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs":
+            data = json.loads(df["data"].replace("'","\""))
+            config["general"]["raw_loc"] = data["raw_log_loc"]
+            config["general"]["ds_name"] = df["ds_name"]
+            config["general"]["ds_type"] = df["ds_type"]
+            config["general"]["start_dte"] = request.POST.get("start_dte")
+            config["general"]["end_dte"] = request.POST.get("end_dte")            
+        elif df["ds_name"] == "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs":
+            config["general"]["raw_loc"] = request.POST.get("raw_log_loc")
+            config["general"]["ds_name"] = df["ds_name"]
+            config["general"]["ds_type"] = df["ds_type"]
+            config["general"]["start_dte"] = request.POST.get("start_dte")
+            config["general"]["end_dte"] = request.POST.get("end_dte")
+        elif df["ds_type"] in ["Security Onion", "Elastic"]:
+            data = json.loads(df["data"].replace("'","\""))
+            config["general"]["raw_loc"] = "/elastic"
+            config["general"]["ds_name"] = df["ds_name"]
+            config["general"]["ds_type"] = df["ds_type"]
+            config["general"]["start_dte"] = request.POST.get("start_dte")
+            config["general"]["end_dte"] = request.POST.get("end_dte")            
+
+            if df["ds_type"] == "Security Onion":
+                index = "*-zeek-*"
+            else:
+                index = data["index"]
+
+            config["data"] = {"auth": "api",
+                              "host": data["host"],
+                              "port": data["port"],
+                              "api": data["api_key"],
+                              "timeout": 900,
+                              "max_records": 0,
+                              "index": index,
+                              "data_type": df["ds_type"]}
+        else:
+            pass
 
     return config

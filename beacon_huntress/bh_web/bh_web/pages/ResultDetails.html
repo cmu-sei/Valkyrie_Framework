@@ -1,7 +1,7 @@
-{% extends 'index.html' %}
-
-{% block content %}
-<h1>Result Details</h1>
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Result Details</h1>
+<p class="header-subtitle"><a href="/">Home</a> / <a href="Results.html">Results</a> / Result Details</p>
+{% endblock %} {% block content %}
 
 {% if messages %}
     {% for message in messages %}

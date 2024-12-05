@@ -19,7 +19,7 @@ from django.urls import path
 from pathlib import Path
 from . import views
 from bh_execute.views import AggView, DBScanView, DBScanVarView, ByPacketView, ByConnGroupView, ByPConnView
-from settings.views import setting_view, filter_view
+from settings.views import setting_view, filter_view, get_datasources, new_ds, del_ds, edit_ds, get_elasticindex
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,5 +49,11 @@ urlpatterns = [
     path('DelFilteredBeacon', views.del_fil_beacon),
     path('RunConfig', views.get_config),
     path('LookupDNS', views.lookup_dns),
-    path('FilteredLookupDNS', views.filter_lookup_dns)
+    path('FilteredLookupDNS', views.filter_lookup_dns),
+    path('DataSources.html', get_datasources),
+    path('NewDataSource.html', new_ds),
+    path('DelDS', del_ds),
+    path('EditDS', edit_ds),
+    path('GetIndex', get_elasticindex)
+
 ]

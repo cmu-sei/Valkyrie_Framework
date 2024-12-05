@@ -52,7 +52,7 @@ def _total_cnt(src_loc):
 ##  FUNCTIONS
 #####################################################################################
 
-def build_raw(src_file, dest_parquet_file, overwrite = False, verbose = False):
+def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwrite = False, verbose = False):
     '''
     Build initial filtes
 
@@ -101,28 +101,45 @@ def build_raw(src_file, dest_parquet_file, overwrite = False, verbose = False):
 
     df = pd.read_json(src_file, lines=True)
 
-    # READ JSON AND NORMALIZE IT
-    # NORMALIZE JSON IF EVENTDATA TAG IS PRESENT
-    if "eventdata" in df:
-        nor_df = json_normalize(df["eventdata"])
-        final_df = nor_df.query("proto == 'tcp'")
-        new = final_df.copy()
-        new["source_file"] = dest_parquet_file
-        new["src_row_id"] = new.reset_index().index
-        final_df = new
+    # CHECK FOR DATES
+    # START & END DATE
+    if start_dte != "" and end_dte != "":
+        df = df.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
+    # ONLY START
+    elif start_dte != "" and end_dte == "":
+        df = df.query("ts >= {}".format(start_dte))
+    # ONLY END
+    elif start_dte == "" and end_dte != "":
+        df = df.query("ts <= {}".format(end_dte))
     else:
-        nor_df = df
-        final_df = nor_df.query("proto == 'tcp'")
-        final_df = df.astype({"id.resp_p": int}, errors="raise")
-        final_df["source_file"] = dest_parquet_file
-        final_df["src_row_id"] = df.reset_index().index
+        pass
 
-    logger.debug("Creating parquet file {}".format(dest_parquet_file))
-    try:
-        final_df.to_parquet(dest_parquet_file,compression="snappy")
-    except BaseException as err:
-        logger.error("Failure on file {}".format(dest_parquet_file))
-        logger.error(err)
+    # PROCESS IF THERE IS DATA
+    if df.empty:
+        logger.warning("No data for file {}".format(dest_parquet_file))
+    else:
+        # READ JSON AND NORMALIZE IT
+        # NORMALIZE JSON IF EVENTDATA TAG IS PRESENT
+        if "eventdata" in df:
+            nor_df = json_normalize(df["eventdata"])
+            final_df = nor_df.query("proto == 'tcp'")
+            new = final_df.copy()
+            new["source_file"] = dest_parquet_file
+            new["src_row_id"] = new.reset_index().index
+            final_df = new
+        else:
+            nor_df = df
+            final_df = nor_df.query("proto == 'tcp'")
+            final_df = df.astype({"id.resp_p": int}, errors="raise")
+            final_df["source_file"] = dest_parquet_file
+            final_df["src_row_id"] = df.reset_index().index
+
+        logger.debug("Creating parquet file {}".format(dest_parquet_file))
+        try:
+            final_df.to_parquet(dest_parquet_file,compression="snappy")
+        except BaseException as err:
+            logger.error("Failure on file {}".format(dest_parquet_file))
+            logger.error(err)        
 
     #####################################################################################
     ##  FINAL RESULTS
@@ -1019,7 +1036,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
     endtime = datetime.now() - starttime
     logger.info('Delta process is completed {}'.format(endtime))
 
-def build_bronze_layer(src_loc, bronze_loc, dns_file = "", overwrite = False, verbose = False):
+def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", overwrite = False, verbose = False):
     '''
     Create a bronze data layer for a source folder location.  \n  
     Bronze data will only use tcp data and will include source and destination DNS.\n
@@ -1108,6 +1125,8 @@ def build_bronze_layer(src_loc, bronze_loc, dns_file = "", overwrite = False, ve
 
                     build_raw(src_file = f,
                         dest_parquet_file = par_name,
+                        start_dte = start_dte,
+                        end_dte = end_dte,
                         overwrite = overwrite,
                         verbose = verbose)
                     

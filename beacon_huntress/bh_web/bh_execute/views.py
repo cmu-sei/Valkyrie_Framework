@@ -8,6 +8,7 @@ from .models import Agg, DBScan, DBScanVar, ByPacket, ByConnGroup, ByPConn
 import os
 from beacon_huntress.src.bin.web import exe_bh
 from bh_web.views import context_results_grid
+from beacon_huntress.src.bin.data import get_data, data_to_json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,23 +22,25 @@ def AggView(request):
             send.save()
 
             # RUN BEACON HUNTRESS
-            exe_bh(request,"agg")
+            ret_val = exe_bh(request,"agg")
 
-            # GATHER RESULTS GRID
-            context = context_results_grid()
+            if ret_val["cnt"] == 0:
+                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
 
-            # REDIRECT TO RESULTS PAGE
-            #return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "Results.html"), context)            
             return redirect("/Results.html")
     else:
         try:
+            # GATHER DROP LIST ITEMS & CONVERT TO JSON
+            df = get_data("data_sources")
+            options = data_to_json(df)
+
             ds = Agg.objects.latest("row_id")
         except Agg.DoesNotExist:
             print("NO VALUE")
         
         form = ExeAgg(instance=ds)
 
-    return render(request, os.path.join(BASE_DIR, "bh_execute", "pages", "ExeAgg.html"), {'form': form})
+    return render(request, os.path.join(BASE_DIR, "bh_execute", "pages", "ExeAgg.html"), context={'form': form, "options": options})
 
 def DBScanView(request):
 
@@ -49,23 +52,26 @@ def DBScanView(request):
             send.save()
 
             # RUN BEACON HUNTRESS
-            exe_bh(request,"dbscan")
+            ret_val = exe_bh(request,"dbscan")
 
-            # GATHER RESULTS GRID
-            context = context_results_grid()
+            if ret_val["cnt"] == 0:
+                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
 
             # REDIRECT TO RESULTS PAGE
-            #return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "Results.html"), context)
             return redirect("/Results.html")
     else:
         try:
+            # GATHER DROP LIST ITEMS & CONVERT TO JSON
+            df = get_data("data_sources")
+            options = data_to_json(df)
+
             ds = DBScan.objects.latest("row_id")
         except DBScan.DoesNotExist:
             print("NO VALUE")
         
         form = ExeDBScan(instance=ds)
 
-    return render(request, os.path.join(BASE_DIR, "bh_execute", "pages", "ExeDBScan.html"), {'form': form})
+    return render(request, os.path.join(BASE_DIR, "bh_execute", "pages", "ExeDBScan.html"), context={'form': form, "options": options})
 
 def DBScanVarView(request):
 
@@ -77,23 +83,26 @@ def DBScanVarView(request):
             send.save()
 
             # RUN BEACON HUNTRESS
-            exe_bh(request,"dbscan_var")
+            ret_val = exe_bh(request,"dbscan_var")
 
-            # GATHER RESULTS GRID
-            context = context_results_grid()
+            if ret_val["cnt"] == 0:
+                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
 
             # REDIRECT TO RESULTS PAGE
-            #return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "Results.html"), context)
             return redirect("/Results.html")
     else:
         try:
+            # GATHER DROP LIST ITEMS & CONVERT TO JSON
+            df = get_data("data_sources")
+            options = data_to_json(df)
+
             ds = DBScanVar.objects.latest("row_id")
         except DBScanVar.DoesNotExist:
             print("NO VALUE")
         
         form = ExeDBScanVar(instance=ds)
 
-        return render(request, os.path.join(BASE_DIR, "bh_execute", "pages", "ExeDBScanVar.html"), {'form': form})
+        return render(request, os.path.join(BASE_DIR, "bh_execute", "pages", "ExeDBScanVar.html"), context={'form': form, "options": options})
 
 def ByPacketView(request):
 
@@ -105,13 +114,12 @@ def ByPacketView(request):
             send.save()
 
             # RUN BEACON HUNTRESS
-            exe_bh(request,"by_packet")
+            ret_val = exe_bh(request,"by_packet")
 
-            # GATHER RESULTS GRID
-            context = context_results_grid()
+            if ret_val["cnt"] == 0:
+                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
 
             # REDIRECT TO RESULTS PAGE
-            #return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "Results.html"), context)
             return redirect("/Results.html")
     else:
         try:
@@ -133,13 +141,12 @@ def ByConnGroupView(request):
             send.save()
 
             # RUN BEACON HUNTRESS
-            exe_bh(request,"by_conn_group")
+            ret_val = exe_bh(request,"by_conn_group")
 
-            # GATHER RESULTS GRID
-            context = context_results_grid()
+            if ret_val["cnt"] == 0:
+                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
 
             # REDIRECT TO RESULTS PAGE
-            #return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "Results.html"), context)            
             return redirect("/Results.html")
     else:
         try:
@@ -161,7 +168,13 @@ def ByPConnView(request):
             send.save()
 
             # RUN BEACON HUNTRESS
-            exe_bh(request,"by_p_conn")               
+            ret_val = exe_bh(request,"by_p_conn")
+
+            if ret_val["cnt"] == 0:
+                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
+
+            # REDIRECT TO RESULTS PAGE
+            return redirect("/Results.html")            
     else:
         try:
             ds = ByPConn.objects.latest("row_id")

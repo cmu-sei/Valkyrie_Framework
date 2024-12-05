@@ -57,6 +57,8 @@ services:
       - .:/app
       - /tmp:/tmp
       - ./bh_web/datasets/tutorial:/tutorial
+      - ./bh_web/datasets/elastic:/elastic
+      - ./bh_web/datasets/zeek:/zeek
     ports:
       - "8000:8000"
     networks:

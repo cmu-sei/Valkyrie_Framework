@@ -1,9 +1,9 @@
 FROM python:3.10-bullseye
 
 # FOR PROXY UNCOMMENT BELOW AND ADD YOUR PROXY
-#ENV HTTP_PROXY ""
-#ENV HTTPS_PROXY ""
-#ENV NO_PROXY ""
+#ENV HTTP_PROXY=""
+#ENV HTTPS_PROXY=""
+#ENV NO_PROXY=""
 
 # ADD DIRECTORIES
 RUN mkdir /app && mkdir /app/log && mkdir /tmp/raw && mkdir /tmp/raw/data

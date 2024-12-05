@@ -1,8 +1,7 @@
-{% extends 'index.html' %}
-
-{% block content %}
-<h1>Logs Details</h1>
-
+{% extends 'index.html' %} {% block header %}
+<h1 class="header-title">Log Details</h1>
+<p class="header-subtitle"><a href="/">Home</a> / <a href="Logs.html">Logs</a> / Log Details</p>
+{% endblock %} {% block content %}
 
 {{ file_content|linebreaks }}
 

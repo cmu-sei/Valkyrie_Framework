@@ -267,7 +267,11 @@ def _non_gold_cli(delta_file, beacons_conns, sort_by = "connection_count", pass_
         )
 
     # BUILD RESULTS
-    if len(df) != 0:
+    if df.empty:
+        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
+        print("NONE")
+        print("X" * 121)  
+    else:
         
         # GET NUMBER OF UNIQUE BEACONS
         num_b = df["dest_ip"].nunique()
@@ -278,11 +282,7 @@ def _non_gold_cli(delta_file, beacons_conns, sort_by = "connection_count", pass_
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
             print(df)
 
-        print("X" * 121)
-    else:
-        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
-        print("NONE")
-        print("X" * 121)        
+        print("X" * 121)     
 
 def agglomerative_clustering(delta_file, delta_column, max_variance, min_records, cluster_factor, line_amounts, min_delta_time, gold_loc = "", overwrite = False, verbose = False):
     '''
@@ -327,7 +327,6 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
 
     # LOAD DATASET
     dataset = pd.read_parquet(delta_file).sort_values(by=["connection_id"])
-    dataset = dataset.query("dip == '1.3.150.200'")
     X = dataset.iloc[:, np.r_[0,6]].values
     Y = dataset.iloc[:, np.r_[0:3,6]].values
 
