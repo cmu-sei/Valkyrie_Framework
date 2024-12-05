@@ -27,7 +27,7 @@ IP Maven is a DNS service that provides detailed information about IP addresses 
 
 The thinking is that by combining normal zeek dns logs with the netblock information, we can provide a more detailed view of the network traffic.
 
-**For more details see the Beacon Huntress [read me](https://github.com/cmu-sei/Valkyrie_Framework/tree/main/ip_maven) file.**
+**For more details see the IP Maven [read me](https://github.com/cmu-sei/Valkyrie_Framework/tree/main/ip_maven) file.**
 
 ---
 
