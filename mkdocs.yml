@@ -94,6 +94,7 @@ nav:
   - Beacon Huntress:
       - Main: beacon_huntress/index.md
       - Quick Start: beacon_huntress/quickstart.md
+      - Beacon Search: beacon_huntress/beaconsearch.md
       - Algorithm: beacon_huntress/beaconalgo.md
       - Configuration: beacon_huntress/configuration.md
       - Dashboard: beacon_huntress/dashboard.md
@@ -102,6 +103,7 @@ nav:
       - Interface: beacon_huntress/interface.md
       - Juptyer Notebook: beacon_huntress/jupyter.md
       - Modules: beacon_huntress/modules.md
+      - Run Options: beacon_huntress/runoptions.md
       - Tutorial: beacon_huntress/tutorial.md
   - IP Maven:
       - Main: ip_maven/index.md
