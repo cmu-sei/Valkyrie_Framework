@@ -91,17 +91,13 @@ nav:
   - Home: index.md
   - Beacon Huntress:
       - Main: beacon_huntress/index.md
-      - Quick Start: beacon_huntress/quickstart.md
-      - Beacon Search: beacon_huntress/beaconsearch.md
       - Algorithms: beacon_huntress/algorithms.md
-      - Configuration: beacon_huntress/configuration.md
       - Dashboard: beacon_huntress/dashboard.md
+      - Data Sources: beacon_huntress/datasource.md
       - Default Filtered Hosts: beacon_huntress/defaultfilteredhosts.md
-      - Installation: beacon_huntress/installation.md
       - Interface: beacon_huntress/interface.md
-      - Juptyer Notebook: beacon_huntress/jupyter.md
+      - Juptyer Notebooks: beacon_huntress/jupyter.md
       - Modules: beacon_huntress/modules.md
-      - Run Options: beacon_huntress/runoptions.md
       - Tutorial: beacon_huntress/tutorial.md
   - IP Maven:
       - Main: ip_maven/index.md
