@@ -95,7 +95,7 @@ nav:
       - Main: beacon_huntress/index.md
       - Quick Start: beacon_huntress/quickstart.md
       - Beacon Search: beacon_huntress/beaconsearch.md
-      - Algorithm: beacon_huntress/beaconalgo.md
+      - Algorithms: beacon_huntress/algorithms.md
       - Configuration: beacon_huntress/configuration.md
       - Dashboard: beacon_huntress/dashboard.md
       - Default Filtered Hosts: beacon_huntress/defaultfilteredhosts.md

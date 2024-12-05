@@ -17,7 +17,7 @@ Proceed with the following steps in the terminal:
 3. Run `source bh/bin/activate` to activate the Python Virtual Environment.
 4. Run `sudo pip3 install -r setup/requirements.txt` to import the requirments file.
 5. Change the default configuration file (`src/config/config.conf`) settings below.
-    * You must set `dashboard` in [config.conf](configuration.md) to `false`.
+    * You must set `dashboard` in [config.conf](../configuration) to `false`.
 6. Run `python3 beacon_huntress.py` to check for beacons.
 
 ### __CLI Run w/Example Results__
@@ -143,7 +143,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook.  Run the steps below.
     ```
 
 4) Choose the algorithm you want to run, and configure the settings.  You could also run all algorithms.
-    * [Agglomerative Clustering](configuration.md#a-idagglomerativeclusteringaagglomerative-clustering)
+    * [Agglomerative Clustering](../configuration#a-idagglomerativeclusteringaagglomerative-clustering)
         * __delta_file__ <i>(string)</i><br>
         Source delta file.<br>
         * __delta_column__ <i>(string)</i><br>
@@ -177,7 +177,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook.  Run the steps below.
         )
         ```
     
-    * [DBScan Clustering](configuration.md#a-iddbscanclusteringadbscan-clustering)
+    * [DBScan Clustering](../configuration#a-iddbscanclusteringadbscan-clustering)
         * __delta_file__ <i>(string)</i><br>
         Source delta file.<br>
         * __delta_column__ <i>(string)</i><br>
@@ -210,7 +210,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook.  Run the steps below.
         )
         ```
 
-    * [DBScan by Variance](configuration.md#a-iddbscanbyvarianceadbscan-by-variance-clustering)
+    * [DBScan by Variance](../configuration#a-iddbscanbyvarianceadbscan-by-variance-clustering)
         * __delta_file__ <i>(string)</i><br>
         Source delta file.<br>
         * __delta_column__ <i>(string)</i><br>

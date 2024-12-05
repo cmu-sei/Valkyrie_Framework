@@ -1,18 +1,20 @@
 # Beacon Search
 
-You can search for beacons by the algorithms below.  The basic idea is to search for slow or fast beacons based upon the time interval and algorithm of your choosing.  The algorithms can be set by using the `cluster_type` option in [config.conf](configuration.md) in order to run the algorithm.  Each algorithm has it's own unique parameters for searching for beacons.  Details about each ML option can be found below.
+You can search for beacons by the algorithms below.  The basic idea is to search for slow or fast beacons based upon the time interval and algorithm of your choosing.  The algorithms can be set by using the `cluster_type` option in [config.conf](../configuration) in order to run the algorithm. Each algorithm has it's own unique parameters for searching for beacons.  Details about each ML option can be found below.
 
-So, which algorithm should I choose? That depends on what type of beacon you are looking for. Looking for a [Fast Beacon](../../../readme.md#a-idfsbeaconsafastslow-beacon), Agglomerative Clustering or either DBScan would work.<br> Looking for a [Slow Beacon](../../../readme.md#a-idfsbeaconsafastslow-beacon), stick to either of the DBScan algorithms.  Beacon's could also be found by using non-ML algorithms via Packet Size Uniqueness and Connection Groups.
+So, which algorithm should I choose? That depends on what type of beacon you are looking for. Looking for a [Fast Beacon](../#fs_beacons), Agglomerative Clustering or either DBScan would work.
+
+Looking for a [Slow Beacon](../#fs_beacons), stick to either of the DBScan algorithms. Beacons could also be found by using non-ML algorithms via Packet Size Uniqueness and Connection Groups.
 
 ???+ tip "Note" 
     Beacon Huntress default search option is DBScan by Variance with the Slow Beacon parameters used in [dbscan_by_variance()](#dbscanbyvariance).
 
-## <a name="searchforbeacons"></a>__Advanced Search for Beacons__
+## :material-lightbulb: <a name="searchforbeacons"></a>__Advanced Search for Beacons__
 
 Below are the current algorithms that can be used for searching for beacons.  
 
 ???+ tip "Note"
-    The algorithms can be set by using the `cluster_type` option in [config.conf](configuration.md) in order to run the algorithm.  
+    The algorithms can be set by using the `cluster_type` option in [config.conf](../configuration) in order to run the algorithm.  
 
 * [Agglomerative Clustering](#agglomerativeclustering)
     * cluster_type = <i>__agg__</i>
@@ -36,31 +38,31 @@ Below are the current algorithms that can be used for searching for beacons.
 
 Agglomerative cluster is a Hierarchical clustering used to group objects in clusters based upon similarity.  Each item is treated as a singleton cluster, working from the bottom up.  Clusters that are similar are merged into a larger cluster.  This process continues until all the clusters are placed into a single large cluster, see image below.  
 
-* Agglomerative cluster works well when searching for [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).
+* Agglomerative cluster works well when searching for [Fast Beacons](../#fs_beacons).
  
 ![](../assets/img/bh/agg_cluster.png)
-<br>image source: https://www.geeksforgeeks.org/hierarchical-clustering-in-data-mining/
+<br>[Image source](https://www.geeksforgeeks.org/hierarchical-clustering-in-data-mining/)
 
 ### __Parameters__
 * __max_variance__ <i>(float)</i><br>
-Variance threshold for any potential beacons.<br>
+Variance threshold for any potential beacons.
 
 * __min_records__ <i>(int)</i><br>
-Minimum number of delta records to search.<br>
+Minimum number of delta records to search.
 
 * __cluster_factor__ <i>(float)</i><br>
-The likelihood percentage for a cluster.<br>
+The likelihood percentage for a cluster.
 
 * __line_amounts__ <i>(list)</i><br>
-Line amounts to process at a time, in list format.<br>
+Line amounts to process at a time, in list format.
 
 * __min_delta_time__ <i>(string)</i><br>
-Minimum delta time to search by, in milliseconds.<br>
+Minimum delta time to search by, in milliseconds.
 
 Below are two options that can be used to find a fast or slow beacon using Agglomerative clustering.
 
 ???+ tip "Note"
-    Agglomerative clustering is __NOT__ a recommended algorithm for searching for Slow Beacons.<br>
+    Agglomerative clustering is __NOT__ a recommended algorithm for searching for Slow Beacons.
 
 #### __Fast Beacon Search__
 Searching for beacons with 70% likelihood, 12% max variance, at least 10 connections, and delta time of 60 seconds.
@@ -88,7 +90,7 @@ Searching for beacons with 70% likelihood, 12% max variance, at least 10 connect
 
 DBScan stands for Density-Based Spatial Clustering of Applications with Noise.  DBScan discovers clusters of different sizes from a large amount of data that contains noise and outliers, see image below.  DBScan primarily uses two parameter Minimum Points and ESP (Epsilion).  Minimum points are the minimum number of points (a threshold) clustered together for a region to be considered dense.  EPS is the distance measure that will be used to locate the points for a cluster.
 
-* DBScan cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon).  However, this is the slowest running algorithim.
+* DBScan cluster is a good choice for searching either [Fast Beacons](../#fs_beacons) or [Slow Beacons](../#fs_beacons).  However, this is the slowest running algorithim.
  
 
 ![](../assets/img/bh//dbscan.png)
@@ -135,7 +137,7 @@ Searching for beacons with 70% likelihood, time spans (0-5 mins, 2-15 mins, 15-3
 
 DBScan by variance uses the same principals as [DBScan Clustering](#dbscanclustering) but will exclude the amount of records that is needed to be scanned by variance and spans are generated based upon the percentage given.  If the variance is outside of the configured threshold it is excluded from the scan.  This feature provides all the benefits of a DBScan without the performance overhead.
 
-* DBScan by Variance cluster is a good choice for searching either [Fast Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon) or [Slow Beacons](../../../readme.md#a-idfsbeaconsafastslow-beacon). 
+* DBScan by Variance cluster is a good choice for searching either [Fast Beacons](../#fs_beacons) or [Slow Beacons](../#fs_beacons). 
   * This provides a perfomance increase over DBScan for connections are filtered prior by a variance setting.
 
 ### __Parameters__

@@ -2,7 +2,7 @@
 
 Beacon Huntress uses a combination of Python and Machine Learning to find potential beacons.
 
-## **Copy Zeek Logs**
+## :material-clipboard: **Copy Zeek Logs**
 
 Zeek Connection Logs are required to run Beacon Huntress. Follow the steps below to copy the Zeek Connection Logs. It's recommended to organize the logs into directories, with one directory per day.
 
@@ -17,12 +17,12 @@ Zeek Connection Logs are required to run Beacon Huntress. Follow the steps below
          # SFTP COMMAND EXAMPLE (REPLACE YYYY-MM-DD WITH DATE)
          get -R /nsm/zeek/logs/YYYY-MM-DD/conn.* /tmp/raw/data/YYYY-MM-DD
 
-## **Open Web Page**
+## :material-web: **Open Web Page**
 
 To get started
 
 1.  Open a browser window
-2.  Go to 127.0.0.1:8000
+2.  Go to [127.0.0.1:8000](http://127.0.0.1:8000)
 3.  You will now see Beacon Huntress loaded.
 
 ![](../assets/img/bh/home_page.png)
@@ -151,10 +151,8 @@ You can filter out any falsely identified beacons from the Result Details page.
 
 You can access the Grafana Dashboard via the Dashboard button on the Result Details page.
 
-> ### **Note**
->
-> For addtional details related to the Granfana Dashboard navigate to the github site.  
-> [https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md](https://github.com/cmu-sei/Valkyrie_Framework/blob/main/beacon_huntress/src/lib/documentation/dashboard.md)
+???+ info "Note"
+    For addtional details related to the Granfana Dashboard [go here](../dashboard).
 
 ![](../assets/img/bh/result_dash_highlighted.png)
 

@@ -9,7 +9,7 @@ This will explain how to properly configure Beacon Huntress. Beacon Huntress req
 5. How many connections does a potential beacon/s need to have in order to be reported?
 6. Do I want my results displayed to a dashboard or just output the results.
 
-## <a name="configfiles"></a>**Configuration Files**
+## :material-file: <a name="configfiles"></a>**Configuration Files**
 
 ### <a name="configconf"></a>**Config.conf**
 
@@ -70,10 +70,10 @@ Config.conf is the configuration for Beacon Huntress. This config will tell Beac
 - **cluster_type** <i>(string)</i>
   Type of cluster algorithm you want to run.
   **Options**
-  _ agg ([Agglomerative Clustering](beaconsearch.md#a-idagglomerativeclusteringaagglomerative-clustering))
-  _ dbscan ([DBScan Clustering](beaconsearch.md#a-iddbscanclusteringadbscan-clustering))
-  _ dbscan_var ([DBScan by Variance](beaconsearch.md#a-iddbscanbyvarianceadbscan-by-variance-clustering))
-  _ by_packet ([Packet Size Uniqueness](beaconsearch.md#a-idpacketuniapacket-size-uniqueness)) \* by_conn_group ([Connection Groups](beaconsearch.md#a-idconngrpsaconnection-groups))
+  _ agg ([Agglomerative Clustering](../beaconsearch#a-idagglomerativeclusteringaagglomerative-clustering))
+  _ dbscan ([DBScan Clustering](../beaconsearch#a-iddbscanclusteringadbscan-clustering))
+  _ dbscan_var ([DBScan by Variance](../beaconsearch#a-iddbscanbyvarianceadbscan-by-variance-clustering))
+  _ by_packet ([Packet Size Uniqueness](../beaconsearch#a-idpacketuniapacket-size-uniqueness)) \* by_conn_group ([Connection Groups](../beaconsearch#a-idconngrpsaconnection-groups))
 
 ### **Dashboard**
 
@@ -441,7 +441,7 @@ Below are a couple of example configuration settings for [CLI](#cli-example-gene
 ### **CLI Example General Settings**
 
 Settings are set in /src/conf/config.conf.<br>
-[DBScan by Variance](../../../readme.md#a-iddbscanbyvarianceadbscan-by-variance-clustering) with a Slow Beacon Search.
+[DBScan by Variance](../algorithms#a-iddbscanbyvarianceadbscan-by-variance-clustering) with a Slow Beacon Search.
 
 ```yaml
 ##  BEACON HUNTRESS CONFIG
@@ -552,7 +552,7 @@ beacon:
 ### **Dashboard Example Config**
 
 Settings are set in src/conf/dashboard.conf
-[DBScan by Variance](../../../readme.md#a-iddbscanbyvarianceadbscan-by-variance-clustering) with a Slow Beacon Search.
+[DBScan by Variance](../algorithms#a-iddbscanbyvarianceadbscan-by-variance-clustering) with a Slow Beacon Search.
 
 config.conf
 

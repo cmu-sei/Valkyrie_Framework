@@ -1,11 +1,16 @@
 # Valkyrie Framework
 
-Developed by Carnegie Mellon University's Software Engineering Institute (SEI), the **Valkyrie Framework** is an open source suite of tools that enable hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic using machine learning and other advanced analytics.
+![](assets/img/valkyrie_framework.png)
 
-???+ tip "Note"
+Developed by [Carnegie Mellon University's Software Engineering Institute (SEI)](https://sei.cmu.edu), the **Valkyrie Framework** is an open source suite of tools that enable hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic using machine learning and other advanced analytics.
+
+???+ tip "About the Framework"
     There are two tools in the Framework currently, but we expect more in the future.
 
-## Beacon Huntress
+    The [Source Code Repository](https://github.com/cmu-sei/Valkyrie_Framework) is hosted on GitHub.
+
+
+## ![](assets/img/inline/beacon_huntress.png){: .bh-inline } [Beacon Huntress](beacon_huntress)
 
 Beacon Huntress is designed to identify malicious network beacons. But first, what are network beacon? We define network beacons as events that occur (and re-occur) on a timed interval. Network beacons can be compared to a heartbeat signal over time. While there are legitimate uses for network beacons (e.g., WiFi, obtaining instructions from an API, beaming telemetry data home), network beaconing can also be a byproduct of malware connecting to a command and control (C2) server. Malware communicating with a C2 server can pass information or request new instructions.
 
@@ -13,7 +18,7 @@ Beacons can be difficult to spot with traditional security tools -- especially t
 
 Beacon Huntress uses a combination of Python and Machine Learning to find potential beacons.
 
-## IP Maven
+## ![](assets/img/inline/ip_maven.png){: .ipmaven-inline } [IP Maven](ip_maven)
 
 IP Maven is a DNS service that provides detailed information about IP addresses and their associated netblock records, both online and offline.
 

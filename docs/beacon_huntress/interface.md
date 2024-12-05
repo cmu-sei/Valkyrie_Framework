@@ -4,7 +4,7 @@ This page outlines the usage and functionalities of the Beacon Huntress GUI.
 
 ## <a name="execute"></a>**Execute**
 
-The Execute tab has three sections: Quick Cluster Search, Cluster Search, and Hierarchical Search. For more information on Beacon Huntress algorithm configurations, see [Beacon Huntress Algorithms](../documentation/beaconalgo.md).
+The Execute tab has three sections: Quick Cluster Search, Cluster Search, and Hierarchical Search. For more information on Beacon Huntress algorithm configurations, see [Beacon Huntress Algorithms](../algorithms).
 
 ## <a name="execute"></a>**Settings**
 
@@ -68,7 +68,7 @@ The Filtered Hosts section will display any additional IP addresses that have be
 
 ## <a name="dfh"></a>**Default Filtered Hosts**
 
-Default Filtered Hosts is a premade list of popular websites that are automatically filtered out from the results. These sites will not appear on the Filtered Hosts page. To see the complete list, go to the [Default Filtered Hosts](defaultfilteredhosts.md) page.
+Default Filtered Hosts is a premade list of popular websites that are automatically filtered out from the results. These sites will not appear on the Filtered Hosts page. To see the complete list, go to the [Default Filtered Hosts](../defaultfilteredhosts) page.
 
 # <a name="results"></a>**Results**
 

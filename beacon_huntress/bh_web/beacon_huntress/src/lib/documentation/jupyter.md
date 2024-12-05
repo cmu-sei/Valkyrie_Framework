@@ -92,7 +92,7 @@ Open beacon_huntress.ipynb inside a Jupyter notebook. Run the steps below.
                          delta_file_loc = "data/silver/delta")
     ```
 
-4) Choose the algorithm you want to run and configure the settings. Some examples are included below, but see the [Beacon Algorithms](../documentation/beaconalgo.md) page for more details.
+4) Choose the algorithm you want to run and configure the settings. Some examples are included below, but see the [Beacon Algorithms](../algorithms) page for more details.
 
     * Agglomerative Clustering
          ```python

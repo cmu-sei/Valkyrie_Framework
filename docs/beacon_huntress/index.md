@@ -1,4 +1,4 @@
-# Beacon Huntress Main
+# Welcome to Beacon Huntress
 
 Beacon Huntress uses a combination of Python and Machine Learning to identify potential beacons.
 
@@ -32,9 +32,9 @@ With answers to these questions, you can begin to configure Beacon Huntress to r
     - Raw Bro/Zeek logs are copied to /tmp/raw/data. <br>
     - All connections using ports 80 and 443 are included. <br>
     - Local connections, i.e. connections with 127.0.0.1 as the source or destination, are excluded.
-    - Various high-usage top sites are excluded. See [Default Filtered Hosts](src/lib/documentation/defaultfilteredhosts.md) for the list of filtered sites.
+    - Various high-usage top sites are excluded. See [Default Filtered Hosts](defaultfilteredhosts) for the list of filtered sites.
 
-## :material-docker: **Docker Setup**
+## :material-docker: <a name="docker"></a>**Docker Setup**
 
 The quickest way to set up this software is via docker-compose.
 
@@ -51,8 +51,8 @@ Good to go? OK, proceed with the following in the terminal:
 2. Run `docker-compose up -d` or `docker compose up -d` depending on your docker version. This will create the database, and may take some time to complete.
 3. Note that some docker volumes were created.
    - `_mysql` is your database, so that if the container stops, you do not lose previously saved data
-4. Visit http://127.0.0.1:8000 in your web browser to access the Beacon Huntress Web UI.
-5. Continue to the [Tutorial](src/lib/documentation/tutorial.md) section for examples on how to start using Beacon Huntress.
+4. Visit [http://127.0.0.1:8000](http://127.0.0.1:8000) in your web browser to access the Beacon Huntress Web UI.
+5. Continue to the [Tutorial](tutorial) section for examples on how to start using Beacon Huntress.
 
 For troubleshooting, check `docker logs -f beacon_huntress` to access Web UI logging.
 
@@ -63,6 +63,6 @@ For troubleshooting, check `docker logs -f beacon_huntress` to access Web UI log
       - 3306 (MySQL)
       - 8000 (Django)
 
-Once you have the list of IP's from the dashboard you should conduct further investigation and analysis of the Potential Beacons using tools such as nslookup, pcaps, etc. to assess their veracity. Depending on network traffic and Beacon Huntress configuration, some connections identified as Potential Beacons may not be malicious. You can filter these sites out of the results; for more details see the [User Interface](src/lib/documentation/interface.md) documentation.
+Once you have the list of IP's from the dashboard you should conduct further investigation and analysis of the Potential Beacons using tools such as nslookup, pcaps, etc. to assess their veracity. Depending on network traffic and Beacon Huntress configuration, some connections identified as Potential Beacons may not be malicious. You can filter these sites out of the results; for more details see the [User Interface](interface) documentation.
 
-See the [Tutorial](tutorial.md) for running Beacon Huntress.
+See the [Tutorial](tutorial) for running Beacon Huntress.

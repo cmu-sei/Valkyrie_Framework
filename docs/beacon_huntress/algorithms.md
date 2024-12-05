@@ -2,7 +2,7 @@
 
 Beacon Huntress can be configured to search for beacons using the algorithms below. Each Machine Learning (ML) algorithm has its own unique parameters and is used to search for slow or fast beacons based on time intervals.
 
-## <a name="searchforbeacons"></a>**Advanced Search for Beacons**
+## :material-lightbulb: <a name="searchforbeacons"></a>**Advanced Search for Beacons**
 
 Below are the current algorithms that can be used when searching for beacons.
 

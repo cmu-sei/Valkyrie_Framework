@@ -23,7 +23,7 @@ This page outlines the usage and functionalities of the Beacon Huntress GUI.
 
 # <a name="execute"></a>__Execute__
 
-The Execute tab has three sections: Quick Cluster Search, Cluster Search, and Hierarchical Search. For more information on Beacon Huntress algorithm configurations, see [Beacon Huntress Algorithms](../documentation/beaconalgo.md).
+The Execute tab has three sections: Quick Cluster Search, Cluster Search, and Hierarchical Search. For more information on Beacon Huntress algorithm configurations, see [Beacon Huntress Algorithms](../algorithms).
 <br></br>
 # <a name="execute"></a>__Settings__
 
