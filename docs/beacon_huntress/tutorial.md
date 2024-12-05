@@ -1,4 +1,4 @@
-# Beacon HuntressTutorial
+# Beacon Huntress Tutorial
 
 This tutorial will provide an example for running Beacon Huntress using a generic dataset.
 
