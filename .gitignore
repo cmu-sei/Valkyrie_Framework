@@ -2,3 +2,8 @@ __pycache__
 venv
 db_data
 bh_run.yaml
+
+node_modules/
+package-lock.json	
+package.json
+*/package-lock.json
