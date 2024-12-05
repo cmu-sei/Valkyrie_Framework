@@ -1,32 +1,27 @@
 # IP Maven
 
-IP Maven is a DNS service that provides detailed information about IP addresses and their associated netblock records, both online and offline.
+IP Maven is a comprehensive DNS analysis service designed to provide detailed insights into IP addresses and their associated netblock records. It offers both online and offline capabilities, making it a versatile tool for network administrators, security professionals, and analysts.
 
-The thinking is that by combining normal zeek dns logs with the netblock information, we can provide a more detailed view of the network traffic.
+By combining traditional Zeek DNS logs with enriched netblock information, IP Maven delivers a holistic view of network traffic. This fusion enables more accurate threat detection, enhanced network visibility, and improved diagnostics of network behavior.
 
-Quick Start
-Due to licensing restrictions on some of the data that IP Maven relies on, the application does not include netblock information by default. To load the data and start the application, follow these steps:
+## :material-key: Key Features
 
-```bash
-pip install -r requirements.txt
+- Netblock Enrichment: Seamlessly integrates IP addresses with detailed netblock information for more insightful analysis.
+- Offline Analysis: Perform in-depth investigations using archived data without relying on continuous online queries.
+- Zeek Integration: Works in conjunction with Zeek logs to enhance DNS analysis with enriched IP intelligence.
+- User-Friendly Interface: Simplifies the process of viewing, searching, and interpreting DNS and netblock data.
+- Extensible Framework: Designed for customization and integration into existing network monitoring pipelines.
 
-# If python manage.py results in ModuleNotFoundError: No module named 'pkg_resources'
-# https://stackoverflow.com/questions/7446187/no-module-named-pkg-resources
-pip install setuptools
+## :material-lightbulb: Why Use IP Maven?
 
-python manage.py makemigrations ipmaven_www
-python manage.py migrate
+IP Maven bridges the gap between raw DNS logs and actionable insights by adding critical context to IP addresses. Here’s why it’s a valuable addition to your toolkit:
 
-python ../scripts/load_csv_to_database.py --db ../src/ipmaven_www/db.sqlite3 --csv ../_data/import/out/arin_db.csv
+- Enhanced Network Visibility: See the "big picture" of your network traffic by associating IPs with their respective netblocks.
+- Improved Threat Detection: Detect unusual patterns or anomalies with enriched data.
+- Faster Incident Response: Investigate incidents with comprehensive information at your fingertips.
+- Offline Functionality: Access and analyze data even in air-gapped or restricted environments.
 
-python manage.py runserver 127.0.0.1:8000
-```
+## :material-license: License
 
-The output then, should be similar to:
-
-```bash
-CSV data imported into 'import2' table successfully.
-Data moved to 'ipmaven_www_whois' table and temporary table dropped.
-```
-
-The app is now ready to use.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  
+Copyright 2023 Carnegie Mellon University. See the [license file](https://github.com/cmu-sei/valkyrie_framework/blob/master/license.txt) for more details.

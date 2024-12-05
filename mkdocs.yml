@@ -89,8 +89,6 @@ extra:
       name: Software Engineering Institute
 nav:
   - Home: index.md
-  # - What's New: new.md
-  # - Quick Start: quickstart.md
   - Beacon Huntress:
       - Main: beacon_huntress/index.md
       - Quick Start: beacon_huntress/quickstart.md
@@ -107,6 +105,9 @@ nav:
       - Tutorial: beacon_huntress/tutorial.md
   - IP Maven:
       - Main: ip_maven/index.md
+      - Quick Start: ip_maven/quickstart.md
+      - Additional Resources: ip_maven/additionalresources.md
+      - Frequently Asked Questions: ip_maven/faqs.md
 
 repo_url: "https://github.com/cmu-sei/Valkyrie_Framework"
 repo_name: "cmu-sei/Valkyrie_Framework"

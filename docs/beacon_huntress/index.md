@@ -66,3 +66,8 @@ For troubleshooting, check `docker logs -f beacon_huntress` to access Web UI log
 Once you have the list of IP's from the dashboard you should conduct further investigation and analysis of the Potential Beacons using tools such as nslookup, pcaps, etc. to assess their veracity. Depending on network traffic and Beacon Huntress configuration, some connections identified as Potential Beacons may not be malicious. You can filter these sites out of the results; for more details see the [User Interface](interface) documentation.
 
 See the [Tutorial](tutorial) for running Beacon Huntress.
+
+## :material-license: License
+
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  
+Copyright 2023 Carnegie Mellon University. See the [license file](https://github.com/cmu-sei/valkyrie_framework/blob/master/license.txt) for more details.
