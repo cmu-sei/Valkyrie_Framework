@@ -62,9 +62,9 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
 extra:
-  # analytics:
-  #   provider: google
-  #   property: TODO get new analytics id
+  analytics:
+    provider: google
+    property: G-8TFTQ2LFKB
   social:
     - icon: material/message-question
       link: https://github.com/cmu-sei/valkyrie_framework/issues/new?template=question.md
