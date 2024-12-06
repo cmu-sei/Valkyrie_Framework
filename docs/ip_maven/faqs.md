@@ -10,4 +10,4 @@
 
 3. **How often should I update netblock information?**
 
-    Netblock data updates depend on your provider's frequency. It is recommended to update the data monthly or as specified by your licensing agreement.
+    Netblock data updates depend on your provider's frequency. It is recommended that you update the data monthly or as specified by your licensing agreement.

@@ -2,7 +2,7 @@
 
 # Valkyrie Framework
 
-Valkyrie Framework is an open source suite of tools that enable hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic.
+Valkyrie Framework is an open source suite of tools that enables hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic.
 
 ## Key Links
 
@@ -13,9 +13,9 @@ Valkyrie Framework is an open source suite of tools that enable hunt teams to lo
 
 ### Beacon Huntress
 
-Beacon Huntress is designed to identify malicious network beacons. But first, what are network beacon? We define network beacons as events that occur (and re-occur) on a timed interval. Network beacons can be compared to a heartbeat signal over time. While there are legitimate uses for network beacons (e.g., WiFi, obtaining instructions from an API, beaming telemetry data home), network beaconing can also be a byproduct of malware connecting to a command and control (C2) server. Malware communicating with a C2 server can pass information or request new instructions.
+Beacon Huntress is designed to identify malicious network beacons. But first, what are network beacons? We define network beacons as events that occur (and recur) on a timed interval. Network beacons can be compared to a heartbeat signal over time. While there are legitimate uses for network beacons (e.g., WiFi, obtaining instructions from an API, beaming telemetry data home), network beaconing can also be a byproduct of malware connecting to a command and control (C2) server. Malware communicating with a C2 server can pass information or request new instructions.
 
-Beacons can be difficult to spot with traditional security tools -- especially those that communicate infrequently. Beacon Huntress finds beacons within Zeek logs using machine learning algorithms that identify clustering.
+Beacons can be difficult to spot with traditional security tools -- especially those that communicate infrequently. Beacon Huntress finds beacons within Zeek logs using machine learning algorithms that identify clustering patterns.
 
 Beacon Huntress uses a combination of Python and Machine Learning to find potential beacons.
 
@@ -25,7 +25,7 @@ Beacon Huntress uses a combination of Python and Machine Learning to find potent
 
 IP Maven is a DNS service that provides detailed information about IP addresses and their associated netblock records, both online and offline.
 
-The thinking is that by combining normal zeek dns logs with the netblock information, we can provide a more detailed view of the network traffic.
+By combining traditional Zeek DNS logs with enriched netblock information, IP Maven delivers a holistic view of network traffic.
 
 **For more details see the IP Maven [read me](https://github.com/cmu-sei/Valkyrie_Framework/tree/main/ip_maven) file.**
 
