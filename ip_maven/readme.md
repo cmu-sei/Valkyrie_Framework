@@ -2,7 +2,7 @@
 
 IP Maven is a DNS service that provides detailed information about IP addresses and their associated netblock records, both online and offline.
 
-The thinking is that by combining normal zeek dns logs with the netblock information, we can provide a more detailed view of the network traffic.
+By combining traditional Zeek DNS logs with enriched netblock information, IP Maven delivers a holistic view of network traffic.
 
 ## Quick Start
 
@@ -23,7 +23,7 @@ python ../scripts/load_csv_to_database.py --db ../src/ipmaven_www/db.sqlite3 --c
 python manage.py runserver 127.0.0.1:8000
 ```
 
-The output then, should be similar to:
+The output should be similar to:
 
 ```
 CSV data imported into 'import2' table successfully.
