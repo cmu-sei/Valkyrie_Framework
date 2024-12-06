@@ -106,6 +106,9 @@ nav:
   - IP Maven:
       - Main: ip_maven/index.md
       - Quick Start: ip_maven/quickstart.md
+      - Installation: ip_maven/installation.md
+      - IP Address Search: ip_maven/howto.md
+      - API Endpoints: ip_maven/apiendpoints.md
       - Additional Resources: ip_maven/additionalresources.md
       - Frequently Asked Questions: ip_maven/faqs.md
 
