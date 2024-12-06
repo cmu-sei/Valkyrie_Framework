@@ -43,7 +43,7 @@ python ../scripts/load_csv_to_database.py --db ../src/ipmaven_www/db.sqlite3 --c
 
 Verify the data load by checking the application logs for success messages.
 
-The output then, should be similar to:
+The output should be similar to:
 
 ```bash
 CSV data imported into 'import2' table successfully.
