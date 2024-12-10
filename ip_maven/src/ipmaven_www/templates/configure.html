@@ -1,55 +1,83 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 
 <h3>Configure (Settings)</h3>
-    
+
 <div id="loading" class="mb-3">Loading data, please wait...</div>
 <div class="row g-3 align-items-center">
-    <form id="uploadForm" method="POST" enctype="multipart/form-data" action="{% url 'upload_log_file' %}" class="d-flex align-items-center">
-        {% csrf_token %}
-        <div class="me-3">
-            <label for="logFile" class="form-label">Upload Log File:</label>
-            <input type="file" name="logFile" id="logFile" accept=".log" class="form-control" />
-        </div>
-        <div>
-            <button type="submit" class="btn btn-primary" style="margin-top:30px;">Upload</button>
-        </div>
-    </form>
+  <form
+    id="uploadForm"
+    method="POST"
+    enctype="multipart/form-data"
+    action="{% url 'upload_log_file' %}"
+    class="d-flex align-items-center"
+  >
+    {% csrf_token %}
+    <div class="me-3">
+      <label for="logFile" class="form-label">Upload Log File:</label>
+      <input
+        type="file"
+        name="logFile"
+        id="logFile"
+        accept=".log,.txt"
+        class="form-control"
+      />
+    </div>
+    <div>
+      <button
+        type="submit"
+        id="uploadButton"
+        class="btn btn-primary"
+        style="margin-top: 30px"
+        disabled
+      >
+        Upload
+      </button>
+    </div>
+  </form>
 </div>
-<br/><br/>
+<br /><br />
 <div class="row">
-    <!-- Table to display uploaded files -->
-    <h4>Uploaded Files</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Filename</th>
-                <th>Upload Time</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for file in uploaded_files %}
-            <tr>
-                <td>{{ file.filename }}</td>
-                <td>{{ file.upload_time|date:"Y-m-d H:i:s" }}</td>
-                <td>{{ file.status }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3">No files uploaded yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <!-- Table to display uploaded files -->
+  <h4>Uploaded Files</h4>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Upload Time</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for file in uploaded_files %}
+      <tr>
+        <td>{{ file.filename }}</td>
+        <td>{{ file.upload_time|date:"Y-m-d H:i:s" }}</td>
+        <td>{{ file.status }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3">No files uploaded yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-    document.getElementById("uploadForm").addEventListener("submit", function(event) {
-        document.getElementById("loading").style.display = "block";
+  // Get the file input and upload button elements
+  const fileInput = document.getElementById("logFile");
+  const uploadButton = document.getElementById("uploadButton");
+
+  // Enable the button only when a file is selected
+  fileInput.addEventListener("change", function () {
+    uploadButton.disabled = !fileInput.files.length;
+  });
+
+  // Show loading message on form submission
+  document
+    .getElementById("uploadForm")
+    .addEventListener("submit", function (event) {
+      document.getElementById("loading").style.display = "block";
     });
 </script>
 {% endblock %}

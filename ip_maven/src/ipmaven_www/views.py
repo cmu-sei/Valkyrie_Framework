@@ -70,51 +70,89 @@ def process_file(file_path, replace):
         conn = DBConnect()
         cursor = conn.cursor()
 
-        file_path = Path(settings.BASE_DIR) / 'ipmaven_www' / 'data' / 'in' / file_path
-        df = pd.read_csv(file_path, sep='\t', names=['data'], header=None)
+        try:
+            if replace == 'true':
+                # delete all objects if user wants to replace
+                Mapping.objects.all().delete()
+        except Exception as e:
+            pass;
         
         logger = logging.getLogger('ipmaven_www')
 
-        r = f"{df.count} rows processed successfully"
+        file_path = Path(settings.BASE_DIR) / 'ipmaven_www' / 'data' / 'in' / file_path
 
-        if replace == 'true':
-            # delete all objects if user wants to replace
-            Mapping.objects.all().delete()
+        # is file a log file or text file?
+        if file_path.suffix == '.txt':
+            print("processing text file")
 
-        for index, row in df.iterrows():
-            data = json.loads(row['data'])
+            ct = 0
+            #load text file by line
+            with open(file_path, 'r') as f:
+                for l in f:
+                    ct = ct + 1
+                    # Extract data fields from JSON object
+                    query = l
+                    answer = l
+                    score = 0
 
-            # Extract data fields from JSON object
-            query = data.get('query')
-            answer = data.get('answers', [""])[0]
-            orig_ip = data.get('id', {}).get('orig_h')
-            orig_port = data.get('id', {}).get('orig_p')
-            resp_ip = data.get('id', {}).get('resp_h')
-            resp_port = data.get('id', {}).get('resp_p')
-            proto = data.get('proto')
-            rtt = data.get('rtt')
-            query_class = data.get('qclass_name')
-            query_type = data.get('qtype_name')
-            response_code = data.get('rcode_name')
-            score = 0
+                    # Check if record already exists
+                    cursor.execute("""
+                        SELECT 1 FROM ipmaven_www_mapping
+                        WHERE query = %s AND answer = %s
+                    """, (query, answer))
+                    exists = cursor.fetchone()
 
-            if query_type != 'A': # TODO: just store IV4 addresses right now
-                continue
+                    # Insert record if it does not already exist
+                    if not exists:
+                        cursor.execute("""
+                            INSERT INTO ipmaven_www_mapping (
+                                query, answer, score
+                            ) VALUES (%s, %s, %s)
+                        """, (query, answer, score))
 
-            # Check if record already exists
-            cursor.execute("""
-                SELECT 1 FROM ipmaven_www_mapping
-                WHERE query = %s AND answer = %s
-            """, (query, answer))
-            exists = cursor.fetchone()
+            r = f"{ct} rows processed successfully"
 
-            # Insert record if it does not already exist
-            if not exists:
+        else:
+            print("processing log file")
+        
+            df = pd.read_csv(file_path, sep='\t', names=['data'], header=None)
+            
+            r = f"{df.count} rows processed successfully"
+
+            for index, row in df.iterrows():
+                data = json.loads(row['data'])
+
+                # Extract data fields from JSON object
+                query = data.get('query')
+                answer = data.get('answers', [""])[0]
+                orig_ip = data.get('id', {}).get('orig_h')
+                orig_port = data.get('id', {}).get('orig_p')
+                resp_ip = data.get('id', {}).get('resp_h')
+                resp_port = data.get('id', {}).get('resp_p')
+                proto = data.get('proto')
+                rtt = data.get('rtt')
+                query_class = data.get('qclass_name')
+                query_type = data.get('qtype_name')
+                response_code = data.get('rcode_name')
+                score = 0
+
+                if query_type != 'A': # TODO: just store IV4 addresses right now
+                    continue
+
+                # Check if record already exists
                 cursor.execute("""
-                    INSERT INTO ipmaven_www_mapping (
-                        query, answer, orig_ip, orig_port, resp_ip, resp_port, proto, rtt, query_class, query_type, response_code, score
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (query, answer, orig_ip, orig_port, resp_ip, resp_port, proto, rtt, query_class, query_type, response_code, score))
+                    SELECT 1 FROM ipmaven_www_mapping
+                    WHERE query = %s AND answer = %s
+                """, (query, answer))
+                exists = cursor.fetchone()
+
+                # Insert record if it does not already exist
+                if not exists:
+                    cursor.execute("""
+                        INSERT INTO ipmaven_www_mapping (
+                            query, answer, orig_ip, orig_port, resp_ip, resp_port, proto, rtt, query_class, query_type, response_code, score
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (query, answer, orig_ip, orig_port, resp_ip, resp_port, proto, rtt, query_class, query_type, response_code, score))
 
         conn.commit()
         logger.info(f'File {file_path} processed successfully')
