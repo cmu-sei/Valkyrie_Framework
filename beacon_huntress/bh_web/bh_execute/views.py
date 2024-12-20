@@ -1,6 +1,6 @@
 # Create your views here.  
 from pathlib import Path
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import ExeAgg, ExeDBScan, ExeDBScanVar, ExeByPacket, ExeConnGroup, ExePConn
@@ -10,7 +10,10 @@ from beacon_huntress.src.bin.web import exe_bh
 from bh_web.views import context_results_grid
 from beacon_huntress.src.bin.data import get_data, data_to_json
 
+from bh_execute.tasks import test_task, run_algo
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 def AggView(request):
 
@@ -21,11 +24,25 @@ def AggView(request):
             send = form.save(commit=False)
             send.save()
 
-            # RUN BEACON HUNTRESS
-            ret_val = exe_bh(request,"agg")
+            #run_algo.apply_async(request,"agg")
+            post_data = request.POST.dict()
+            #test_task.delay()
+            run_algo.delay(request.POST.dict(),"agg")
 
-            if ret_val["cnt"] == 0:
-                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
+            messages.info(request, "Process is running")
+            #messages.info(request, results)
+            #app.send_task("app.run_search_algo", args=[request,"agg"])
+
+            # RUN BEACON HUNTRESS
+            #print("*"*100)
+            #print(request)
+            #print(request.POST.dict())
+            #print("*"*100)
+            #ret_val = exe_bh(request,"agg")
+            #ret_val = exe_bh(post_data,"agg")
+
+            # if ret_val["cnt"] == 0:
+            #    messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
 
             return redirect("/Results.html")
     else:

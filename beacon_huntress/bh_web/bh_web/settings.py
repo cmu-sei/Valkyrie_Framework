@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'settings',
     'bh_execute',
+    'channels',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -82,6 +83,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'bh_web.wsgi.application'
+ASGI_APPLICATION = 'core.asgi.application'
 
 
 # Database
@@ -143,3 +145,20 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#Celery settings
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+# CELERY_BROKER_URL = 'redis://redis:6379/0'  
+# CELERY_RESULT_BACKEND  = 'redis://redis:6379/0'
+# CELERY_ACCEPT_CONTENT = ['json']  # Accept JSON-serialized tasks
+# CELERY_TASK_SERIALIZER = 'json'  # Serialize tasks in JSON format
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis', 6379)],
+        },
+    },
+}
