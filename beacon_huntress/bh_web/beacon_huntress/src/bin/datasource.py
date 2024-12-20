@@ -1,18 +1,25 @@
 import pandas as pd
 import json
 import sys
+import os
 from elasticsearch import Elasticsearch
 
 
 def safe_load(row):
+    '''
+    Convert a row to JSON format.\n
+
+    Parameters:
+        row - Dictionary tuple.
+    Returns
+        JSON value or None
+    '''    
     try:
         return json.loads(row)
     except json.JSONDecodeError:
         return None
 
 def elastic_client(data):
-
-    print(data)
 
     if data["auth"] == "api":
         # API KEY
@@ -156,6 +163,16 @@ def get_elastic_data(client, data, start_dte = "", end_dte = ""):
 
     return df_zeek
 
-########################################################
-## 
-########################################################
+def chunk_data(df,loc,filename,chunk_type="num",chunk=10000):
+
+    cnt = 0
+
+    if chunk_type == "num":
+        for x in range(0, len(df), chunk):
+            cnt += 1
+            chk = df[x:x+ chunk]
+            
+            os.path.join(loc,filename + "_{}.parquet".format(cnt))
+            chk.to_parquet(os.path.join(loc,filename + "_{}.parquet".format(cnt)),compression="snappy")
+    
+    return None

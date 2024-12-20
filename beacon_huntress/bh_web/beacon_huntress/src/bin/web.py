@@ -51,19 +51,30 @@ def exe_bh(request,type):
     conf = bh._load_config(os.path.join(BASE_DIR, "config", "config.conf"))
     db_conf = bh._load_config(os.path.join(BASE_DIR, "config", "dashboard.conf"))
 
+    #conf = bh._load_config(os.path.join("beacon_huntress", "src", "config", "config.conf"))
+    #db_conf = bh._load_config(os.path.join("beacon_huntress", "src", "config", "dashboard.conf"))
+
     # BUILD CONFIG
     conf = load_settings(conf, "general")
+
+
+    print("Made it 1")
     conf = load_settings(conf, "post", request)
+    print("Made it 2")
     conf = load_settings(conf, "filter")
+    print("Made it 3")
     conf = load_settings(conf, type)
 
+    print("Made it 4")
     with open("bh_run.yaml", "w") as file:
         yaml.dump(conf, file, sort_keys=False)
 
-    # RUN BEACON HUNTRESS
+    # RUN BEACON HUNTR
+    print("Made it 5")
     ret_val = beacon_huntress("bh_run.yaml")
 
     # DELETE TEMP YAML
+    print("Made it 6")
     os.remove("bh_run.yaml")
 
     # UNCOMMENT TO RENDER THE PAGE
@@ -171,7 +182,9 @@ def load_settings(config, type, request = ""):
     elif type == "post":
         
         # GET DATASOURCE ID FROM POST
-        ds_id = request.POST.get("ds_id")
+        # COMMENTED AFTER CELERY
+        #ds_id = request.POST.get("ds_id")
+        ds_id = request["ds_id"]
 
         # GET DATAFRAME IN JSON FORMAT
         df = _get_ds(ds_id)
@@ -184,21 +197,28 @@ def load_settings(config, type, request = ""):
             config["general"]["raw_loc"] = data["raw_log_loc"]
             config["general"]["ds_name"] = df["ds_name"]
             config["general"]["ds_type"] = df["ds_type"]
-            config["general"]["start_dte"] = request.POST.get("start_dte")
-            config["general"]["end_dte"] = request.POST.get("end_dte")            
+            # config["general"]["start_dte"] = request.POST.get("start_dte")
+            # config["general"]["end_dte"] = request.POST.get("end_dte")            
+            config["general"]["start_dte"] = request["start_dte"]
+            config["general"]["end_dte"] = request["end_dte"]
         elif df["ds_name"] == "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs":
-            config["general"]["raw_loc"] = request.POST.get("raw_log_loc")
+            #config["general"]["raw_loc"] = request.POST.get("raw_log_loc")
+            config["general"]["raw_loc"] = request["raw_log_loc"]
             config["general"]["ds_name"] = df["ds_name"]
             config["general"]["ds_type"] = df["ds_type"]
-            config["general"]["start_dte"] = request.POST.get("start_dte")
-            config["general"]["end_dte"] = request.POST.get("end_dte")
+            # config["general"]["start_dte"] = request.POST.get("start_dte")
+            # config["general"]["end_dte"] = request.POST.get("end_dte")
+            config["general"]["start_dte"] = request["start_dte"]
+            config["general"]["end_dte"] = request["end_dte"]
         elif df["ds_type"] in ["Security Onion", "Elastic"]:
             data = json.loads(df["data"].replace("'","\""))
             config["general"]["raw_loc"] = "/elastic"
             config["general"]["ds_name"] = df["ds_name"]
             config["general"]["ds_type"] = df["ds_type"]
-            config["general"]["start_dte"] = request.POST.get("start_dte")
-            config["general"]["end_dte"] = request.POST.get("end_dte")            
+            # config["general"]["start_dte"] = request.POST.get("start_dte")
+            # config["general"]["end_dte"] = request.POST.get("end_dte")            
+            config["general"]["start_dte"] = request["start_dte"]
+            config["general"]["end_dte"] = request["end_dte"]
 
             if df["ds_type"] == "Security Onion":
                 index = "*-zeek-*"

@@ -354,7 +354,7 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
             new_id = delta[0]
 
             if delta[0] != curr_id or (i == len(X) - 1):
-                if (len(curr_deltas) >= max_lines and len(curr_deltas) >= min_records):
+                if (len(curr_deltas) >= int(max_lines) and len(curr_deltas) >= int(min_records)):
                     
                     num_clusters = round(cluster_factor * len(curr_deltas)) + 1
 
