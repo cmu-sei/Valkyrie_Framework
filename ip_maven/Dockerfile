@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y \
 
 # ADD DIRECTORIES
 RUN mkdir -p /app/log /tmp/raw/data
-ADD ./src /app
-ADD ./readme.md /app
+ADD ./ip_maven/src /app
+ADD ./ip_maven/readme.md /app
 WORKDIR /app
 
 # GATHER PYTHON MODULES
