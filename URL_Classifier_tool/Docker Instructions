@@ -1,0 +1,4 @@
+Cd into URL_Classifier_tool directory and run:
+
+docker build -t url_classifier .
+docker run -it --rm url_classifier -v "http://example.com"
