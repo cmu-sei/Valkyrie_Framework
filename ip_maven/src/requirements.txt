@@ -15,6 +15,7 @@ numpy==2.1.1
 packaging==24.1
 pandas==2.2.2
 prompt_toolkit==3.0.47
+psycopg2-binary==2.9.6
 python-dateutil==2.9.0.post0
 pytz==2024.2
 PyYAML==6.0.2
