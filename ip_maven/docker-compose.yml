@@ -2,13 +2,13 @@ networks:
   valkyrie-network:
     driver: bridge
 services:
-  # ipmaven:
-  #   image: dustinupdyke/ipmaven
-  #   container_name: ipmaven
-  #   ports:
-  #     - '8888:8000'
-  #   networks:
-  #     - valkyrie-network
+  ipmaven:
+    image: dustinupdyke/ipmaven
+    container_name: ipmaven
+    ports:
+      - '8888:8000'
+    networks:
+      - valkyrie-network
   postgres:
     image: postgres
     container_name: postgres
