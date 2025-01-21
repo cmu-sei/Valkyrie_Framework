@@ -33,7 +33,7 @@ jobs:
           tags: dustinupdyke/ipmaven:${{ steps.tag_name.outputs.tag }}
           push: false
           context: ./
-          file: ./Dockerfile
+          file: ./ip_maven/Dockerfile
 
       
       - name: Save Docker image as tar
