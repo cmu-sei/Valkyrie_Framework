@@ -49,17 +49,12 @@ services:
     build:
       context: .
     container_name: beacon_huntress
-    # command: >
-    #   sh -c "python3 bh_web/manage.py migrate &&
-    #          python3 bh_web/manage.py runserver 0.0.0.0:8000"
     command: >
-      sh -c "python3 bh_web/manage.py migrate &&
-             daphne -b 0.0.0.0 -p 8000 bh_web.asgi:application &&
-             pwd &&
-             ls"
+      sh -c "python3 manage.py migrate &&
+             daphne -b 0.0.0.0 -p 8000 bh_web.asgi:application"    
     restart: always
     volumes:
-      - .:/app
+      - ./bh_web:/app
       - /tmp:/tmp
       - ./bh_web/datasets/tutorial:/tutorial
       - ./bh_web/datasets/elastic:/elastic

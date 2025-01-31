@@ -8,6 +8,7 @@ from .models import conf_general, conf_filter
 from beacon_huntress.src.bin.data import get_data, data_to_json, add_ds, del_data, upd_ds
 from beacon_huntress.src.bin.datasource import elastic_client, elastic_index
 import os, json, numpy as np
+from bh_execute.tasks import load_ds_data
 
 # BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -163,11 +164,15 @@ def get_datasources(request, mask = True):
 def new_ds(request):
 
     if request.method == "POST":
-
+        
         print(request.POST)
 
         try:
             add_ds(request.POST)
+
+            # LOAD ELASTIC DATA
+            if request.POST.get("data_type") == "Elastic":
+                load_ds_data.delay(request.POST.dict())
 
             messages.info(request, "Added Data Source {}".format(request.POST.get("ds_name")))
         except BaseException as err:
@@ -234,15 +239,15 @@ def get_elasticindex(request):
                 "timeout": 10}
         try:
             # UNCOMMENT AFTER WORKING OUT THE KINKS
-            #es = elastic_client(data)
-            #df = elastic_index(es)
-            #df = data_to_json(df)
-
-            import pandas as pd
-            data = {"index_name": ["Test Index 1", "Test Index 2", "Test Index 3"], 
-                              "cnt": [1712, 312523, 12461]}
-            df = pd.DataFrame(data)
+            es = elastic_client(data)
+            df = elastic_index(es)
             df = data_to_json(df)
+
+            # import pandas as pd
+            # data = {"index_name": ["Test Index 1", "Test Index 2", "Test Index 3"], 
+            #                   "cnt": [1712, 312523, 12461]}
+            # df = pd.DataFrame(data)
+            # df = data_to_json(df)
 
             return JsonResponse(df,safe=False)
         except BaseException as err:

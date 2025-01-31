@@ -15,6 +15,7 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+#BASE_DIR = Path(__file__).resolve().parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -56,6 +57,8 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # FOR WEBSOCKETS
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,7 +86,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'bh_web.wsgi.application'
-ASGI_APPLICATION = 'core.asgi.application'
+ASGI_APPLICATION = 'bh_web.asgi.application'
 
 
 # Database
@@ -135,10 +138,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-STATIC_URL = 'static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static/"),
-)
+# STATIC_URL = 'static/'
+# STATICFILES_DIRS = (
+#     os.path.join(Path(__file__).resolve().parent, "static/"),
+# )
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_DIRS = [BASE_DIR / "static"]
+# ENABLE WHITENOISE COMPRESSION AND CACHING
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Default primary key field type
@@ -146,13 +155,9 @@ STATICFILES_DIRS = (
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#Celery settings
+#CELERY SETTINGS
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
-# CELERY_BROKER_URL = 'redis://redis:6379/0'  
-# CELERY_RESULT_BACKEND  = 'redis://redis:6379/0'
-# CELERY_ACCEPT_CONTENT = ['json']  # Accept JSON-serialized tasks
-# CELERY_TASK_SERIALIZER = 'json'  # Serialize tasks in JSON format
 
 CHANNEL_LAYERS = {
     'default': {
@@ -162,3 +167,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# SECURITY SETTINGS NEED TO FIGURE THESE OUT (BACKHERE)
+#SECURE_SSL_REDIRECT = True
+#SECURE_HSTS_SECONDS = 31536000

@@ -49,8 +49,19 @@ CONF = os.path.join(_get_parent_dir(os.path.abspath(__file__),2),"config","dashb
 ##  
 #####################################################################################
 
-def get_conn_str(conf = CONF, conf_hash = "", option = "get"):
+def get_conn_str(conf = CONF):
+    """
+    Get the configuration DB connection string
+    
+    Parameters:
+    ----------
+    conf:
+        Configuration file
 
+    Returns
+    -------
+    DB Connection String: STRING
+    """
     starttime = datetime.now()
 
     try:
@@ -72,6 +83,18 @@ def get_conn_str(conf = CONF, conf_hash = "", option = "get"):
     return my_conn
 
 def data_to_json(df):
+    """
+    Convert Pandas Dataframe to JSON
+
+    Parameters:
+    ===========
+    df: PANDAS DATAFRAME
+        A pandas dataframe.
+
+    Returns:
+    ========
+    JSON data: JSON
+    """
     # CONVERT TO 
     #df_json = df.to_json(orient="records", lines=True)
     df_json = df.to_json(orient="records")
@@ -80,6 +103,37 @@ def data_to_json(df):
     return df_json
 
 def get_data(type,value = None):
+    """
+    Gather data from the DB to used for the web app
+
+    Parameters:
+    ===========
+    type: STRING
+        Return data from the DB.
+        Options:
+            group: Beacon group data.
+            filtered_beacons: A beacons that have been filtered.
+            data_sources: A beacon huntress data sources. Use values rowid to return a specific datasource.
+            data_type: Data source types.
+            ds_by_name: A beacon huntress data sources by name. Use values ds_name to return the specific datasource.
+            ds_files: A data source local files. Used for Elastic/SecOnion data sources. Use values rowid to return a specific datasource.
+            ds_files_name:  A data source local files. Used for Elastic/SecOnion data sources. Use values ds_name to return a specific datasource.
+            active_ds: Active data sources. Used for Elastic/SecOnion data sources. Elactic/SecOnion data source are disabled until data is cached locally. 
+            NONE: All potential beacons. Use values uid to return potential beacons for a beacon run group.
+    value: STRING
+        Specfic values to filter by.
+        Options:
+            data_sources type: Set value to rowid
+            ds_by_name type: Set value to data source name
+            ds_files: Set value to rowid
+            ds_files_name: Set value to ds_name
+            active_ds: Set value to rowid
+            NONE: Set value beacon group id
+
+    Returns:
+    ========
+    Pandas Dataframe: PANDAS DATAFRAME
+    """    
     
     #####################################################################################
     ##  
@@ -98,6 +152,17 @@ def get_data(type,value = None):
             df = pd.read_sql("select * from vw_datasources where rowid = {} order by create_date".format(value), my_conn)
     elif type == "data_type":
         df = pd.read_sql("select * from ds_type order by ds_type", my_conn)
+    elif type == "ds_by_name":
+        df = pd.read_sql("select * from vw_datasources where ds_name = '{}' order by create_date".format(value), my_conn)        
+    elif type == "ds_files":
+        df = pd.read_sql("select * from vw_dsfiles where rowid = {}".format(value), my_conn)    
+    elif type == "ds_files_name":
+        df = pd.read_sql("select * from vw_dsfiles where ds_name = '{}' and active = True".format(value), my_conn)        
+    elif type == "active_ds":
+        if value == None:
+            df = pd.read_sql("select * from vw_datasources where active = True order by create_date", my_conn)
+        else:
+            df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)               
     else:
         if value == None:
             df = pd.read_sql("select * from vw_beacon", my_conn)
@@ -107,7 +172,33 @@ def get_data(type,value = None):
     return df
 
 def add_data(type,value=None):
+    """
+    Add data from the DB to used for the web app.
 
+    Parameters:
+    ============
+    type: STRING
+        Return data from the DB.
+        Options:
+            beacon: Add beacon filter ip. Use value of IP.
+            filtered_beacons: A beacons that have been filtered.
+            data_sources: A beacon huntress data sources. Use values rowid to return a specific datasource.
+            data_type: Data source types.
+            ds_by_name: A beacon huntress data sources by name. Use values ds_name to return the specific datasource.
+            ds_files: A data source local files. Used for Elastic/SecOnion data sources. Use values rowid to return a specific datasource.
+            ds_files_name:  A data source local files. Used for Elastic/SecOnion data sources. Use values ds_name to return a specific datasource.
+            active_ds: Active data sources. Used for Elastic/SecOnion data sources. Elactic/SecOnion data source are disabled until data is cached locally. 
+            All other options: All potential beacons. Use values uid to return potential beacons for a beacon run group.
+    value: String
+        Options:
+            IP value for beacon filter
+            IP & DNS value for DNS (JSON Data)
+            Data source name, data source type & datasource details for datasource (JSON Data)
+            Beacon run group id, datasource id & datasource file (JSON Data)
+    Returns:
+    =========
+    Pandas Dataframe: PANDAS DATAFRAME
+    """
     try:
         my_conn = get_conn_str(CONF)
 
@@ -120,13 +211,36 @@ def add_data(type,value=None):
         elif type == "ds":
             query = "insert into datasource (ds_name,ds_type_id,data) values('{}','{}','{}')".format(value[0],value[1],value[2])
             my_conn.connect().execute(query)
+        elif type == "ds_files":
+            query = "insert into ds_files (group_id,ds_id,file_name) values ('{}',{},'{}')".format(value[0],value[1],value[2])
+            my_conn.connect().execute(query)
 
         return None
     except BaseException as err:
         logger.error(err)
 
 def del_data(type,value=None):
-    
+    """
+    Delete data from the beacon db.
+
+    Parameters:
+    ===========
+    type: STRING
+        Data to delete
+        Options:
+            detail: 
+            beacon: Will delete beacon filters
+            data_source: Will delete data source and any data source files
+
+    value: STRING 
+        Options:
+            all: will delete all data from deltas, raw sources, beacon run config, beacon logs, beacon details, beacon run group
+            uid: beacon group id
+
+    Returns:
+    ========
+    Nothing
+    """
     my_conn = get_conn_str(CONF)
 
     table_lst = ["delta", "raw_source", "beacon_run_conf", "beacon_log", "beacon", "beacon_group"]
@@ -155,12 +269,43 @@ def del_data(type,value=None):
 
     elif type == "data_source":
         if int(value) != 1:
-            query = "delete from datasource where rowid = {}".format(value)
-            my_conn.connect().execute(query)
+            # CHECK FOR DS FILES
+            df = get_data("ds_files",value)
+            
+            # IF NO LOCAL FILES DELETE THE DATSOURCE
+            if df.empty:
+                query = "delete from datasource where rowid = {}".format(value)
+                my_conn.connect().execute(query)
+            else:
+                # DELETE DATASOURCE FILES FROM DB
+                query = "delete from ds_files where ds_id = {}".format(value)
+                my_conn.connect().execute(query)
+
+                # DELETE DATASOURCE
+                query = "delete from datasource where rowid = {}".format(value)
+                my_conn.connect().execute(query)
+
+                # DELETE THE FILES FROM THE FILESYSTEM
+                for x in df["file_name"].values:
+                    del_dsfile(x)
 
     return None
 
 def del_logfile(request,dir):
+    """
+    Delete a Beacon Huntress log file.
+
+    Parameters:
+    ===========
+    request: 
+        Django GET request
+    dir: 
+        The log file to delete
+
+    Returns:
+    ========
+    Nothing    
+    """
     
     log = request.GET.get("log")
 
@@ -172,6 +317,18 @@ def del_logfile(request,dir):
         print("File {} does not exist".format(full_path))
 
 def get_run_conf(uid):
+    """
+    Get the run configuration for a Beacon Huntress group id.
+
+    Parameters:
+    ===========
+    uid: 
+        Beacon Huntress run group id
+
+    Returns:
+    ========
+    All configuration settings: JSON
+    """
 
     pd.set_option('display.max_colwidth', None)
 
@@ -207,6 +364,18 @@ def get_run_conf(uid):
     return ret_val
 
 def add_beacon_group(uid):
+    """
+    Add Beacon Huntress group id.
+
+    Parameters:
+    ===========
+    uid: 
+        Beacon Huntress run group id
+
+    Returns:
+    ========
+    Beacon Huntress group id table primary key: INT   
+    """
     
     try:
         group_id = []
@@ -226,7 +395,20 @@ def add_beacon_group(uid):
         logger.error(err)    
 
 def add_group_conf(uid, config):
+    """
+    Add Beacon Huntress group and log.
 
+    Parameters:
+    ===========
+    uid: 
+        Beacon Huntress run group id
+    config:
+        Beacon Huntress run configuration
+
+    Returns:
+    ========
+    Nothing
+    """
     try:
         my_conn = get_conn_str(CONF)
 
@@ -236,6 +418,18 @@ def add_group_conf(uid, config):
         logger.error(err)        
 
 def get_group_id(uid):
+    """
+    Get Beacon Huntress group id.
+
+    Parameters:
+    ===========
+    uid: 
+        Beacon Huntress run group id
+
+    Returns:
+    ========
+    Beacon Huntress group id table primary key: INT   
+    """
 
     my_conn = get_conn_str(CONF)
 
@@ -246,6 +440,20 @@ def get_group_id(uid):
     return int(df.group_id.to_string(index=False))
 
 def add_group_log(group_id,log_file):
+    """
+    Add Beacon Huntress group and log to database.
+
+    Parameters:
+    ===========
+    group_id: 
+        Beacon Huntress run group id (INT)
+    log_file:
+        Beacon Huntress run log file (STRING)
+
+    Returns:
+    ========
+    Nothing
+    """
 
     try:
         my_conn = get_conn_str(CONF)
@@ -256,6 +464,18 @@ def add_group_log(group_id,log_file):
         logger.error(err)        
 
 def add_dns(http_log_dir):
+    """
+    Add DNS data to database.
+
+    Parameters:
+    ===========
+    http_log_dir: 
+        Zeek http dsn log directory
+
+    Returns:
+    ========
+    Nothing
+    """
 
     #####################################################################################
     ##  GATHER HTTP LOG DIR
@@ -309,6 +529,22 @@ def add_dns(http_log_dir):
     my_conn.connect().execute(query)  
 
 def add_ds(post_data):
+    """
+    Add data source data to the database.
+
+    Parameters:
+    ===========
+    post_data: 
+        Django POST data
+
+    Returns:
+    ========
+    Boolean
+            True for Elastic
+            False for all data sources
+    """
+
+    bg_pro = False
 
     if post_data["data_type"] == "Zeek Connection Logs":
         data = {"raw_log_loc": post_data["raw_log_loc"]}
@@ -316,27 +552,43 @@ def add_ds(post_data):
         query = "insert into datasource \
                 (ds_name,ds_type_id,data) \
                 select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
-        
+
     elif post_data["data_type"] == "Security Onion":
         data = {"host": post_data["es_host"], "port": post_data["es_port"], "api_key": post_data["api_key"]}
 
         query = "insert into datasource \
                 (ds_name,ds_type_id,data) \
                 select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
+        
+        bg_pro = False
     elif post_data["data_type"] == "Elastic":
         # GET INDEX AS A LIST FOR MULTIPLE VALUES
-        data = {"host": "".join(post_data["es_host"]), "port": "".join(post_data["es_port"]), "api_key": "".join(post_data["api_key"]), "index": post_data.getlist("es_index")}
+        data = {"host": "".join(post_data["es_host"]), "port": "".join(post_data["es_port"]), "api_key": "".join(post_data["api_key"]), "index": post_data.getlist("es_index"), "ds_name": post_data["ds_name"]}
 
         query = "insert into datasource \
-                (ds_name,ds_type_id,data) \
-                select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
-    else:
-        pass
+                (ds_name,ds_type_id,data,active) \
+                select distinct '{}',{},'{}',False".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
+        
+        bg_pro = True
 
     my_conn = get_conn_str(CONF)
     my_conn.connect().execute(query)
 
+    return bg_pro
+
 def upd_ds(post_data):
+    """
+    Update data source data to the database.
+
+    Parameters:
+    ===========
+    post_data: 
+        Django POST data
+
+    Returns:
+    ========
+    Nothing
+    """
 
     data = {}
 
@@ -354,5 +606,46 @@ def upd_ds(post_data):
         data = '{}'\
         where rowid = {}".format(ds_name,str(data).replace("'","''"),post_data.GET.get("rowid"))
         
+    my_conn = get_conn_str(CONF)
+    my_conn.connect().execute(query)    
+
+def del_dsfile(filename):
+    """
+    Delete data source file data
+
+    Parameters:
+    ===========
+    filename: 
+        Data source file
+
+    Returns:
+    ========
+    Nothing
+    """
+
+    if os.path.exists(filename):
+        os.remove(filename)
+
+        if len(os.listdir(os.path.dirname(filename))) == 0:
+            os.rmdir(os.path.dirname(filename))
+    else:
+        print("File {} does not exist".format(filename))
+
+def ds_activate(ds_name):
+    """
+    Activate data source after files have been created
+
+    Parameters:
+    ===========
+    ds_name: 
+        Data source name
+
+    Returns:
+    ========
+    Nothing
+    """
+
+    query = "update datasource set active = True where ds_name = '{}'".format(ds_name)
+
     my_conn = get_conn_str(CONF)
     my_conn.connect().execute(query)    
