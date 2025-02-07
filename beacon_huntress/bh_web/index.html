@@ -7,7 +7,7 @@
     <link
       rel="icon"
       type="image/icon type"
-      href="/static/icons/beacon_huntress.png"
+      href="app/static/icons/beacon_huntress.png"
     />
     <meta
       name="viewport"
@@ -19,8 +19,23 @@
     />
     <meta name="author" content="Cyber Mission Readiness @ CERT < SEI < CMU" />
     <title>Beacon Huntress</title>
-    <link href="/static/assets/css/modern.css" rel="stylesheet" />
-    <link href="/static/assets/css/style.css" rel="stylesheet" />
+
+
+    <link href="static/assets/css/modern.css" rel="stylesheet" />
+    <link href="static/assets/css/style.css" rel="stylesheet" />
+    <script type="text/javascript" src="/static/script/notifications.js"></script>
+    <script>
+      // Initialize WebSocket notifications
+      getNotificationsAlgo('ws://localhost:8000/ws/notifications/', 'alert-container');
+    </script>
+    
+
+    <!--
+    {% load static %}
+    <link href="{% static 'assets/css/modern.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/style.css' %}" rel="stylesheet" />
+    -->
 
     <!-- <script src="/static/script/jquery.min.js"></script>
     <link rel="stylesheet" href="/static/css/jquery.dataTables.min.css">
@@ -167,14 +182,18 @@
               {% endblock %}
             </div>
 
+            <script src="static/assets/js/app.js"></script>
+
             <div class="row">
               <div class="col-12 col-lg-12 d-flex">
                 <div class="card flex-fill">
                   <div class="card-header">
+                    
+                    <div id="alert-container"></div>
+                    
                     {% block content %}
-
                     <img
-                      src="/static/images/beacon_huntress.png"
+                      src="static/images/beacon_huntress.png"
                       alt="Beacon Huntress"
                     />
                     <p>
@@ -196,6 +215,7 @@
                 </div>
               </div>
             </div>
+
           </div>
         </main>
         <footer class="footer">
@@ -219,7 +239,7 @@
                     <a class="text-muted">|</a>
                   </li>
                   <li class="list-inline-item">
-                    <a class="text-muted" href="#">v2.1</a>
+                    <a class="text-muted" href="#">v2.2</a>
                   </li>
                 </ul>
               </div>
@@ -228,7 +248,7 @@
                   <div class="text-center">
                     <span class="text-muted">Built with &hearts;</span>
                     <img
-                      src="/static/assets/img/sei/sei-logo.png"
+                      src="static/assets/img/sei/sei-logo.png"
                       alt="CMU Software Engineering Institute"
                       style="margin-left: 4px"
                     />
@@ -241,6 +261,6 @@
       </div>
     </div>
 
-    <script src="/static/assets/js/app.js"></script>
+    <!--<div id="alert-container"></div>-->
   </body>
 </html>

@@ -1,10 +1,14 @@
 {% extends 'index.html' %} {% block header %}
 <h1 class="header-title">Beacon Huntress Results</h1>
 <p class="header-subtitle"><a href="/">Home</a> / Results</p>
-{% endblock %} {% block content %}
 
+<script type="text/javascript" src="/static/script/notifications.js"></script>
+
+{% endblock %} 
+
+{% block content %}
 {% if messages %} {% for message in messages %}
-<div class="alert alert-danger alert-dismissible fade show" role="alert" style="padding:15px;">
+<div class="alert alert-success alert-dismissible fade show" role="alert" style="padding:15px;">
   {{ message|safe }}
   <button
     type="button"
@@ -15,5 +19,14 @@
 </div>
 {% endfor %} {% endif %}
 
+<div id="alert-container"></div>
+
 <h4>Results Table</h4>
-{{ files|safe }} {% endblock %}
+{{ files|safe }} 
+
+<script>
+    // Initialize WebSocket notifications
+    getNotificationsAlgo('ws://localhost:8000/ws/notifications/', 'alert-container');
+</script>
+
+{% endblock %}

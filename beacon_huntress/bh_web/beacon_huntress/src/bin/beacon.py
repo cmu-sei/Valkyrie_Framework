@@ -97,8 +97,6 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
     # GET BEACON DATA
     df_delta = pd.merge(dataset_full, df_beacons, how="inner", left_on=["connection_id"], right_on = ["connection_id"])
 
-    #df_delta = dataset_full[dataset_full["connection_id"].isin(beacon_conns)].copy()
-
     # WINDOWS HAS A PROBLEM WITH SEARCHING FOR PATHS WITH \
     # ADDED FILE NAME COLUMN TO SEARCH BY FILE_NAME REGUARDLESS OF OS
     # df_delta["file_name"] = df_delta["source_file"].apply(lambda z: os.path.basename(z))
@@ -285,28 +283,39 @@ def _non_gold_cli(delta_file, beacons_conns, sort_by = "connection_count", pass_
         print("X" * 121)     
 
 def agglomerative_clustering(delta_file, delta_column, max_variance, min_records, cluster_factor, line_amounts, min_delta_time, gold_loc = "", overwrite = False, verbose = False):
-    '''
+    """
     Run an agglormerative clustering algorithm against a delta file to identify cluster points to be used to find a beacon.\n
 
     Parameters:
-        delta_file - Source delta file.\n
-        delta_column - Source delta column. \n
-        max_variance - Variance threshold for any potential beacons.\n
-        min_records - Minimum number of delta records to search.\n
-        cluster_factor - Cluster factor percentage.\n
-        line_amounts - Line amounts to process at a time, in list format.\n
-        min_delta_time - Minimum delta time to search by, in milliseconds.\n
-        gold_loc -Results file location. Blank string ("") for no result file.\n
-            default: "" \n
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False                               
+    ===========
+    delta_file:
+        Source delta file.\n
+    delta_column: 
+        Source delta column. \n
+    max_variance:
+        Variance threshold for any potential beacons.\n
+    min_records:
+        Minimum number of delta records to search.\n
+    cluster_factor:
+        Cluster factor percentage.\n
+    line_amounts:
+        Line amounts to process at a time, in list format.\n
+    min_delta_time:
+        Minimum delta time to search by, in milliseconds.\n
+    gold_loc: STRING
+        Results file location. Blank string ("") for no result file.\n
+        Default: "" \n
+    overwrite: BOOLEAN 
+        Overwrite existing location.  True or False (case-sensistive). \n
+        Default: False \n
+    verbose: BOOLEAN 
+        Verbose logger.\n
+        default = False                               
 
-    Returns
-        Nothing
-    '''
+    Returns:
+    =======
+    Gold File Path: STRING
+    """
     from sklearn.cluster import AgglomerativeClustering
 
     #####################################################################################
@@ -354,7 +363,7 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
             new_id = delta[0]
 
             if delta[0] != curr_id or (i == len(X) - 1):
-                if (len(curr_deltas) >= max_lines and len(curr_deltas) >= min_records):
+                if (len(curr_deltas) >= int(max_lines) and len(curr_deltas) >= int(min_records)):
                     
                     num_clusters = round(cluster_factor * len(curr_deltas)) + 1
 
@@ -409,31 +418,41 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
     return gold_file
 
 def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minimum_points_in_cluster = 4, minimum_likelihood = .70, gold_loc = "", overwrite = False, verbose = False):
-    '''
+    """
     Run a DBSCAN cluster algorithm against a delta file to identify cluster points to be used to find a beacon.\n
 
     Parameters:
-        delta_file - Source delta file.\n
-        delta_column - Source delta column. \n
-        minimum_delta - Minimum number of delta records to search using your delta column.\n
-        spans - Spans you wish to search, in list format. Minimum number of delta records to search using your delta column.\n
-            example: [[0, 5], [5, 10]] (Will search two spans 0-5 and 5-10).
-            default = []\n
-        minimum_points_in_cluster - Minimum points needed for a cluster.\n
-            default = 4\n
-        minimum_likelihood - Minimum likelihood value to identify a beacon.\n
-            default = .70\n
-        gold_loc -Results file location. Blank string ("") for no result file.\n
-            default = ""\n
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False
+    ===========
+    delta_file:
+        Source delta file.\n
+    delta_column:
+        Source delta column. \n
+    minimum_delta:
+        Minimum number of delta records to search using your delta column.\n
+    spans: LIST 
+        Spans you wish to search, in list format. Minimum number of delta records to search using your delta column.\n
+        Example: [[0, 5], [5, 10]] (Will search two spans 0-5 and 5-10).
+        Default = []\n
+    minimum_points_in_cluster: INT
+        Minimum points needed for a cluster.\n
+        Default = 4\n
+    minimum_likelihood: FLOAT
+        Minimum likelihood value to identify a beacon.\n
+        Default = .70\n
+    gold_loc: STRING
+        Results file location. Blank string ("") for no result file.\n
+        Default = ""\n
+    overwrite: BOOLEAN
+        Overwrite existing location.\n
+        Example: False \n
+        Default: False \n
+    verbose - Verbose logger.\n
+        Default = False
 
-    Returns
-        Nothing
-    '''
+    Returns:
+    ========
+    Gold File Location: STRING
+    """
 
     from sklearn.cluster import DBSCAN
     from scipy.spatial.distance import cdist
@@ -593,36 +612,47 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
     return gold_file
 
 def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_avg = 15, variance_per = 10, minimum_likelihood = 70, gold_loc = "", overwrite = False, verbose = False):
-    '''
+    """
     Run a DBSCAN cluster by filtering out records by delta variance percentage and average delta time. Source delta file must be in parquet format.\n
 
     Parameters:
-        delta_file - Source delta file.\n
-        delta_column - Source delta column. \n
-        avg_delta - Average delta time to include in the search using your delta column. Greater than equal (>=).\n
-        conn_cnt - Total connection count for filtering. Greater than equal (>=).\n
-            default = 4\n
-        span_avg - The percentage to increase and decrease from the connections total delta span.\n
-            example: 15\n
-                15 will decrease 15% from the minimum and maximum delta span.\n
-                min delta = 5\n
-                max delta = 10\n
-                span min = 4.25 (5 - (5 * 15%))\n
-                span max = 11.5 (10 + (10 * 15%))\n
-            default = 15\n
-        variance_per - Total variance perctage for filtering. Greater than equal (>=).
-            default = 4\n           
-        gold_loc -Results file location. Blank string ("") for no result file.\n
-            default = ""\n
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False
+    ===========
+    delta_file:
+        Source delta file.\n
+    delta_column:
+        Source delta column. \n
+    avg_delta:
+        Average delta time to include in the search using your delta column. Greater than equal (>=).\n
+    conn_cnt: INTEGER
+        Total connection count for filtering. Greater than equal (>=).\n
+        Default = 4\n
+    span_avg:
+        The percentage to increase and decrease from the connections total delta span.\n
+        Example: 15\n
+            15 will decrease 15% from the minimum and maximum delta span.\n
+            min delta = 5\n
+            max delta = 10\n
+            span min = 4.25 (5 - (5 * 15%))\n
+            span max = 11.5 (10 + (10 * 15%))\n
+        Default = 15\n
+    variance_per: INTEGER
+        Total variance perctage for filtering. Greater than equal (>=).
+        Default = 4\n           
+    gold_loc: STRING
+        Results file location. Blank string ("") for no result file.\n
+        Default = ""\n
+    overwrite: BOOLEAN
+        Overwrite existing location.\n
+        Example: False \n
+        Default: False \n
+    verbose: BOOLEAN
+        Verbose logger.\n
+        Default = False
 
-    Returns
-        Nothing
-    '''
+    Returns:
+    ========
+    Gold File Location: STRING
+    """
 
     from sklearn.cluster import DBSCAN
     from scipy.spatial.distance import cdist
@@ -807,20 +837,22 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
     return gold_file
 
 def get_dns(ip):
-    '''
+    """
     Lookup DNS record for an IP.\n
 
     Parameters:
-        ip - IP you want to lookup DNS entry.\n
+    ===========
+    ip:
+        IP you want to lookup DNS entry.\n
 
-    Returns
-        DNS record (string)
-    '''
+    Returns:
+    ========
+    DNS record: STRING
+    """
 
     import socket
 
     try:
-        #val = socket.gethostbyaddr(ip)[0]
         val = socket.getfqdn(ip)
 
         # IF RETURNED SAME IP THEN SET TO UNKNOWN
@@ -834,19 +866,23 @@ def get_dns(ip):
     return ret_val
 
 def cli_results(gold_file, file_type = "parquet", avg_delta = 0):
-    '''
+    """
     Display the results of a gold file in the Command Line Interface (CLI).\n
 
     Parameters:
-        gold_file - IP you want to lookup DNS entry.\n
-        file_type - Destination file type (csv or parquet)\n
-            default = parquet\n
-        avg_delta - Average delta parameter from ML algorithm
-            default = 0
+    ===========
+    gold_file:
+        IP you want to lookup DNS entry.\n
+    file_type: STRING (Options = csv or parquet)
+        Destination file type (csv or parquet)\n
+        Default = parquet\n
+    avg_delta: INTEGER
+        Default = 0
 
-    Returns
-        DNS record (string)
-    '''
+    Returns:
+    ========
+    Nothing
+    """
 
     if file_type == "CSV":
         df = pd.read_csv(gold_file)
@@ -884,28 +920,36 @@ def cli_results(gold_file, file_type = "parquet", avg_delta = 0):
         print("X" * 121)        
 
 def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent = 5, gold_loc = "", overwrite = False, verbose = False):
-    '''
+    """
     Run a Beacon search by packet size uniqueness.\n
 
     Parameters:
-        delta_file - Source delta file.\n
-        delta_column - Source delta column. \n
-        avg_delta - Average delta time to include in the search using your delta column. Greater than equal (>=).\n
-        conn_cnt - Total connection count for filtering. Greater than equal (>=).\n
-            default = 4\n
-        min_unique_percent - Lowest packet uniqueness in percentage. For instance if you have 10 connections with 9 of them being the same packet size,\nyour unique package size is 10%.
-            default = 5\n           
-        gold_loc -Results file location. Blank string ("") for no result file.\n
-            default = ""\n
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False
+    ===========
+    delta_file:
+        Source delta file.\n
+    delta_column:
+        Source delta column. \n
+    avg_delta:
+        Average delta time to include in the search using your delta column. Greater than equal (>=).\n
+    conn_cnt: INTEGER
+        Total connection count for filtering. Greater than equal (>=).\n
+        Default = 4\n
+    min_unique_percent: INTEGER 
+        Lowest packet uniqueness in percentage. For instance if you have 10 connections with 9 of them being the same packet size,\nyour unique package size is 10%.\n
+        Default = 5\n           
+    gold_loc:
+        Results file location. Blank string ("") for no result file.\n
+        Default = ""\n
+    overwrite: BOOLEAN
+        Overwrite existing location.
+        Default: False \n
+    verbose - Verbose logger.  True or False (case-sensistive). \n
+        Default = False
 
-    Returns
-        Nothing
-    '''
+    Returns:
+    ========
+    Gold File Location: STRING
+    """
     
     starttime = datetime.now()
 
@@ -1005,27 +1049,35 @@ def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent
     return gold_file
 
 def cluster_conns(delta_file, delta_column, conn_cnt = 5, conn_group = 5, threshold = 60, gold_loc = "", overwrite = False, verbose = False):
-    '''
+    """
     Run a Beacon search by clusters of connections per a threshold.\n
 
     Parameters:
-        delta_file - Source delta file.\n
-        delta_column - Source delta column. \n
-        conn_cnt - Total connection count for a group. Greater than equal (>=).\n
-            default = 4\n
-        conn_group - Total number of connections groups. Greater than equal (>=).\n
-        threshold - The time threshold in minutes when determining connection groups.\n
-        gold_loc -Results file location. Blank string ("") for no result file.\n
-            default = ""\n        
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False
+    ===========
+    delta_file:
+        Source delta file.\n
+    delta_column:
+        Source delta column. \n
+    conn_cnt: INTEGER
+        Total connection count for a group. Greater than equal (>=).\n
+        Default = 4\n
+    conn_group: INTEGER
+        Total number of connections groups. Greater than equal (>=).\n
+    threshold: INTEGER
+        The time threshold in minutes when determining connection groups.\n
+    gold_loc: STRING
+        Results file location. Blank string ("") for no result file.\n
+        Default = ""\n        
+    overwrite: BOOLEAN
+        Overwrite existing location.\n
+        Default: False \n
+    verbose: BOOLEAN
+        Verbose logger.\n
+        Default = False
 
     Returns
-        Nothing
-    '''
+    Gold File Location: STRING
+    """
     
     starttime = datetime.now()
 
@@ -1144,25 +1196,31 @@ def cluster_conns(delta_file, delta_column, conn_cnt = 5, conn_group = 5, thresh
     return gold_file
 
 def p_conns(delta_file, diff_time = 60, diff_type = "mi"):
-    '''
+    """
     Run a persistent connection search.\n
 
     Parameters:
-        delta_file - Source delta file.\n
-        diff_time - The time difference interval you want to search by (<=0). \n
-        diff_type - What time interval type.\n
-            Options
-                Days = dd, days or day
-                Hours = hh, hr or hours
-                Minutes = mi, mins or minutes
-                Seconds = ss, sec or seconds
-                Minutes = mi, mins or minutes
-                Milliseconds = ms, milli or milliseconds
-            default = mi\n
+    ===========
+    delta_file:
+        Source delta file.\n
+    diff_time:
+        The time difference interval you want to search by (<=0). \n
+    diff_type: STRING
+        What time interval type.\n
+        Options
+            Days = dd, days or day\n
+            Hours = hh, hr or hours\n
+            Minutes = mi, mins or minutes\n
+            Seconds = ss, sec or seconds\n
+            Minutes = mi, mins or minutes\n
+            Milliseconds = ms, milli or milliseconds\n
+        default = mi\n
 
-    Returns
-        Printed Pandas DataFrame
-    '''
+    Returns:
+    ========
+    Printed Pandas DataFrame
+    """
+
     df = pd.read_parquet(delta_file)
     df_pc = df[["connection_id", "sip", "dip", "port", "proto", "datetime"]].copy().reset_index()
 

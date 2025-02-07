@@ -1,6 +1,7 @@
 {% extends 'index.html' %} {% block header %}
 <h1 class="header-title">Beacon Huntress Data Sources</h1>
 <p class="header-subtitle"><a href="/">Home</a> / Data Sources</p>
+
 {% endblock %} {% block content %}
 
 {% if messages %} {% for message in messages %}
@@ -21,4 +22,5 @@
     <div class="mt-3">
       <button type="submit" value="New" class="btn btn-primary">New</button>
     </div>
+
 {% endblock %}

@@ -50,22 +50,54 @@ services:
       context: .
     container_name: beacon_huntress
     command: >
-      sh -c "python3 bh_web/manage.py migrate &&
-             python3 bh_web/manage.py runserver 0.0.0.0:8000"
+      sh -c "python3 manage.py migrate &&
+             daphne -b 0.0.0.0 -p 8000 bh_web.asgi:application"    
     restart: always
     volumes:
-      - .:/app
+      - ./bh_web:/app
       - /tmp:/tmp
       - ./bh_web/datasets/tutorial:/tutorial
       - ./bh_web/datasets/elastic:/elastic
       - ./bh_web/datasets/zeek:/zeek
     ports:
       - "8000:8000"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - PYTHONPATH=/app
     networks:
       - bh_network      
     depends_on:
       db:
         condition: service_healthy
+
+  redis:
+    image: redis
+    container_name: bh_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - bh_network      
+
+  celery:
+    build:
+      context: .
+    container_name: bh_celery
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0        
+    volumes:
+      - ./bh_web:/app
+      - /tmp:/tmp
+      - ./bh_web/datasets/tutorial:/tutorial
+      - ./bh_web/datasets/elastic:/elastic
+      - ./bh_web/datasets/zeek:/zeek  
+    depends_on:
+      - web
+      - redis
+    command: celery -A bh_web.celery worker --loglevel=debug    
+    networks:
+      - bh_network
 
 volumes:
   db_data: 

@@ -53,16 +53,30 @@ def _total_cnt(src_loc):
 #####################################################################################
 
 def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwrite = False, verbose = False):
-    '''
-    Build initial filtes
+    """
+    Build initial files
 
     Parameters:
-        src_file - Source file.\n
-        dest_parquet_file - Destination parquet file.\n
-        overwrite - Overwrite existing data (True or False).\n
-    Returns
-        Nothing
-    '''
+    ===========
+        src_file:
+            Source file.
+        dest_parquet_file:
+            Destination parquet file.
+        start_dte: DATETIME
+            Filter start date and time.
+        end_dte: DATETIME
+            Filter end date and time.
+        overwrite: BOOLEAN
+            Overwrite existing data.
+            Default = False
+        verbose: BOOLEAN
+            Verbose logging.
+            Default = False
+
+    Returns:
+    ========
+        Nothing    
+    """
     from pandas import json_normalize
 
     #####################################################################################
@@ -150,23 +164,29 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
     logger.debug('Total runtime {}'.format(endtime))
 
 def add_dns(src_file, dest_loc, file_type, dns_file = "", dns_df = "", verbose = False):
-    '''
+    """
     Add all DNS entries to files.
 
     Parameters:
-        src_file - Source file/s directory location.\n
-        dest_loc - Destination file/s directory location.\n
-        file_type - Destination file type (csv or parquet)\n
-        dns_file - Source DNS lookup file (must be in parquet format)\n
-                    Default = ""\n
-        dns_df - Source DNS Pandas DataFrame\n
-                    Default = ""\n
-        verbose - Verbose logging (True or False)\n
-                    Default = False\n
+    ===========
+        src_file:
+            Source file/s directory location.
+        dest_loc:
+            Destination file/s directory location.
+        file_type:
+            Destination file type (csv or parquet).
+        dns_file:
+            Source DNS lookup file (must be in parquet format).
+        dns_df:
+            Source DNS Pandas DataFrame.
+        verbose: BOOLEAN
+            Verbose logging.
+            Default = False
 
-    Returns
+    Returns:
+    ========
         Nothing
-    '''
+    """
 
     #####################################################################################
     ##  Logging
@@ -341,17 +361,26 @@ def add_dns(src_file, dest_loc, file_type, dns_file = "", dns_df = "", verbose =
     logger.debug('Total runtime {}'.format(endtime))
 
 def build_null_files(src_loc, dest_loc, overwrite = False, file_type = "parquet"):
-    '''
+    """
     Create files with Null DNS entries
 
     Parameters:
-        src_file - Source file/s directory location.\n
-        dest_loc - Destination file/s directory location.\n
-        overwrite - Overwrite existing file/s\n
-        file_type - Destination file type (csv or parquet)\n
-    Returns
+    ===========
+        src_file:
+            Source file/s directory location.
+        dest_loc:
+            Destination file/s directory location.
+        overwrite: BOOLEAN
+            Overwrite existing file/s.
+            Default = False
+        file_type: STRING
+            Destination file type (csv or parquet).
+            Default = parquet
+    Returns:
+    ========
         Nothing
-    '''
+    """
+
     #####################################################################################
     ##  
     #####################################################################################
@@ -405,30 +434,39 @@ def build_null_files(src_loc, dest_loc, overwrite = False, file_type = "parquet"
     logger.info('Total runtime {}'.format(endtime))    
 
 def filter_dataframe(df, filter_vals, filter_column, filter_exclude = True, data_type = "int", ret_org = False, verbose = False):
-    '''
-    Filter a zeke pandas dataframe.\n
+    """
+    Filter a zeke pandas dataframe.
 
     Parameters:
-        df - Source pandas dataframe.\n
-        filter_vals - List values you wish to filter for.  This is ends with (default) or wildcard (*) only, can be mixed mode.\n
-                      * for a wildcard search\n
-                      example ends with : ["facebook.com", "twitter.com"]\n
-                      example wildcard with : ["facebook*", "*twitter"]\n
-        filter_column - Dataframe column you want to search.\n
-        filter_exclude - Filter by exclusion.\n
-                      True or False\n
-                        Default = False\n
-        data_type - Datatype for your filter\n
-                      int = integer\n
-                      string = string\n
-                      match = matching values (source and destination DNS values)\n
-                        Default = int\n
-        ret_org - Return original dataframe if no results gathered.
-                  True or False\n
-                    Default = False\n
-    Returns
+    ===========
+        df:
+            Source pandas dataframe.
+        filter_vals:
+            List values you wish to filter for.  This is ends with (default) or wildcard (*) only, can be mixed mode.
+            * for a wildcard search
+                example ends with : ["facebook.com", "twitter.com"]
+                example wildcard with : ["facebook*", "*twitter"]
+        filter_column:
+            Dataframe column you want to search.
+        filter_exclude: BOOLEAN
+            Filter by exclusion.
+                Default = True
+        data_type: STRING
+            Datatype for your filter
+                int = integer
+                string = string
+                match = matching values (source and destination DNS values)
+            Default = int
+        ret_org: BOOLEAN
+            Return original dataframe if no results gathered.
+            Default = False
+        verbose: BOOLEAN
+            Verbose logging
+            Default = False        
+    Returns:
+    ========
         Pandas DataFrame
-    '''
+    """
 
     #####################################################################################
     ##  Logging
@@ -546,32 +584,41 @@ def filter_dataframe(df, filter_vals, filter_column, filter_exclude = True, data
     return final_df
 
 def convert_parquet_to_csv(par_file, csv_file):
-    '''
-    Create a csv file from a parquet file\n
+    """
+    Create a csv file from a parquet file.
 
     Parameters:
-        par_file - Parquet file/s location.\n
-        csv_file - Destination csv file.\n
-    Returns
+    ===========
+        par_file:
+            Parquet file/s location.
+        csv_file:
+            Destination csv file.
+    Returns:
+    ========
         Nothing
-    '''
+    """
     df = pd.read_parquet(par_file)
     df.to_csv(csv_file)
 
 def download_s3_folder(s3_loc, loc_dest, profile = "default"):
-    '''
-    Download a AWS s3 folder to a local folder.\n
-    Must have a AWS CLI Profile setup.\n
+    """
+    Download a AWS s3 folder to a local folder.
+    Must have a AWS CLI Profile setup.
 
     Parameters:
-        s3_loc - S3 file location. No trailing /. \n
-            example: s3://bucketname/folder
-        loc_dest - Local destination.\n
-        profile - AWS CLI Profile name
-            default = default
-    Returns
+    ===========
+        s3_loc:
+            S3 file location. No trailing /.
+                example: s3://bucketname/folder
+        loc_dest:
+            Local destination.
+        profile:
+            AWS CLI Profile name
+            Default = default
+    Returns:
+    ========
         Nothing
-    '''
+    """
 
     import boto3
 
@@ -606,79 +653,97 @@ def download_s3_folder(s3_loc, loc_dest, profile = "default"):
 def build_filter_files(src_loc, dest_file = "", port_filter = None, port_exclude = False, src_filter = None, src_exclude = True, 
 dest_filter  = None, dest_exclude = True, s_dns_filter = None, s_dns_exclude = True, d_dns_filter  = None, d_dns_exclude = True, 
 match_filter = None, match_exclude = True, file_type = "parquet", overwrite = False, verbose = False):
-    '''
-    Create filtered files. A default metadata.json will be created for historical filter identification purposes. \n
+    """
+    Create filtered files. A default metadata.json will be created for historical filter identification purposes.
 
     Parameters:
-        src_loc - Source folder location. No trailing slash. \n
-            example: /bronze/parquet/raw/2022/04/20 \n
-        dest_file - Destination folder location for all filtering.\n  
-                            Use a new folder name at the end. \n
-                            data folder to be appended to the end \n
-                            Must have a file location. \n
-            example: /bronze/filtered/my_filter_name \n            
-        port_filter - Ports you want to filter on in list format. \n
-            example: [80, 443] \n
-        port_exclude - Exclusive or inclusive search on port_filter values.  True or False (case-sensistive). \n
-            Exclusive = True (not in)
-            Inclusive = False (in)
-            default: False
-        src_filter - Source IP filters you want to search for in list format. \n
-                     Will search for filters ending in unless a wildcard (*) is used. \n
-                     Wildcard location does not matter.\n
-            example w/o wildcard: ["127.0.0.1", "9.9.9.9"] \n
-            example with wildcard: ["127.*", "9.9.*"] \n
-        src_exclude - Exclusive or inclusive search on src_filter values.  True or False (case-sensistive). \n
-            Exclusive = True (not in)
-            Inclusive = False (in)
-            default: True
-        dest_filter - Destination IP filters you want to search for in list format. \n
-                     Will search for filters ending in unless a wildcard (*) is used. \n
-                     Wildcard location does not matter.\n
-            example w/o wildcard: ["127.0.0.1", "9.9.9.9"] \n
-            example with wildcard: ["127.*", "9.9.*"] \n
-        dest_exclude - Exclusive or inclusive search on dest_filter values.  True or False (case-sensistive). \n
-            Exclusive = True (not in)
-            Inclusive = False (in)
-            default: True
-        s_dns_filter - Source DNS filters you want to search for in list format. \n
-                     Will search for filters ending in unless a wildcard (*) is used. \n
-                     Wildcard location does not matter.\n
-            example w/o wildcard: ["google.com", "facebook.com"] \n
-            example with wildcard: ["*google", "*facebook"] \n
-        src_exclude - Exclusive or inclusive search on s_dns_filter values.  True or False (case-sensistive). \n
-            Exclusive = True (not in)
-            Inclusive = False (in)
-            default: True
-        d_dns_filter - Destination IP filters you want to search for in list format. \n
-                     Will search for filters ending in unless a wildcard (*) is used. \n
-                     Wildcard location does not matter.\n
-            example w/o wildcard: ["google.com", "facebook.com"] \n
-            example with wildcard: ["*google", "*facebook"] \n
-        d_dns_exclude - Exclusive or inclusive search on dest_filter values.  True or False (case-sensistive). \n
-            Exclusive = True (not in)
-            Inclusive = False (in)
-            default: True 
-        match_filter - Source & Destination DNS filters you want to match for in list format. \n
-                     In order for a match to filter objects must be in both source and destination. \n
-                     The matching is for the entire list, and can match on any item in the list. \n
-                     Will search for filters ending in unless a wildcard (*) is used. \n
-                     Wildcard location does not matter. \n
-            example w/o wildcard: ["google.com", "facebook.com"] \n
-            example with wildcard: ["*google", "*facebook"] \n   
-        match_exclude - Exclusive or inclusive search on match_filter values.  True or False (case-sensistive). \n
-            Exclusive = True (not in)
-            Inclusive = False (in)
-            default: True
-        file_type - Destination file types.  Parquet or CSV \n
-            example: parquet or csv \n 
-            default: parquet \n
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-    Returns
-        True|False
-    '''    
+    ===========
+        src_loc: STRING
+            Source folder location. No trailing slash.
+                Example: /bronze/parquet/raw/2022/04/20
+        dest_file: STRING
+            Destination folder location for all filtering.
+                Use a new folder name at the end.
+                Data folder to be appended to the end
+                Must have a file location.
+            Example: /bronze/filtered/my_filter_name            
+        port_filter: LIST
+            Ports you want to filter on in list format.
+            Example: [80, 443]
+        port_exclude: BOOLEAN
+            Exclusive or inclusive search on port_filter values.
+                Exclusive = True (not in)
+                Inclusive = False (in)
+            Default: False
+        src_filter: LIST
+            Source IP filters you want to search for in list format.
+                Will search for filters ending in unless a wildcard (*) is used.
+                Wildcard location does not matter.
+            Example w/o wildcard: ["127.0.0.1", "9.9.9.9"]
+            Example with wildcard: ["127.*", "9.9.*"]
+        src_exclude: TRUE
+            Exclusive or inclusive search on src_filter values.
+                Exclusive = True (not in)
+                Inclusive = False (in)
+            Default: True
+        dest_filter: LIST
+            Destination IP filters you want to search for in list format.
+                Will search for filters ending in unless a wildcard (*) is used.
+                Wildcard location does not matter.
+            Example w/o wildcard: ["127.0.0.1", "9.9.9.9"]
+            Example with wildcard: ["127.*", "9.9.*"]
+        dest_exclude: BOOLEAN
+            Exclusive or inclusive search on dest_filter values.
+                Exclusive = True (not in)
+                Inclusive = False (in)
+            Default: True
+        s_dns_filter: LIST
+            Source DNS filters you want to search for in list format.
+                Will search for filters ending in unless a wildcard (*) is used.
+                Wildcard location does not matter.
+            Example w/o wildcard: ["google.com", "facebook.com"]
+            Example with wildcard: ["*google", "*facebook"]
+        src_exclude: BOOLEAN
+            Exclusive or inclusive search on s_dns_filter values.
+                Exclusive = True (not in)
+                Inclusive = False (in)
+            Default: True
+        d_dns_filter: LIST
+            Destination IP filters you want to search for in list format.
+                Will search for filters ending in unless a wildcard (*) is used.
+                Wildcard location does not matter.
+            Example w/o wildcard: ["google.com", "facebook.com"]
+            Example with wildcard: ["*google", "*facebook"]
+        d_dns_exclude: BOOLEAN
+            Exclusive or inclusive search on dest_filter values.
+                Exclusive = True (not in)
+                Inclusive = False (in)
+            Default: True 
+        match_filter: LIST
+            Source & Destination DNS filters you want to match for in list format.
+                In order for a match to filter objects must be in both source and destination.
+                The matching is for the entire list, and can match on any item in the list.
+                Will search for filters ending in unless a wildcard (*) is used.
+                Wildcard location does not matter.
+            Example w/o wildcard: ["google.com", "facebook.com"]
+            Example with wildcard: ["*google", "*facebook"] 
+        match_exclude: BOOLEAN
+            Exclusive or inclusive search on match_filter values.
+                Exclusive = True (not in)
+                Inclusive = False (in)
+            Default: True
+        file_type: STRING
+            Destination file types. Parquet or CSV
+            Example: parquet or csv
+            Default: parquet
+        overwrite: BOOLEAN
+            Overwrite existing location.
+            Example: False
+            Default: False
+    Returns:
+    ========
+        BOOLEAN: New file create 
+    """ 
 
     #####################################################################################
     ##  Logging
@@ -907,25 +972,31 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
     return is_new
 
 def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", overwrite = False):
-    '''
-    Create a delta file from a parquet folder location or file. \n
-    Current unit of measurement is milliseconds and minutes. \n
+    """
+    Create a delta file from a parquet folder location or file.
+    Current unit of measurement is milliseconds and minutes.
 
     Parameters:
-        src_loc - Parquet folder or single file location.  Must be a parquet files! \n
-            folder example: /bronze/filtered/filterloc \n        
-            file example: /bronze/filtered/filterloc/single_file.parquet \n        
-        delta_file_loc - Destination of delta file. \n
-            example: /silver/parquet/foldername \n        
-        delta_file_type - Destination file types.  Parquet or CSV \n
-            example: parquet or csv \n 
-            default: parquet \n
-        overwrite - Overwrite existing location.  True or False (case-sensistive). \n
-            example: False \n
-            default: False \n
-    Returns
+    ===========
+        src_loc: STRING
+            Parquet folder or single file location.  Must be a parquet files!
+            Folder example: /bronze/filtered/filterloc
+            File example: /bronze/filtered/filterloc/single_file.parquet
+        delta_file_loc: STRING
+            Destination of delta file.
+            Example: /silver/parquet/foldername
+        delta_file_type: STRING
+            Destination file types. Parquet or CSV
+            Example: parquet or csv
+            Default: parquet
+        overwrite: BOOLEAN
+            Overwrite existing location.
+            Example: False
+            Default: False
+    Returns:
+    ========
         Nothing
-    '''
+    """
 
     # Delta time measures
     unit_measure_ms = "milliseconds"
@@ -1037,25 +1108,34 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
     logger.info('Delta process is completed {}'.format(endtime))
 
 def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", overwrite = False, verbose = False):
-    '''
-    Create a bronze data layer for a source folder location.  \n  
-    Bronze data will only use tcp data and will include source and destination DNS.\n
+    """
+    Create a bronze data layer for a source folder location.  
+    Bronze data will only use tcp data and will include source and destination DNS.
 
     Parameters:
-        src_loc - Source raw data folder. \n
-            folder example: /source/ \n         
-        bronze_loc - Bronze folder location. Files will be parquet format. \n
-            example: /bronze/raw/parquet \n
-        dns_file - DNS whitelist file.  Must be parquet format. \n
-            example: /whitelist/whitelist_ip.parquet \n
-            default = "" \n
-        overwrite - Overwrite existing files.  True or False. \n
-            default = False
-        verbose - Verbose logger.  True or False. \n
-            default = False        
-    Returns
-        True|False
-    '''    
+    ===========
+        src_loc: STRING 
+            Source raw data folder.
+            Folder example: /source/       
+        bronze_loc: STRING
+            Bronze folder location. Files will be parquet format.
+            Example: /bronze/raw/parquet
+        start_dte: DATETIME
+            Filter start date and time.
+        end_dte: DATETIME
+            Filter end date and time.
+        dns_file:
+            Source DNS lookup file (must be in parquet format).
+        overwrite:
+            Overwrite existing files.
+            Default = False
+        verbose:
+            Verbose logger.
+            Default = False        
+    Returns:
+    ========
+        BOOLEAN: Is a new file
+    """ 
 
     starttime = datetime.now()
     logger.debug("Starting Bronze Layer Process")
@@ -1148,21 +1228,26 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
     return is_new
 
 def unzip(zip_file, dest_loc, zip_type = "tar"):
-    '''
-    Unzip a source raw file.  \n  
-    Only tar files are available for unzipping.\n
+    """
+    Unzip a source raw file. Only tar files are available for unzipping.
 
     Parameters:
-        zip_file - Source zip file location. \n
-            folder example: /temp/file.tar \n         
-        dest_loc - Destination folder location where the file will unzip. \n
-            example: /temp/raw \n
-        zip_type - Type of zip file. \n
-            example: "tar" \n
-            default = "tar" \n
-    Returns
+    ===========
+        zip_file: STRING
+            Source zip file location.
+            Folder example: /temp/file.tar
+        dest_loc: STRING
+            Destination folder location where the file will unzip.
+            Example: /temp/raw
+        zip_type: STRING
+            Type of zip file.
+            Example: "tar" 
+            Default = "tar"
+
+    Returns:
+    ========
         Nothing
-    '''        
+    """   
     import tarfile
 
     if zip_type == "tar":
@@ -1190,17 +1275,21 @@ def unzip(zip_file, dest_loc, zip_type = "tar"):
             logger.error(err)
     
 def get_latest_file(folder_loc, file_type = "parquet"):
-    '''
-    Get latest file file from a folder location and file type.  \n  
+    """
+    Get latest file file from a folder location and file type.
 
     Parameters:
-        folder_loc - Source zip file location. \n
-            folder example: /temp/silver/delta \n         
-        delta_file_type - Type of delta file.  CSV or Parquet \n
-            default = "parquet" \n
-    Returns
+    ===========
+        folder_loc: STRING
+            Source zip file location.
+            Folder example: /temp/silver/delta
+        delta_file_type: STRING
+            Type of delta file. CSV or Parquet.
+            Default = "parquet"
+    Returns:
+    ========
         File
-    '''      
+    """     
     import glob
 
     if file_type == "log":

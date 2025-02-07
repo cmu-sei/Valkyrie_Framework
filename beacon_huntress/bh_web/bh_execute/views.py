@@ -1,6 +1,6 @@
 # Create your views here.  
 from pathlib import Path
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import ExeAgg, ExeDBScan, ExeDBScanVar, ExeByPacket, ExeConnGroup, ExePConn
@@ -9,6 +9,7 @@ import os
 from beacon_huntress.src.bin.web import exe_bh
 from bh_web.views import context_results_grid
 from beacon_huntress.src.bin.data import get_data, data_to_json
+from bh_execute.tasks import run_algo
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,17 +22,17 @@ def AggView(request):
             send = form.save(commit=False)
             send.save()
 
-            # RUN BEACON HUNTRESS
-            ret_val = exe_bh(request,"agg")
+            # RUN BACKGROUND PROCESS
+            post_data = request.POST.dict()
+            run_algo.delay(request.POST.dict(),"agg")
 
-            if ret_val["cnt"] == 0:
-                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
+            messages.info(request, "Hierachical Search is running ")
 
             return redirect("/Results.html")
     else:
         try:
             # GATHER DROP LIST ITEMS & CONVERT TO JSON
-            df = get_data("data_sources")
+            df = get_data("active_ds")
             options = data_to_json(df)
 
             ds = Agg.objects.latest("row_id")
@@ -51,18 +52,18 @@ def DBScanView(request):
             send = form.save(commit=False)
             send.save()
 
-            # RUN BEACON HUNTRESS
-            ret_val = exe_bh(request,"dbscan")
+            # RUN BACKGROUND PROCESS
+            post_data = request.POST.dict()
+            run_algo.delay(request.POST.dict(),"dbscan")
 
-            if ret_val["cnt"] == 0:
-                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
+            messages.info(request, "Detailed Cluster Search is running")
 
-            # REDIRECT TO RESULTS PAGE
             return redirect("/Results.html")
+
     else:
         try:
             # GATHER DROP LIST ITEMS & CONVERT TO JSON
-            df = get_data("data_sources")
+            df = get_data("active_ds")
             options = data_to_json(df)
 
             ds = DBScan.objects.latest("row_id")
@@ -82,18 +83,17 @@ def DBScanVarView(request):
             send = form.save(commit=False)
             send.save()
 
-            # RUN BEACON HUNTRESS
-            ret_val = exe_bh(request,"dbscan_var")
+            # RUN BACKGROUND PROCESS
+            post_data = request.POST.dict()
+            run_algo.delay(request.POST.dict(),"dbscan_var")
 
-            if ret_val["cnt"] == 0:
-                messages.info(request, 'No potential beacons! See log file <a href=/LogDetails.html?filename={0}>{0}</a> for more details!'.format(ret_val["log_file"]))
+            messages.info(request, "Quick Cluster Search is running")
 
-            # REDIRECT TO RESULTS PAGE
             return redirect("/Results.html")
     else:
         try:
             # GATHER DROP LIST ITEMS & CONVERT TO JSON
-            df = get_data("data_sources")
+            df = get_data("active_ds")
             options = data_to_json(df)
 
             ds = DBScanVar.objects.latest("row_id")

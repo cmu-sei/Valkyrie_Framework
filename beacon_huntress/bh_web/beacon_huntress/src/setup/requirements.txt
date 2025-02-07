@@ -1,8 +1,6 @@
-art==5.7
 boto3==1.21.46
 botocore==1.24.46
 click==8.1.0
-elasticsearch==8.5.1
 fastparquet==0.8.1
 mysqlclient==2.1.0
 numpy==1.21.6
@@ -19,4 +17,12 @@ Django==4.2.2
 django-bootstrap-v5==1.0.11
 django-crispy-forms==2.0
 crispy-bootstrap4==2022.1
-pymemcache==4.0.0
+redis==5.2.1
+celery==5.2.7
+django-celery-results==2.5.1
+channels==4.2.0
+channels_redis==4.2.1
+daphne==4.1.2
+whitenoise==6.8.2
+eland==8.7.0
+elasticsearch==8.17.1

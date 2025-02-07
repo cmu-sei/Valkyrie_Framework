@@ -20,7 +20,6 @@ import shutil
 import yaml
 from pathlib import Path
 from progress.bar import Bar
-from art import *
 import uuid
 import pandas as pd
 from django.utils import timezone
@@ -329,21 +328,34 @@ def pipeline(conf):
             is_new_bronze = True
 
             logger.info("Elastic datasource selected")
-            logger.info("Connecting to Elastic")
 
-            es_client = datasource.elastic_client(config["data"])
-            logger.info("Collecting data")
+            logger.info("Gather file location")
+            df_files = data.get_data("ds_files_name", config["general"]["ds_name"])
+            df_files = df_files[["file_name"]]
 
-            df_bronze = datasource.get_elastic_data(es_client,config["data"], start_dte, end_dte)
-            logger.info("Elastic data collected")
+            df_bronze = datasource.get_file_data(df_files)
 
-            #df_bronze["source_file"] = "/elastic/elastic.parquet"
-            df_bronze["source_file"] = os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch))
-            df_bronze["src_row_id"] = df_bronze.index
+            logger.info("Elastic data collected ({})".format(len(df_bronze)))
+
+            # FILTER BY DATES
+            if start_dte != "" and end_dte != "":
+                df_bronze = df_bronze.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
+            # ONLY START
+            elif start_dte != "" and end_dte == "":
+                df_bronze = df_bronze.query("ts >= {}".format(start_dte))
+            # ONLY END
+            elif start_dte == "" and end_dte != "":
+                df_bronze = df_bronze.query("ts <= {}".format(end_dte))
+            else:
+                pass  
+
+            # #df_bronze["source_file"] = "/elastic/elastic.parquet"
+            #df_bronze["source_file"] = os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch))
+            #df_bronze["src_row_id"] = df_bronze.index
 
             Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
 
-            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))            
+            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))     
 
             endtime = datetime.now() - es_starttime
             logger.info("Elastic runtime {}".format(endtime))

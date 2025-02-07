@@ -62,7 +62,6 @@ CREATE TABLE IF NOT EXISTS `beacon`.`beacon_filter` (
   `dt` datetime DEFAULT CURRENT_TIMESTAMP
 );
 
-
 CREATE TABLE IF NOT EXISTS `beacon`.`beacon_log` (
   `rowid` int NOT NULL AUTO_INCREMENT,
   `group_id` int DEFAULT NULL,
@@ -148,10 +147,21 @@ CREATE TABLE IF NOT EXISTS `beacon`.`datasource`
 `ds_name` varchar(256),
 `ds_type_id` int,
 `data` text,
+`active` boolean default True,
 `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`rowid`),
 CONSTRAINT `fk_dstype_typeid` FOREIGN KEY (`ds_type_id`) REFERENCES `beacon`.`ds_type` (`rowid`),
 CONSTRAINT `ux_ds` UNIQUE (`ds_name`, `ds_type_id`)
+);
+
+CREATE TABLE IF NOT EXISTS `beacon`.`ds_files` (
+`rowid` int NOT NULL AUTO_INCREMENT,
+`group_id` varchar(256),
+`ds_id` int,
+`file_name` varchar(256),
+`create_date` datetime DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`rowid`),
+CONSTRAINT `fk_esfiles_dsid` FOREIGN KEY (`ds_id`) REFERENCES `beacon`.`datasource` (`rowid`)
 );
 
 /*********************************************************************
@@ -177,7 +187,6 @@ left join `beacon`.`dns` d on
 	`b`.`dest_ip` = `d`.`ip`
 where `b`.`dest_ip` not in (select distinct `beacon_filter`.`ip` from `beacon`.`beacon_filter`) 
 group by `bg`.`uid`,`b`.`source_ip`,`b`.`dest_ip`,`b`.`port`,`b`.`likelihood`,`d`.`dns`;
-
 
 CREATE OR REPLACE DEFINER = 'root'@'localhost' 
 SQL SECURITY DEFINER VIEW `beacon`.`vw_beacon_group` 
@@ -206,10 +215,18 @@ where f.is_user = True;
 CREATE OR REPLACE DEFINER = 'root'@'localhost' 
 SQL SECURITY DEFINER VIEW `beacon`.`vw_datasources`
 as
-select distinct ds.rowid,ds.ds_name,dt.ds_type,ds.data,ds.create_date
+select distinct ds.rowid,ds.ds_name,dt.ds_type,ds.data,ds.create_date,ds.active
 from `beacon`.`datasource` ds
 inner join `beacon`.`ds_type` dt on
 ds.ds_type_id = dt.rowid;
+
+CREATE OR REPLACE DEFINER = 'root'@'localhost' 
+SQL SECURITY DEFINER VIEW `beacon`.`vw_dsfiles`
+as
+select distinct ds.rowid,ds.ds_name,df.group_id,df.file_name,ds.active
+from `beacon`.`datasource` ds
+inner join `beacon`.`ds_files` df on
+ds.rowid = df.ds_id;
 
 /*********************************************************************
 **  PRIVILEGES 

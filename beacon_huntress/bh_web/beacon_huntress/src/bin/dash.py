@@ -85,22 +85,51 @@ def _config_hash(conf = DB_CONF, conf_hash = "", option = "get"):
 
     return ret_val
 
+def _check_missing_fields(df):
+
+    columns = ["uid", "orig_bytes", "source_ip" , "source_port", "port", "dest_ip", "local_resp", "missed_bytes", "orig_pkts",
+                "orig_ip_bytes", "community_id", "ts", "proto", "duration", "resp_ip_bytes", "local_orig", "service",
+                "resp_pkts", "history", "resp_bytes", "conn_state", "source_file", "src_row_id",
+                "delta_mins", "dt", "group_id", "likelihood"]
+
+    string_lst = ["uid", "source_ip", "dest_ip", "community_id", "proto", "service", "history", "conn_state"]
+    num_lst = ["orig_bytes", "source_port", "port", "local_resp", "missed_bytes", "orig_pkts", "orig_ip_bytes", "ts",
+                "duration", "resp_ip_bytes", "local_orig", "resp_pkts", "resp_bytes"]
+    
+    for x in columns:
+        if x in df.columns:
+            pass
+        else:
+            if x in string_lst:
+                df[x] = ""
+            elif x in num_lst:
+                df[x] = 0
+            else:
+                df[x] = ""
+
+    return df
+
 def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
-    '''
-    Add values from a pandas dataframe into a mysql db to be used for a Grafana dashboard. Source files must be in parquet format.\n
+    """
+    Add values from a pandas dataframe into a mysql db to be used for a Grafana dashboard. Source files must be in parquet format.
 
     Parameters:
-        file_loc - Source gold file. File must be parquest.\n
-        conf - DB configuration file location. File must be json format.\n
-            default = ../conf/mysql.json\n
-        drop - Drop the table and recreate prior to inserting the data. True or False (case-sensistive).
-            default = False\n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False
+    ===========
+    file_loc:
+        Source gold file. File must be parquest.
+    group_id:
+        Beacon Huntress Run Group UUID.
+    conf:
+        DB configuration file location. File must be json format.
+        Default = ../conf/mysql.json
+    verbose: BOOLEAN 
+        Verbose logger. 
+        Default = False
 
-    Returns
-        Nothing
-    '''
+    Returns:
+    ========
+    Nothing
+    """
     from sqlalchemy import create_engine
     import json
 
@@ -117,10 +146,6 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
         logger.error("Issue with config {}".format(conf))
         logger.error(err)
 
-    # if conf_data["db"]["drop"] == True:
-    #     exist = "replace"
-    # else:
-    #     exist = "append"
     exist = "append"
 
     #####################################################################################
@@ -148,12 +173,14 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
                 logger.debug("Nothing to load for {}".format(file_type))
             else:
                 logger.debug("Loading {} data".format(file_type))
-                #del_records(t_names = [file_type], conf = conf, verbose = verbose)
 
                 df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt"}, inplace = True)
 
                 # ADD GROUP_ID
                 df["group_id"] = group_id
+
+                # CHECK FOR MISSING FIELDS IN FINAL BEACON DATA
+                df = _check_missing_fields(df)
 
                 # CREATE FINAL DATAFRAME
                 # MIGHT NEED TO ADD BACK IN "resp_p", "s_dns", "d_dns", "delta_ms"
@@ -173,7 +200,6 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
                 logger.debug("Nothing to load for {}".format(file_type))  
             else:
                 logger.info("Loading {} data".format(file_type))
-                #del_records(t_names = [file_type], conf = conf, verbose = verbose)
 
                 # ADD GROUP_ID
                 df["group_id"] = group_id
@@ -217,26 +243,31 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
     logger.info("Total runtime {}".format(endtime))
 
 def del_records(t_names, conf = DB_CONF, verbose = False):
-    '''
-    Delete all records from a mysql table that are used for a Grafana dashboard. Truncate command is used. Truncate is not a logged operation.\n
+    """
+    Delete all records from a mysql table that are used for a Grafana dashboard. 
+    Truncate command is used. Truncate is not a logged operation.
 
     Parameters:
-        t_name - Table names of tables you wish to delete all records from.  All option will only delete available table options.\n
-            options\n
-            =======\n
-            all\n
-            beacon\n
-            conf_hash\n
-            delta\n
-            raw_source\n
-        conf - DB configuration file location. File must be json format.\n
-            default = ../conf/mysql.json\n
-        verbose - Verbose logger.  True or False (case-sensistive). \n
-            default = False
+    -----------
+    t_name:
+        Table names of tables you wish to delete all records from.
+        All option will only delete available table options.
+            options:
+                all\n
+                beacon\n
+                conf_hash\n
+                delta\n
+    conf:
+        DB configuration file location. File must be json format.
+        Default = ../conf/mysql.json
+    verbose: BOOLEAN
+        Verbose logger.
+        Default = False
 
-    Returns
-        Nothing
-    '''
+    Returns:
+    --------
+    Nothing
+    """
 
     from sqlalchemy import create_engine
     import json
@@ -276,8 +307,39 @@ def del_records(t_names, conf = DB_CONF, verbose = False):
     logger.info("Dashboard data removed")
     logger.info("Total runtime {}".format(endtime))    
 
-
 def load_dashboard(file_loc, dash_config, dash_type, group_id, is_new = False, overwrite = False, verbose = False):
+    """
+    Load the Grafana Dashboard.
+    This is a docstring with \033[31mcolored text\033[0m.
+    
+    Parameters:
+    -----------
+    file_loc: 
+        Location of files to load to the dashboard.
+    dash_config: 
+        Dashboard configuration file location. File must be json format.
+    dash_type: 
+        Type of data that is being loaded to the Dashboard. Options below
+            options:
+                raw_source: Raw file locations
+                delta: Delta data
+                beacon: Final beacon data
+    group_id: 
+        Beacon Group UUID.
+    is_new: BOOLEAN
+        Is the data new. Used to prevent redundant data.
+        Default = False
+    overwrite: BOOLEAN
+        Overwrite existing data. 
+        Default = False
+    verbose: BOOLEAN
+        Enable verbose logging. 
+        Default = False                
+
+    Returns:
+    --------
+    Nothing
+    """    
 
     # DELETE DASHBOARD DATA OR SKIP ALREADY LOADED DATA
     if dash_type == "raw_source" or dash_type == "all":
