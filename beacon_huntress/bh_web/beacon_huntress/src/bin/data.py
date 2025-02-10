@@ -13,7 +13,7 @@ import logging
 import pandas as pd
 import yaml
 from datetime import datetime
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import json
 import platform
 from pathlib import Path
@@ -204,16 +204,22 @@ def add_data(type,value=None):
 
         if type == "beacon":
             query = "insert into beacon_filter (ip) values('{}')".format(value)
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
         elif type == "dns":
             query = "insert into dns (ip,dns) values('{}','{}')".format(value[0],value[1])
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
         elif type == "ds":
             query = "insert into datasource (ds_name,ds_type_id,data) values('{}','{}','{}')".format(value[0],value[1],value[2])
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
         elif type == "ds_files":
             query = "insert into ds_files (group_id,ds_id,file_name) values ('{}',{},'{}')".format(value[0],value[1],value[2])
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
+        elif type == "group_conf":
+            query = "insert into beacon_run_conf (uid,config) values('{}','{}')".format(value["uid"], str(value["config"]).replace("'","''"))
+
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
+            conn.commit()
 
         return None
     except BaseException as err:
