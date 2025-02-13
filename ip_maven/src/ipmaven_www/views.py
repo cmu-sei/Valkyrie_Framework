@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.db.models import F, IntegerField
+from django.db.models.functions import Length
 from .models import Whois, Mapping, UploadedFile
 from .serializers import WhoisSerializer, MappingSerializer
 from rest_framework.views import APIView
@@ -18,9 +20,43 @@ import psycopg2
 from django.db.models import Q
 import logging
 import os, re, json
+from django.utils import timezone
+from ipaddress import ip_address, AddressValueError
+import subprocess
+import socket
 
 logger = logging.getLogger("logger")
 
+"""internet connected?"""
+def is_connected():
+    try:
+        socket.create_connection(("8.8.8.8", 53), timeout=3)
+        return True
+    except OSError:
+        return False
+
+def perform_whois_lookup(ip):
+    if not is_connected():
+        print("No internet connection. Skipping WHOIS lookup.")
+        return None
+
+    try:
+        result = subprocess.run(["whois", ip], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            print(f"WHOIS lookup failed for {ip} with return code {result.returncode}")
+            return None
+    except Exception as e:
+        print(f"WHOIS lookup error: {e}")
+        return None
+
+def is_integer(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
 
 def DBConnect():
     try:
@@ -300,9 +336,66 @@ class MappingApiView(APIView):
                 {"error": "Number of 'search_by' fields must match the number of 'search_query' fields."},
                 status=400
             )
-
+        
         # Filter the queryset using the dynamically constructed Q object
         queryset = queryset.filter(q_object).order_by('id')
+
+        if queryset.count() < 1:
+            print(f"Creating new mapping for {raw_search_query}")
+
+            print(f"Creating new mapping for {raw_search_query}")
+
+            whois_record = None
+
+            query_ip = None
+            try:
+                # full valid IP address?
+                try:
+                    query_ip = ip_address(raw_search_query)
+                except Exception:
+                    pass
+
+                # already have a Whois record?
+                whois_record = Whois.objects.filter(
+                    start_address__lte=raw_search_query,
+                    end_address__gte=raw_search_query
+                ).first()
+
+                # if no existing Whois record, perform real-time
+                print(whois_record)
+                if not whois_record:
+                    print("doing whois")
+                    whois_data = perform_whois_lookup(raw_search_query)
+                    if whois_data:
+                        print(f"whois: {whois_data}")
+                        parsed_data = {
+                            "start_address": raw_search_query,
+                            "end_address": raw_search_query,
+                            "name": "Unknown",  # todo
+                            "handle": "Unknown",  # todo
+                            "customer_name": "Unknown",  # todo
+                            "score": 0,
+                            "updated": timezone.now()
+                        }
+                        whois_record = Whois.objects.create(**parsed_data)
+
+            except AddressValueError:
+                print("h3")
+                query_ip = None
+
+            if query_ip:
+                new_mapping = Mapping.objects.create(
+                    answer=raw_search_query,
+                    answer_whois=whois_record,
+                    query_type="A",
+                    query_class="IN",
+                    response_code="NOERROR",
+                    score=0,
+                    updated=timezone.now(),
+                    created=timezone.now()
+                )
+
+                queryset = Mapping.objects.filter(id=new_mapping.id)
 
         paginator = Paginator(queryset, page_size)
         page_obj = paginator.get_page(page_number)
@@ -385,7 +478,6 @@ class MappingApiView(APIView):
         return Response(response_data)
 
 class WhoisApiView(APIView):
-
     @swagger_auto_schema(
         operation_summary="Gets all whois records",
         operation_description="Gets all whois records in the system, with optional search and pagination",
@@ -401,84 +493,39 @@ class WhoisApiView(APIView):
         # Get query parameters
         raw_search_by = request.query_params.get('search_by', '')
         raw_search_query = request.query_params.get('search_query', '')
-        page_number = request.query_params.get('page_number', 1)
-        page_size = request.query_params.get('page_size', 100)
-        requires_all = request.query_params.get('requires_all', 'False')
+        page_number = int(request.query_params.get('page_number', 1))
+        page_size = int(request.query_params.get('page_size', 100))
+        requires_all = request.query_params.get('requires_all', 'False').lower() == 'true'
 
-        # Filter records based on search query
-        whois_search_parameters = Whois.objects.first().parameters()
+        filters = Q(name__icontains=raw_search_query) | \
+          Q(handle__icontains=raw_search_query) | \
+          Q(customer_name__icontains=raw_search_query) | \
+          (Q(start_address__icontains=raw_search_query) & Q(start_len__lte=15)) | \
+          (Q(end_address__icontains=raw_search_query) & Q(end_len__lte=15))
 
-        # Get the list of search by's and search queries, comma-separated in endpoint link
-        search_by_list = raw_search_by.split(',') if raw_search_by else []
-        search_query_list = raw_search_query.split(',') if raw_search_query else []
+        if is_integer(raw_search_query):
+            filters |= Q(id=int(raw_search_query))  # Ensure it's converted to int
 
-        num_search_bys = len(search_by_list)
-        num_search_queries = len(search_query_list)
+        queryset = Whois.objects.annotate(
+            start_len=Length('start_address', output_field=IntegerField()),
+            end_len=Length('end_address', output_field=IntegerField())
+        ).filter(filters).order_by('customer_name')
 
-        for search_by in search_by_list:
-            if search_by not in whois_search_parameters:
-                print(f'search by {search_by} is not in whois search params')
-                return Response(
-                    {'error': f'Invalid search by field \'{search_by}\' for Whois.'},
-                    status=400
-                )
 
-        # Prepare the queryset of all Whois objects
-        q_object = Q()
+        print(queryset.query)
 
-        # 1 search query, no search by --> search on everything
-        if num_search_bys == 0 and num_search_queries == 1:
-            queryset = Whois.objects.all();
-            # Nit: Might be helpful to add warning to user that this will take
-            # much longer than searching by a specific parameter
-            for search_by in whois_search_parameters:
-                # Skip fields that are meaningless to search in
-                # (e.g., DateTimeFields, or non-string fields)
-                if search_by not in ['registration_date', 'update_date', 'updated']:
-                    q_object |= Q(**{f'{search_by}__icontains': search_query_list[0]})
-                        
-        # 1 search query, multiple search bys --> search on the search bys
-        elif num_search_bys > 1 and num_search_queries == 1:
-            queryset = Whois.objects.all().only(*search_by_list);
-            for search_by in search_by_list:
-                q_object |= Q(**{f'{search_by}__icontains': search_query_list[0]})
-
-        # n search queries, n search bys --> search by pair
-        # Special case: n = 0, q_object will stay empty
-        # Standard case: n = 1, search on one pair
-        elif num_search_bys == num_search_queries:
-            queryset = Whois.objects.all().only(*search_by_list);
-
-            # Evaluate requires_all string into a boolean
-            # Doing here because field is only relevant on the n-pair search
-            # If true, select rows satisfying every query
-            # If false, select all rows satisfying at least one query
-            requires_all = eval(requires_all.capitalize())
-
-            for search_by, search_query in zip(search_by_list, search_query_list):
-                search_args = {f'{search_by}__icontains': search_query}
-
-                if requires_all:
-                    q_object &= Q(**search_args)
-                else:
-                    q_object |= Q(**search_args)
-
-        else:
-            return Response(
-                {"error": "Number of 'search_by' fields must match the number of 'search_query' fields."},
-                status=400
-            )
-
-        # Filter the queryset using the dynamically constructed Q object
-        queryset = queryset.filter(q_object).order_by('customer_name')
-        
-        paginator = Paginator(queryset, page_size)
-        page_obj = paginator.get_page(page_number)
+        # Pagination
+        # paginator = Paginator(queryset, page_size, allow_empty_first_page=True)
+        # page_obj = paginator.get_page(page_number)
 
         response_data = {
-            'items': list(page_obj.object_list.values()),
-            'totalPages': paginator.num_pages,
-            'pageNumber': page_obj.number
+            #'items': list(page_obj.object_list.values()),
+            'items': list(queryset.order_by('-id').values()),
+            'totalPages': 1,
+            'pageNumber': 1,
+            #'totalPages': paginator.num_pages,
+            #'pageNumber': page_obj.number,
+            'query_params': {'search_query': raw_search_query}
         }
 
         return Response(response_data)

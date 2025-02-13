@@ -7,23 +7,28 @@
     <div class="row">
     <h3>IP Mapping Records</h3>
     <div class="col-12">
-        <input class="form-control mb-3" id="searchInput" type="text" placeholder="Search...">
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." aria-describedby="clearSearchButton" id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="btnSearch">Search</button>
+            <button class="btn btn-outline-secondary" type="button" id="btnClearSearch">Clear</button>
+        </div>
+
         <input class="form-control mb-3" id="searchBy" type="text" placeholder="Search by... (optional comma-separated list)">
         
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="requiresAll">
-            <label class="form-check-label" for="requiresAll">Requires All</label>
+            <label class="form-check-label" for="requiresAll">Requires All</label> &nbsp;
         </div>
         
-        <input class="form-control mb-3" id="filePathInput" type="text" placeholder="Enter mappings file name">
-        
-        <div class="mb-3">
-            <button id="replaceButton" class="btn btn-primary">Replace</button>
-            <button id="appendButton" class="btn btn-primary">Append</button>
+        <div class="input-group mb-3">
+            <input class="form-control" id="filePathInput" type="text" placeholder="Mappings file name..." aria-label="Mappings file name..." aria-describedby="replaceButton" >
+            <button id="replaceButton" class="btn btn-outline-secondary">Replace</button>
+            <button id="appendButton" class="btn btn-outline-secondary">Append</button>
         </div>
-        
+
         <div id="loading">Loading data, please wait...</div>
-        <table id="items" class="table table-sm table-striped" style="display:none;">
+        <table id="items" class="table table-sm table-striped tv" style="display:none;">
             <thead>
                 <tr>
                     <th class="sortable col-1" onclick="sortTable(0)">Id</th>
@@ -124,12 +129,12 @@
                             <td>${item.id}</td>
                             <td>${item.query}`;
                         if (item.query_whois != null) {
-                            f += formatWhois(item.query_whois);
+                            f += formatWhois(item.id, item.query_whois);
                         }
                         f += `</td>
                             <td>${item.answer}`;
                         if (item.answer_whois != null) {
-                            f += formatWhois(item.answer_whois);
+                            f += formatWhois(item.id, item.answer_whois);
                         }
                         f += `</td>
                             <td>${item.query_type}</td>
@@ -208,42 +213,50 @@
                 });
         }
 
-        function formatWhois(j) {
-            return `<div class="whois-record">
-            <table class="table table-sm table-striped">
-            <tr>
-            <td class="col-2">IP Range</td>
-            <td>${j.start_address} — ${j.end_address}</td>
-            </tr>
-            <tr>
-            <td>Name (Handle)</td>
-            <td>${j.name} (${j.handle})</td>
-            </tr>
-            <tr>
-            <td>Customer</td>
-            <td>${j.customer_name} <span class="fi fi-${j.code2.toLowerCase()}" title="${j.code2.toLowerCase()}"></span>
-            <br/>
-                ${j.street_address}<br/>
-                ${j.city}, ${j.state || 'N/A'} ${j.postal_code} ${j.code2}</td>
-            </tr>
-            <tr>
-            <td>Via</td>
-            <td><a href="${j.ref}">${j.org_handle}</a> (${j.e164} - ${j.customer === 'Y' ? 'Customer' : 'Non-customer'})<br/>
-            ${j.parent_org_handle || 'No parent handle'}
-            ${j.comment || 'None'}<br/>
-                            ${j.referral_server || 'No referral server'}</td>
-            </tr>
-            <tr>
-            <td>Registration</td>
-            <td>${new Date(j.registration_date).toLocaleDateString()}</td>
-            </tr>
-            <tr>
-            <td>Updated</td>
-            <td>${new Date(j.update_date).toLocaleDateString()}</td>
-            </tr>
-            </table>
+        function formatWhois(id, j) {
+            const uniqueId = `whois-${id}-${j.handle.replace(/\W/g, '')}`; // Unique ID for each record
+
+            return `<button class="btn btn-link btn-sm text-primary" type="button" data-bs-toggle="collapse" data-bs-target="#${uniqueId}" aria-expanded="false" aria-controls="${uniqueId}">
+                                [Details]
+                            </button> ${j.code2} <span class="fi fi-${j.code2.toLowerCase()}" title="${j.code2.toLowerCase()}"></span>
+            <div class="whois-record">
+                <div class="collapse mt-1" id="${uniqueId}">
+                    <div class="card card-body p-2">
+                        <table class="table table-sm">
+                            <tr>
+                                <td class="col-2">Name (Handle)</td>
+                                <td><a href="../whois?id=${j.id}">${j.name} (${j.handle})</a></td>
+                            </tr>
+                            <tr>
+                                <td>Customer</td>
+                                <td>${j.customer_name}
+                                    <br/>
+                                    ${j.street_address}<br/>
+                                    ${j.city}, ${j.state || 'N/A'} ${j.postal_code} ${j.code2} <span class="fi fi-${j.code2.toLowerCase()}" title="${j.code2.toLowerCase()}"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Via</td>
+                                <td><a href="${j.ref}">${j.org_handle}</a> (${j.e164} - ${j.customer === 'Y' ? 'Customer' : 'Non-customer'})<br/>
+                                    ${j.parent_org_handle.replace("NaN", '') || 'No parent handle'}<br/>
+                                    ${j.comment || 'No comment'}<br/>
+                                    ${j.referral_server.replace("NaN", '') || 'No referral server'}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Registration</td>
+                                <td>${new Date(j.registration_date).toLocaleDateString()}</td>
+                            </tr>
+                            <tr>
+                                <td>Updated</td>
+                                <td>${new Date(j.update_date).toLocaleDateString()}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
             </div>`;
         }
+
 
         function handleSearchEvent() {
             fetchedSearchValue = document.getElementById('searchInput').value.toLowerCase();
@@ -274,6 +287,15 @@
 
         document.getElementById('appendButton').addEventListener('click', function() {
             updateMappings(replace=false);
+        });
+
+        document.getElementById('btnSearch').addEventListener('click', function() {
+            handleSearchEvent();
+        });
+
+        document.getElementById('btnClearSearch').addEventListener('click', function() {
+            document.getElementById('searchInput').value = '';
+            handleSearchEvent();
         });
 
         document.addEventListener("DOMContentLoaded", function() {

@@ -33,8 +33,12 @@ th.sortable:hover {
     gap: 8px;
 }
 
-.whois-record {
-    border: solid 1px silver;
+.tv * td {
+    vertical-align: top !important;
+}
+
+.tv * td button {
+    margin-top: -3px !important;
 }
 
 .whois-record table {
@@ -44,4 +48,8 @@ th.sortable:hover {
 a,
 a:hover {
     color: darkred;
+}
+
+#items tr td {
+    vertical-align: top;
 }

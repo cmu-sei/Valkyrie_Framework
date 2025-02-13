@@ -53,9 +53,9 @@ class Mapping(models.Model):
     timestamp = models.FloatField(null=True, blank=True)  # 'ts'
     uid = models.CharField(max_length=100, null=True, blank=True)  # Unique identifier
 
-    orig_ip = models.GenericIPAddressField(null=True, blank=True)  # 'id.orig_h'
+    orig_ip = models.GenericIPAddressField(null=True, blank=True, db_index=True)  # 'id.orig_h'
     orig_port = models.IntegerField(null=True, blank=True)  # 'id.orig_p'
-    resp_ip = models.GenericIPAddressField(null=True, blank=True)  # 'id.resp_h'
+    resp_ip = models.GenericIPAddressField(null=True, blank=True, db_index=True)  # 'id.resp_h'
     resp_port = models.IntegerField(null=True, blank=True)  # 'id.resp_p'
 
     proto = models.CharField(max_length=10, null=True, blank=True)  # 'proto'

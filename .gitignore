@@ -11,3 +11,5 @@ package.json
 
 ip_maven/src/app.log
 ip_maven/src/ipmaven_www/data/*
+ip_maven/_data
+ip_maven/_data/*

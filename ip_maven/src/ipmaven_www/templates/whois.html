@@ -6,7 +6,11 @@
 <div class="row">
     <h3>IP Block Records (Whois)</h3>
     <div class="col-12">
-        <input class="form-control mb-3" id="searchInput" type="text" placeholder="Search for...">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." aria-describedby="clearSearchButton" id="searchInput">
+            <button class="btn btn-outline-secondary" type="button" id="btnSearch">Search</button>
+            <button class="btn btn-outline-secondary" type="button" id="btnClearSearch">Clear</button>
+        </div>
         <input class="form-control mb-3" id="searchBy" type="text" placeholder="Search by... (optional comma-separated list)">
         
         <div class="form-check mb-3">
@@ -119,7 +123,7 @@
                         <td>${item.org_handle || ''}</td>
                         <td>${item.city || ''}</td>
                         <td>${item.state.replace("NaN", '') || ''}</td>
-                        <td>${item.code2 ? `<span class="fi fi-${item.code2.toLowerCase()}"></span>` : ''} ${item.code2 || ''}</td>
+                        <td>${item.code2 || ''} ${item.code2 ? `<span class="fi fi-${item.code2.toLowerCase()}"></span>` : ''}</td>
                         <td>${item.customer_name || ''}</td>
                         <td>${item.e164 || ''}</td>
                         <td class="text-end">${new Date(item.updated).toLocaleDateString()}</td>
@@ -161,8 +165,29 @@
         handleSearchEvent();
     });
 
+    document.getElementById('btnSearch').addEventListener('click', function() {
+        handleSearchEvent();
+    });
+
+    document.getElementById('btnClearSearch').addEventListener('click', function() {
+        document.getElementById('searchInput').value = '';
+        handleSearchEvent();
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
-        loadTable();
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get("id");
+
+        if (id) {
+            document.getElementById('searchInput').value = id;
+            fetchedSearchValue = id;
+            fetchedSearchBy = "id";  // Ensure it searches by ID
+            loadTable(fetchedSearchValue, fetchedSearchBy, 1);
+        } else {
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.textContent = "Please enter a search query to begin.";
+            //loadTable();
+        }
     });
 
     function updatePagination(totalPages, currentPage) {
