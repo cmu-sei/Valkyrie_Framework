@@ -16,10 +16,10 @@ from beacon_huntress.src.bin.beacon import get_dns
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 def _get_context(df):
-    df_html = df.to_html(escape=False, 
-                         index=False, 
+    df_html = df.to_html(escape=False,
+                         index=False,
                          #justify="left",
-                         classes="table table-striped", 
+                         classes="table table-striped",
                          table_id="grid"
                          )
 
@@ -170,17 +170,21 @@ def result_detail_view(request):
 
     df = get_data("detail",uid)
 
+    print("X"*100)
+    print(df.info())
+    print("X"*100)
+
     df["Filter"] = df["dest_ip"].apply(lambda x: '<a href="/FilterBeacon?dest_ip={}&uid={}"><i class="fa-solid fa-filter"></i></a> '.format(x,uid))
 
     # SET LOOKUP FOR UNKNOWN DNS
     df.loc[df["dns"] == "UNKNOWN", "dns"] = df["dest_ip"].apply(lambda x: '<a href="/LookupDNS?dest_ip={}&uid={}" onclick="document.body.style.cursor=\'wait\'"><i class="fa-solid fa-magnifying-glass"></i></a> '.format(x,uid)) + " UNKNOWN"
 
     # REORDER BY SCORE & REINDEX
-    df.sort_values(by=["score", "conn_cnt"], ascending=False, inplace=True)
+    df.sort_values(by=["score", "mad_score", "conn_cnt"], ascending=False, inplace=True)
     df = df.reset_index(drop=True)
     df["ID"] = (df.index) + 1
 
-    df = df[["ID", "source_ip", "dest_ip", "port", "score", "dns", "conn_cnt", "min_dt", "max_dt", "Filter"]].rename(columns={"source_ip": "Source IP", "port": "Port", "dest_ip": "Destination IP", "score": "Score", "dns": "DNS", "conn_cnt": "Connection Count", "min_dt": "First Occurrence", "max_dt": "Last Occurrence"})
+    df = df[["ID", "source_ip", "dest_ip", "port", "score", "mad_score", "dns", "conn_cnt", "min_dt", "max_dt", "Filter"]].rename(columns={"source_ip": "Source IP", "port": "Port", "dest_ip": "Destination IP", "score": "Cluster Score", "mad_score": "MAD Score", "dns": "DNS", "conn_cnt": "Connection Count", "min_dt": "First Occurrence", "max_dt": "Last Occurrence"})
 
     context = _get_context(df)
     return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "ResultDetails.html"), context)

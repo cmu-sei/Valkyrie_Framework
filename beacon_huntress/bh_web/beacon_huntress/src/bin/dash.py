@@ -18,8 +18,6 @@ import yaml
 from pathlib import Path
 from datetime import datetime, timedelta
 import time
-from progress.bar import Bar
-
 
 #####################################################################################
 ##  LOGGING
@@ -43,7 +41,7 @@ DB_CONF = os.path.join(os.path.abspath(os.path.join(os.getcwd(),"..")),"config",
 
 def _config_hash(conf = DB_CONF, conf_hash = "", option = "get"):
 
-    from sqlalchemy import create_engine
+    from sqlalchemy import create_engine, text
     import json
 
     starttime = datetime.now()
@@ -60,26 +58,32 @@ def _config_hash(conf = DB_CONF, conf_hash = "", option = "get"):
         logger.error(err)
 
     #####################################################################################
-    ##  
-    #####################################################################################    
+    ##
+    #####################################################################################
 
-    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]))
+    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]), isolation_level="AUTOCOMMIT")
 
     if option == "get":
         query = "select conf_hash from conf_hash where conf_hash = '{}'".format(conf_hash)
-        rows = my_conn.connect().execute(query).fetchall()
-        
+        # rows = my_conn.connect().execute(query).fetchall()
+
+        with my_conn.connect() as conn:
+            rows = conn.execute(text(query))
+
         if len(rows) > 0:
             ret_val = True
         else:
             ret_val = False
 
     elif option == "add":
-        query = "delete from conf_hash"
-        my_conn.connect().execute(query)
+        # query = "delete from conf_hash"
+        # my_conn.connect().execute(query)
 
         query = "insert into conf_hash(conf_hash) values ('{}')".format(conf_hash)
-        my_conn.connect().execute(query)
+        # my_conn.connect().execute(query)
+
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
 
         ret_val = None
 
@@ -109,7 +113,7 @@ def _check_missing_fields(df):
 
     return df
 
-def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
+def add_records(file_loc = [], dataframe: pd.DataFrame = None, group_id = "", conf = DB_CONF, verbose = False):
     """
     Add values from a pandas dataframe into a mysql db to be used for a Grafana dashboard. Source files must be in parquet format.
 
@@ -122,15 +126,15 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
     conf:
         DB configuration file location. File must be json format.
         Default = ../conf/mysql.json
-    verbose: BOOLEAN 
-        Verbose logger. 
+    verbose: BOOLEAN
+        Verbose logger.
         Default = False
 
     Returns:
     ========
     Nothing
     """
-    from sqlalchemy import create_engine
+    from sqlalchemy import create_engine, text
     import json
 
     starttime = datetime.now()
@@ -154,86 +158,100 @@ def add_records(file_loc, group_id, conf = DB_CONF, verbose = False):
     ##  IF LOAD_TYPE == "FAST":
     ##  COLUMNS = ','.JOIN([STR(I) FOR I IN LIST(DF.COLUMNS)])
     ##  VALS = ','.JOIN([STR(I) FOR I IN LIST(DF.TO_RECORDS(INDEX=FALSE))])
-    ##  QUERY = "INSERT IGNORE INTO `{}` ({}) VALUES {}".FORMAT(FILE_TYPE,COLUMNS,VALS)   
-    ##  MY_CONN.CONNECT().EXECUTE(QUERY)  
-    #####################################################################################    
+    ##  QUERY = "INSERT IGNORE INTO `{}` ({}) VALUES {}".FORMAT(FILE_TYPE,COLUMNS,VALS)
+    ##  MY_CONN.CONNECT().EXECUTE(QUERY)
+    #####################################################################################
 
-    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]))
+    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]), isolation_level="AUTOCOMMIT")
 
-    for x in file_loc:
+    if len(file_loc) > 0 or dataframe is None:
+        for x in file_loc:
+            logger.debug("Loading file {}".format(x))
 
-        logger.debug("Loading file {}".format(x))
-        
-        # LOAD BEACON DATA
-        if "beacon" in os.path.basename(x):
-            df = pd.read_parquet(x)
-            file_type = "beacon"
+            # LOAD BEACON DATA
+            if "beacon" in os.path.basename(x):
+                df = pd.read_parquet(x)
+                file_type = "beacon"
 
-            if df.empty:
-                logger.debug("Nothing to load for {}".format(file_type))
+                if df.empty:
+                    logger.debug("Nothing to load for {}".format(file_type))
+                else:
+                    logger.debug("Loading {} data".format(file_type))
+
+                    df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt"}, inplace = True)
+
+                    # ADD GROUP_ID
+                    df["group_id"] = group_id
+
+                    # CHECK FOR MISSING FIELDS IN FINAL BEACON DATA
+                    df = _check_missing_fields(df)
+
+                    # CREATE FINAL DATAFRAME
+                    # MIGHT NEED TO ADD BACK IN "resp_p", "s_dns", "d_dns", "delta_ms"
+                    final_df = df[["uid", "orig_bytes", "source_ip" , "source_port", "port", "dest_ip", "local_resp", "missed_bytes", "orig_pkts",
+                    "orig_ip_bytes", "community_id", "ts", "proto", "duration", "resp_ip_bytes", "local_orig", "service",
+                    "resp_pkts", "history", "resp_bytes", "conn_state", "source_file", "src_row_id",
+                    "delta_mins", "dt", "group_id", "likelihood"]]
+
+                    final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
+
+            # LOAD DELTA DATA
+            elif "delta" in os.path.basename(x):
+                df = pd.read_parquet(x)
+                file_type = "delta"
+
+                if df.empty:
+                    logger.debug("Nothing to load for {}".format(file_type))
+                else:
+                    logger.info("Loading {} data".format(file_type))
+
+                    # ADD GROUP_ID
+                    df["group_id"] = group_id
+
+                    df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt"}, inplace = True)
+
+                    # CREATE FINAL DATAFRAME
+                    final_df = df[["connection_id", "sip", "dip", "port", "proto", "dt" , "delta_ms", "delta_mins", "source_file", "src_row_id", "group_id"]]
+
+                    final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
+
+            # LOAD RAW DATA
             else:
-                logger.debug("Loading {} data".format(file_type))
+                df = pd.read_parquet(x)
+                file_type = "raw_source"
 
-                df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt"}, inplace = True)
+                if df.empty:
+                    logger.debug("Nothing to load for {}".format(file_type))
+                else:
+                    logger.info("Loading {} data".format(file_type))
 
-                # ADD GROUP_ID
-                df["group_id"] = group_id
+                    df_cnt = df['source_file'].value_counts()
+                    df_2 = pd.DataFrame(df_cnt).reset_index()
 
-                # CHECK FOR MISSING FIELDS IN FINAL BEACON DATA
-                df = _check_missing_fields(df)
+                    if "index" in df_2.columns:
+                        df_2.rename(columns={"source_file": "count", "index": "source_file"}, inplace = True)
 
-                # CREATE FINAL DATAFRAME
-                # MIGHT NEED TO ADD BACK IN "resp_p", "s_dns", "d_dns", "delta_ms"
-                final_df = df[["uid", "orig_bytes", "source_ip" , "source_port", "port", "dest_ip", "local_resp", "missed_bytes", "orig_pkts",
-                "orig_ip_bytes", "community_id", "ts", "proto", "duration", "resp_ip_bytes", "local_orig", "service",
-                "resp_pkts", "history", "resp_bytes", "conn_state", "source_file", "src_row_id",
-                "delta_mins", "dt", "group_id", "likelihood"]]
-                
-                final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
+                    # ADD GROUP_ID
+                    df_2["group_id"] = group_id
 
-        # LOAD DELTA DATA
-        elif "delta" in os.path.basename(x):
-            df = pd.read_parquet(x)
-            file_type = "delta"        
+                    # CREATE FINAL DATAFRAME
+                    final_df = df_2[["source_file", "count", "group_id"]]
 
-            if df.empty:
-                logger.debug("Nothing to load for {}".format(file_type))  
-            else:
-                logger.info("Loading {} data".format(file_type))
+                    final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
+    # DATAFRAMES
+    else:
+        file_type = "mad_score"
+        logger.info("Loading {} data".format(file_type))
 
-                # ADD GROUP_ID
-                df["group_id"] = group_id
+        # CREATE FINAL DATAFRAME
+        # MIGHT NEED TO ADD BACK IN "resp_p", "s_dns", "d_dns", "delta_ms"
+        final_df = dataframe[["sip", "dip", "port", "conn_count", "tsScore", "dsScore", "final_score"]]
 
-                df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt"}, inplace = True)
-                
-                # CREATE FINAL DATAFRAME
-                final_df = df[["connection_id", "sip", "dip", "port", "proto", "dt" , "delta_ms", "delta_mins", "source_file", "src_row_id", "group_id"]]                           
+        # ADD GROUP_ID
+        final_df["group_id"] = group_id
 
-                final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)                             
-        
-        # LOAD RAW DATA
-        else:
-            df = pd.read_parquet(x)
-            file_type = "raw_source"        
+        final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
 
-            if df.empty:
-                logger.debug("Nothing to load for {}".format(file_type))
-            else:
-                logger.info("Loading {} data".format(file_type))
-
-                df_cnt = df['source_file'].value_counts()
-                df_2 = pd.DataFrame(df_cnt).reset_index()
-                
-                if "index" in df_2.columns:
-                    df_2.rename(columns={"source_file": "count", "index": "source_file"}, inplace = True)
-
-                # ADD GROUP_ID
-                df_2["group_id"] = group_id
-
-                # CREATE FINAL DATAFRAME
-                final_df = df_2[["source_file", "count", "group_id"]]                  
-
-                final_df.to_sql(con = my_conn, name = file_type, if_exists = exist, index = False, chunksize= 50000)
 
     # CLOSE ENGINE
     my_conn.dispose()
@@ -269,7 +287,7 @@ def del_records(t_names, conf = DB_CONF, verbose = False):
     Nothing
     """
 
-    from sqlalchemy import create_engine
+    from sqlalchemy import create_engine, text
     import json
 
     starttime = datetime.now()
@@ -286,17 +304,21 @@ def del_records(t_names, conf = DB_CONF, verbose = False):
         logger.error(err)
 
     #####################################################################################
-    ##  
-    #####################################################################################    
+    ##
+    #####################################################################################
 
-    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]))
+    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]), isolation_level="AUTOCOMMIT")
 
     for x in t_names:
 
         if x in ["beacon", "conf_hash", "delta", "raw_source"]:
             logger.debug("Truncate table data {}".format(x))
 
-            my_conn.execute("truncate table {}".format(x))
+            #my_conn.execute("truncate table {}".format(x))
+
+            query = "truncate table {}".format(x)
+            with my_conn.connect() as conn:
+                conn.execute(text(query))
         else:
             logger.warning("Cannot delete {} as it is not an available option".format(x))
 
@@ -305,12 +327,11 @@ def del_records(t_names, conf = DB_CONF, verbose = False):
 
     endtime = datetime.now() - starttime
     logger.info("Dashboard data removed")
-    logger.info("Total runtime {}".format(endtime))    
+    logger.info("Total runtime {}".format(endtime))
 
-def load_dashboard(file_loc, dash_config, dash_type, group_id, is_new = False, overwrite = False, verbose = False):
+def load_dashboard(file_loc = [], dataframe: pd.DataFrame = None, dash_config = "", dash_type = "", group_id = "", is_new = False, overwrite = False, verbose = False):
     """
     Load the Grafana Dashboard.
-    This is a docstring with \033[31mcolored text\033[0m.
     
     Parameters:
     -----------
@@ -334,7 +355,7 @@ def load_dashboard(file_loc, dash_config, dash_type, group_id, is_new = False, o
         Default = False
     verbose: BOOLEAN
         Enable verbose logging. 
-        Default = False                
+        Default = False
 
     Returns:
     --------
@@ -346,56 +367,45 @@ def load_dashboard(file_loc, dash_config, dash_type, group_id, is_new = False, o
         if is_new == False and overwrite != True:
             logger.warning("No new bronze data to add to dashboard")
         else:
-            bar = Bar("\t* Loading Dashboard (Bronze)", max=2, suffix="%(elapsed_td)s")
-            bar.next()
-
             add_records(
                 file_loc = file_loc,
                 conf = dash_config,
                 group_id = group_id,
                 verbose = verbose
                 )
-            bar.next()            
-            bar.finish()
     
     elif dash_type == "delta" or dash_type == "all":
         if is_new == False and overwrite != True:
             logger.warning("No new delta data to add to dashboard")
         else:
-            bar = Bar("\t* Loading Dashboard (Delta)", max=2, suffix="%(elapsed_td)s")
-            bar.next()
             add_records(
                 file_loc = file_loc,
                 conf = dash_config,
                 group_id = group_id,
                 verbose = verbose
                 )
-            bar.next()
-            bar.finish()
 
     elif dash_type == "beacon" or dash_type == "all":
         if is_new == False and overwrite != True:
             logger.warning("No new beacon data to add to dashboard")        
         else:
-            # DELETE DASHBOARD DATA
-            bar = Bar("\t* Loading Dashboard (Gold/Beacons)", max=3, suffix="%(elapsed_td)s")
-            bar.next()     
-
             # NO GOLD FILE FINISH
             # GOLD FILE CONTINUE THE PROCESS
             if file_loc == None or file_loc == "":
                 logger.warning("No gold file!")
-                bar.next()
-                bar.next()
-                bar.finish()
             else:
                 # ALL BEACON DATA
-                bar.next()
                 add_records(
                     file_loc = [file_loc],
                     conf = dash_config,
                     group_id = group_id,
                     verbose = verbose)
-                bar.next()
-                bar.finish()            
+
+    elif dash_type == "mad":
+        logger.info("MADE IT TO ADD_RECORDS SECTION")
+        add_records(
+            dataframe = dataframe,
+            conf = dash_config,
+            group_id = group_id,
+            verbose = verbose)
 

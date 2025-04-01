@@ -161,49 +161,76 @@ CREATE TABLE IF NOT EXISTS `beacon`.`ds_files` (
 `file_name` varchar(256),
 `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`rowid`),
-CONSTRAINT `fk_esfiles_dsid` FOREIGN KEY (`ds_id`) REFERENCES `beacon`.`datasource` (`rowid`)
+CONSTRAINT `fk_dsfiles_dsid` FOREIGN KEY (`ds_id`) REFERENCES `beacon`.`datasource` (`rowid`)
+);
+
+CREATE TABLE IF NOT EXISTS `beacon`.`mad_score`(
+`rowid` int NOT NULL AUTO_INCREMENT,
+`group_id` int DEFAULT NULL,
+`sip` varchar(256) DEFAULT NULL,
+`dip` varchar(256) DEFAULT NULL,
+`port` int DEFAULT NULL,
+`conn_count` decimal(6,2),
+`tsScore` decimal(6,2),
+`dsScore` decimal(6,2),
+`final_score` decimal(6,2),
+`create_date` datetime DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (`rowid`),
+CONSTRAINT `fk_madscore_group_id` FOREIGN KEY (`group_id`) REFERENCES `beacon`.`beacon_group` (`group_id`)
 );
 
 /*********************************************************************
-**  Views 
+**  Views
 *********************************************************************/
 
-CREATE OR REPLACE DEFINER = 'root'@'localhost' 
+CREATE OR REPLACE DEFINER = 'root'@'localhost'
 SQL SECURITY DEFINER VIEW `beacon`.`vw_beacon`
-AS 
+AS
 select `bg`.`uid` AS `uid`,
-`b`.`source_ip` AS `source_ip`,
-`b`.`dest_ip` AS `dest_ip`,
-`b`.`port` AS `port`,
+ifnull(`b`.`source_ip`,`m`.`sip`) AS `source_ip`,
+ifnull(`b`.`dest_ip`,`m`.`dip`) AS `dest_ip`,
+ifnull(`b`.`port`,`m`.`port`) AS `port`,
 ifnull(`b`.`likelihood`,0.0) AS `score`,
-ifnull(`d`.`dns`,'UNKNOWN') as `dns`,
+ifnull(`m`.`final_score`,0.0) as `mad_score`,
+ifnull(`d`.`dns`,'UNKNOWN') AS `dns`,
 count(`b`.`uid`) AS `conn_cnt`,
 min(`b`.`dt`) AS `min_dt`,
-max(`b`.`dt`) AS `max_dt` 
-from `beacon`.`beacon_group` `bg` 
-inner join `beacon`.`beacon` `b` on
-	`bg`.`group_id` = `b`.`group_id` 
+max(`b`.`dt`) AS `max_dt`
+from `beacon`.`beacon_group` `bg`
+left join `beacon`.`beacon` `b` on
+	`bg`.`group_id` = `b`.`group_id`
 left join `beacon`.`dns` d on
 	`b`.`dest_ip` = `d`.`ip`
+left join `beacon`.`mad_score` m on
+    `bg`.`group_id` = `m`.`group_id` and
+    `b`.`source_ip` = `m`.`sip` and
+    `b`.`dest_ip` = `m`.`dip` and
+    `b`.`port` = `m`.`port`
 where `b`.`dest_ip` not in (select distinct `beacon_filter`.`ip` from `beacon`.`beacon_filter`) 
-group by `bg`.`uid`,`b`.`source_ip`,`b`.`dest_ip`,`b`.`port`,`b`.`likelihood`,`d`.`dns`;
+group by `bg`.`uid`,ifnull(`b`.`source_ip`,`m`.`sip`),ifnull(`b`.`dest_ip`,`m`.`dip`),ifnull(`b`.`port`,`m`.`port`),`b`.`likelihood`,`m`.`final_score`,`d`.`dns`;
 
-CREATE OR REPLACE DEFINER = 'root'@'localhost' 
-SQL SECURITY DEFINER VIEW `beacon`.`vw_beacon_group` 
+CREATE OR REPLACE DEFINER = 'root'@'localhost'
+SQL SECURITY DEFINER VIEW `beacon`.`vw_beacon_group`
 AS
 select `bg`.`uid` AS `uid`,
 `l`.`log_file` AS `log_file`,
 `bg`.`dt` AS `dt`,
-count(distinct `b`.`source_ip`,`b`.`port`,`b`.`dest_ip`) AS `beacons` 
-from `beacon`.`beacon_group` `bg` 
+ifnull(count(distinct `b`.`source_ip`,`b`.`port`,`b`.`dest_ip`),
+count(distinct `m`.`sip`,`m`.`dip`,`m`.`port`)) AS `beacons`
+from `beacon`.`beacon_group` `bg`
 left join `beacon`.`beacon` `b` on
-	`bg`.`group_id` = `b`.`group_id` 
+	`bg`.`group_id` = `b`.`group_id`
 left join `beacon`.`beacon_log` `l` on
-	`bg`.`group_id` = `l`.`group_id` 
-where `b`.`dest_ip` not in (select distinct `beacon_filter`.`ip` from `beacon`.`beacon_filter`) 
+	`bg`.`group_id` = `l`.`group_id`
+left join `beacon`.`mad_score` `m` on
+  `bg`.`group_id` = `m`.`group_id` and
+  `b`.`source_ip` = `m`.`sip` and
+  `b`.`dest_ip` = `m`.`dip` and
+  `b`.`port` = `m`.`port`
+where `b`.`dest_ip` not in (select distinct `beacon_filter`.`ip` from `beacon`.`beacon_filter`)
 group by `bg`.`uid`,`l`.`log_file`,`bg`.`dt`;
 
-CREATE OR REPLACE DEFINER = 'root'@'localhost' 
+CREATE OR REPLACE DEFINER = 'root'@'localhost'
 SQL SECURITY DEFINER VIEW `beacon`.`vw_filtered_beacons`
 as
 select distinct f.ip,d.dns,f.short_desc,f.dt
@@ -212,7 +239,7 @@ left join `beacon`.`dns` d on
 	f.ip = d.ip
 where f.is_user = True;
 
-CREATE OR REPLACE DEFINER = 'root'@'localhost' 
+CREATE OR REPLACE DEFINER = 'root'@'localhost'
 SQL SECURITY DEFINER VIEW `beacon`.`vw_datasources`
 as
 select distinct ds.rowid,ds.ds_name,dt.ds_type,ds.data,ds.create_date,ds.active
@@ -220,7 +247,7 @@ from `beacon`.`datasource` ds
 inner join `beacon`.`ds_type` dt on
 ds.ds_type_id = dt.rowid;
 
-CREATE OR REPLACE DEFINER = 'root'@'localhost' 
+CREATE OR REPLACE DEFINER = 'root'@'localhost'
 SQL SECURITY DEFINER VIEW `beacon`.`vw_dsfiles`
 as
 select distinct ds.rowid,ds.ds_name,df.group_id,df.file_name,ds.active
@@ -251,13 +278,20 @@ insert into `beacon`.`ds_type`
 values
 ('Zeek Connection Logs'),
 ('Elastic'),
-('Security Onion');
+('Security Onion'),
+('Delta File');
 
 insert into `beacon`.`datasource`
 (`ds_name`,`ds_type_id`,`data`)
 select distinct 'Zeek Connection Logs',`rowid`,''
 from `beacon`.`ds_type`
 where `ds_type` = 'Zeek Connection Logs';
+
+insert into `beacon`.`datasource`
+(`ds_name`,`ds_type_id`,`data`)
+select distinct 'Delta File',`rowid`,''
+from `beacon`.`ds_type`
+where `ds_type` = 'Delta File';
 
 insert into `beacon`.`dns`
 (dns,ip)

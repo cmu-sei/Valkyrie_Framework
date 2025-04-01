@@ -66,7 +66,7 @@ def _upd_api_key(val):
         return json.dumps(data)
     else:
         return val
-            
+
 def _mask_api(df):
 
     if len(df.loc[df["data"].str.contains('api_key', na=False)]) > 0:
@@ -187,7 +187,7 @@ def new_ds(request):
         options = data_to_json(df)
 
         return render(request, os.path.join(BASE_DIR, "settings", "pages", "NewDataSource.html"), context={"options": options})
-    
+
 def del_ds(request):
 
     try:
@@ -195,8 +195,8 @@ def del_ds(request):
 
         del_data("data_source",rowid)
     except BaseException as err:
-        messages.error(request, "ERROR: {}".format(err))        
-    
+        messages.error(request, "ERROR: {}".format(err))
+
     # RELOAD RESULTS VIEW
     return HttpResponseRedirect("/DataSources.html")
 

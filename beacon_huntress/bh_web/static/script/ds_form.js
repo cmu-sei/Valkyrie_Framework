@@ -71,7 +71,39 @@ function addFieldsRun() {
                 <div id="textHelp" class="form-text">End datetime (optional).</div>
             </div>            
         `;
-    }    
+    }
+    else if (selectedType == "Delta File" && selectedDSName == "Delta File") {  
+        additionalFieldsContainer.innerHTML = `
+            <div class="form-group">
+                <label for="raw_log_loc">Raw Log Location</label><br>
+                <input type="text" id="raw_log_loc" name="raw_log_loc" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="start_dte">Start Datetime</label><br>
+                <input id="start_dte" name="start_dte" class="form-control" type="datetime-local" />
+                <div id="textHelp" class="form-text">Start datetime (optional).</div>
+            </div>
+            <div class="mb-3">
+                <label for="end_dte">End Datetime</label><br>
+                <input id="end_dte" name="end_dte" class="form-control" type="datetime-local" />
+                <div id="textHelp" class="form-text">End datetime (optional).</div>
+            </div>            
+        `;
+    }
+    else if (selectedType == "Delta File" && selectedDSName != "Delta File") {  
+        additionalFieldsContainer.innerHTML = `
+            <div class="mb-3">
+                <label for="start_dte">Start Datetime</label><br>
+                <input id="start_dte" name="start_dte" class="form-control" type="datetime-local" />
+                <div id="textHelp" class="form-text">Start datetime (optional).</div>
+            </div>
+            <div class="mb-3">
+                <label for="end_dte">End Datetime</label><br>
+                <input id="end_dte" name="end_dte" class="form-control" type="datetime-local" />
+                <div id="textHelp" class="form-text">End datetime (optional).</div>
+            </div>            
+        `;
+    }       
 
     //ADD THE DATA_TYPE TO THE REQUEST
     document.getElementById('data_type_field').value = selectedType;

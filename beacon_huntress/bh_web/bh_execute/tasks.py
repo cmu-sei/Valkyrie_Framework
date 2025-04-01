@@ -40,6 +40,7 @@ def run_algo(request,algo):
         message = "Potential beacons! <a href=/ResultDetails.html?uid={0}>{0}</a>".format(str(ret_val["beacon_group"]))
     else:
         message = "ERROR: {}".format(message)
+        print(message)
 
     time.sleep(1)
     channel_layer = get_channel_layer()
@@ -87,6 +88,7 @@ def load_ds_data(request):
         message = "Data for Data Source {} is loaded!".format(request["ds_name"])
     else:
         message = "ERROR: {}".format(message)
+        print(message)
 
     # SLEEP FOR 1 SEC TO ALLOW MESSAGE TO BE RETURNED 
     # IF THE PROCESS IS FASTER THAN THE TIME IT TAKES TO LOAD THE PAGE

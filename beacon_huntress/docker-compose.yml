@@ -59,6 +59,7 @@ services:
       - ./bh_web/datasets/tutorial:/tutorial
       - ./bh_web/datasets/elastic:/elastic
       - ./bh_web/datasets/zeek:/zeek
+      - ./bh_web/datasets/delta:/delta
     ports:
       - "8000:8000"
     environment:
@@ -91,7 +92,8 @@ services:
       - /tmp:/tmp
       - ./bh_web/datasets/tutorial:/tutorial
       - ./bh_web/datasets/elastic:/elastic
-      - ./bh_web/datasets/zeek:/zeek  
+      - ./bh_web/datasets/zeek:/zeek
+      - ./bh_web/datasets/delta:/delta
     depends_on:
       - web
       - redis

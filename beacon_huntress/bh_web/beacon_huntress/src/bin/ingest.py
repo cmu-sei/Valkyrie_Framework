@@ -19,7 +19,6 @@ import time
 import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
-from progress.bar import Bar
 import platform
 
 #####################################################################################
@@ -113,7 +112,22 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
     ##  READ FILE & CREATE JSON & PARQUET FILES
     #####################################################################################
 
-    df = pd.read_json(src_file, lines=True)
+    ext = str(Path(src_file).suffix).replace(".","").lower()
+    print(f"SOURCE FILE: {src_file}")
+    print(f"EXTENSION: {ext}")
+    # print(src_file)
+    # print(ext)
+
+    ## BACKHERE
+    if ext == "json" or ext == "gz":
+        df = pd.read_json(src_file, lines=True)
+    elif ext == "parquet":
+        print("PARQUET SECTION")
+        df = pd.read_parquet(src_file)
+    else:
+        print("ERROR: Extension option {} does not exist for a Raw File type!".format(ext))
+
+    print("RAW DATAFRAME LENGTH: {}".format(len(df)))
 
     # CHECK FOR DATES
     # START & END DATE
@@ -815,8 +829,6 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
     tot_cnt = 0
     logger.debug("Processing {} files from {}".format(tot_files, src_loc))
 
-    bar = Bar("\t* Filter Process", max=tot_files, suffix="%(index)d/%(max)d file/s | %(elapsed_td)s")
-
     # WALK DIR
     for root, dir, dir_f in os.walk(src_loc):
         # NESTED LOOP FOR FILES
@@ -825,7 +837,6 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
             base_folder = os.path.basename(root)
 
             # INCREMENTAL BAR & VARIABLES
-            bar.next()
             tot_cnt += 1
             log_cnt += 1
 
@@ -965,7 +976,6 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
             ##  
             #####################################################################################
 
-    bar.finish()
     endtime = datetime.now() - overall_start
     logger.info('Filter process complete {}'.format(endtime))
 
@@ -1010,10 +1020,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
     logger.info("Starting Delta process")
 
     # LOOP FOR BAR ONLY
-    bar = Bar("\t* Building Delta File", max=5, suffix="%(index)d/%(max)d steps/s | %(elapsed_td)s")
     for i in range(5):
-
-        bar.next()
         
         if os.path.exists(delta_file_loc) and overwrite == True:
             shutil.rmtree(delta_file_loc) 
@@ -1022,21 +1029,17 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
 
         logger.debug("Loading Parquet/s from {}".format(src_loc))
 
-        #src_loc = os.path.join(src_loc,"data")
-
         try:
-            df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "source_file", "src_row_id"])
-            df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port"}, inplace=True)
+            df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id"])
+            df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port", "orig_ip_bytes": "src_bytes", "resp_ip_bytes": "dest_bytes"}, inplace=True)
         except:
             logger.debug("columns (id.orig_h, id.resp_h, id.resp_p, proto, ts) not found.  Trying renamed columns (sip, dip, port, proto, ts)")
             try:
-                df = pd.read_parquet(src_loc, columns=["sip", "dip", "port", "proto", "ts", "source_file", "src_row_id"])
+                df = pd.read_parquet(src_loc, columns=["sip", "dip", "port", "proto", "ts", "src_bytes", "dest_bytes", "source_file", "src_row_id"])
             except BaseException as err:
                 logger.error("Failure to load parquet files in folder {}".format(src_loc))
                 logger.error(err)
                 sys.exit(1)
-
-        bar.next()
 
         if df.empty == True:
             logger.error("No records for file {}".format(src_loc))
@@ -1066,7 +1069,6 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         
         df["connection_id"] = df.groupby(["sip", "dip",	"port", "proto"]).ngroup() 
         df.sort_values(["connection_id", "datetime"], inplace=True)
-        bar.next()
 
         logger.debug("Configuring Delta/s")
 
@@ -1083,7 +1085,6 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         #df["delta_ms"] = df["delta"].astype("timedelta64[ms]").astype(float)
         df["delta_ms"] = df["delta"].dt.total_seconds() * 1000
         df["delta_mins"] = df["delta_ms"] / 60000
-        bar.next()
 
         #GET EPOCH TIME
         epoch = int(time.time())
@@ -1091,18 +1092,16 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         # DUMP FILE AS CSV OR PARQUET
         if delta_file_type == "csv":   
             delta_file = os.path.join(delta_file_loc,"delta_{}.csv".format(epoch))
-            df.to_csv(delta_file, columns = ["connection_id", "sip", "dip", "port", "proto", "datetime", "delta_ms", "delta_mins", "source_file", "src_row_id"])
+            df.to_csv(delta_file, columns = ["connection_id", "sip", "dip", "port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id"])
         else:
             delta_file = os.path.join(delta_file_loc,"delta_{}.parquet".format(epoch))
-            export_df = df[["connection_id", "sip", "dip","port", "proto", "datetime", "delta_ms", "delta_mins", "source_file", "src_row_id"]]
+            export_df = df[["connection_id", "sip", "dip","port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id"]]
             # MIGHT HAVE TO ENABLE AT A LATER TIME
             #export_df.to_parquet(delta_file, compression= "snappy", allow_truncated_timestamps=True)
             export_df.to_parquet(delta_file, compression= "snappy", use_deprecated_int96_timestamps=True)
 
-        bar.next()
         break
 
-    bar.finish()
     logger.debug("Delta File {} is completed".format(delta_file))
     endtime = datetime.now() - starttime
     logger.info('Delta process is completed {}'.format(endtime))
@@ -1168,9 +1167,6 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
     if tot_files == 0:
         logger.error("{} files located at {}!  Please use another location!".format(tot_files, src_loc))
         sys.exit(1)
-
-    #FIGURE OUT ELASPED TIME
-    bar = Bar("\t* Building Bronze Layer", max=tot_files, suffix="%(index)d/%(max)d file/s | %(elapsed_td)s")
           
     # WALK DIR
     #for filename in os.listdir(src_loc):
@@ -1178,8 +1174,6 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
         for fname in dir_f:
             f = os.path.join(root,fname)
 
-            bar.next()
-            #f = os.path.join(src_loc, filename)
             tot_cnt += 1
             log_cnt += 1
 
@@ -1209,7 +1203,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
                         end_dte = end_dte,
                         overwrite = overwrite,
                         verbose = verbose)
-                    
+
                     if is_dns == True:
                         add_dns(src_file = par_name, 
                         dest_loc = dest_loc, 
@@ -1221,7 +1215,6 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
                     logger.error("Failure on file {}".format(f))
                     logger.error(err)
     
-    bar.finish()
     endtime = datetime.now() - starttime
     logger.info("Bronze file process completed {}".format(endtime))
 
@@ -1294,7 +1287,7 @@ def get_latest_file(folder_loc, file_type = "parquet"):
 
     if file_type == "log":
         final_src = os.path.join(folder_loc,"log_*")
-        file_lst = glob.glob(final_src)        
+        file_lst = glob.glob(final_src)
     else:
         final_src = os.path.join(folder_loc,"*.{}".format(file_type))
         file_lst = glob.glob(final_src)

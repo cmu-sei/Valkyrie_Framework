@@ -43,6 +43,47 @@ def _get_ds(ds_id):
 
     return df
 
+def _build_local_conf(df,config,request):
+        # BUILD OUT CONFIG FOR DATASOURCES
+        if ((str(df["ds_name"]) != "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs") or (str(df["ds_name"]) != "Delta File" and df["ds_type"] == "Delta File")):
+            data = json.loads(df["data"].replace("'","\""))
+            config["general"]["raw_loc"] = data["raw_log_loc"]
+            config["general"]["ds_name"] = df["ds_name"]
+            config["general"]["ds_type"] = df["ds_type"]      
+            config["general"]["start_dte"] = request["start_dte"]
+            config["general"]["end_dte"] = request["end_dte"]
+        elif (df["ds_name"] == "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs") or (df["ds_name"] == "Delta File" and df["ds_type"] == "Delta File"):
+            config["general"]["raw_loc"] = request["raw_log_loc"]
+            config["general"]["ds_name"] = df["ds_name"]
+            config["general"]["ds_type"] = df["ds_type"]
+            config["general"]["start_dte"] = request["start_dte"]
+            config["general"]["end_dte"] = request["end_dte"]
+        elif df["ds_type"] in ["Security Onion", "Elastic"]:
+            data = json.loads(df["data"].replace("'","\""))
+            config["general"]["raw_loc"] = "/elastic"
+            config["general"]["ds_name"] = df["ds_name"]
+            config["general"]["ds_type"] = df["ds_type"]       
+            config["general"]["start_dte"] = request["start_dte"]
+            config["general"]["end_dte"] = request["end_dte"]
+
+            if df["ds_type"] == "Security Onion":
+                index = "*-zeek-*"
+            else:
+                index = data["index"]
+
+            config["data"] = {"auth": "api",
+                              "host": data["host"],
+                              "port": data["port"],
+                              "api": data["api_key"],
+                              "timeout": 900,
+                              "max_records": 0,
+                              "index": index,
+                              "data_type": df["ds_type"]}
+        else:
+            pass    
+
+        return config
+
 def exe_bh(request,type):
     """
     Run Beacon Huntress asynchronous.\n
@@ -207,42 +248,7 @@ def load_settings(config, type, request = ""):
         # GET DATAFRAME IN JSON FORMAT
         df = _get_ds(ds_id)
 
-        # BUILD OUT CONFIG FOR DATASOURCES
-        if str(df["ds_name"]) != "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs":
-            data = json.loads(df["data"].replace("'","\""))
-            config["general"]["raw_loc"] = data["raw_log_loc"]
-            config["general"]["ds_name"] = df["ds_name"]
-            config["general"]["ds_type"] = df["ds_type"]      
-            config["general"]["start_dte"] = request["start_dte"]
-            config["general"]["end_dte"] = request["end_dte"]
-        elif df["ds_name"] == "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs":
-            config["general"]["raw_loc"] = request["raw_log_loc"]
-            config["general"]["ds_name"] = df["ds_name"]
-            config["general"]["ds_type"] = df["ds_type"]
-            config["general"]["start_dte"] = request["start_dte"]
-            config["general"]["end_dte"] = request["end_dte"]
-        elif df["ds_type"] in ["Security Onion", "Elastic"]:
-            data = json.loads(df["data"].replace("'","\""))
-            config["general"]["raw_loc"] = "/elastic"
-            config["general"]["ds_name"] = df["ds_name"]
-            config["general"]["ds_type"] = df["ds_type"]       
-            config["general"]["start_dte"] = request["start_dte"]
-            config["general"]["end_dte"] = request["end_dte"]
-
-            if df["ds_type"] == "Security Onion":
-                index = "*-zeek-*"
-            else:
-                index = data["index"]
-
-            config["data"] = {"auth": "api",
-                              "host": data["host"],
-                              "port": data["port"],
-                              "api": data["api_key"],
-                              "timeout": 900,
-                              "max_records": 0,
-                              "index": index,
-                              "data_type": df["ds_type"]}
-        else:
-            pass
+        config = _build_local_conf(df,config,request)
 
     return config
+

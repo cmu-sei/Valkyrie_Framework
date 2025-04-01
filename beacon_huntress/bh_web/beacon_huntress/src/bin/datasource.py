@@ -374,6 +374,7 @@ def load_elastic_data(client, data, chunk_size=100000):
     return f_lst
 
 def get_file_data(df):
+
     """
     Get a single Pandas data frame for the chunked elastic data.\n
 
@@ -384,7 +385,7 @@ def get_file_data(df):
 
     Returns:
     ========
-        Pandas data frame will all data
+        Pandas data frame with all data
 
     """
     final_df = pd.DataFrame()
@@ -400,3 +401,98 @@ def get_file_data(df):
 
 
     return final_df
+
+def check_delta_columns(df):
+
+    df.rename(columns={"source_ip":	"id.orig_h", "destination_ip": "id.resp_h", "port": "id.resp_p","datetime": "ts"},inplace=True)
+
+    if "source_bytes" not in df:
+        df["orig_ip_bytes"] = 0
+    else:
+        df.rename(columns={"source_bytes": "orig_ip_bytes"},inplace = True)
+
+    if "destination_bytes" not in df:
+        df["resp_ip_bytes"] = 0
+    else:
+        df.rename(columns={"destination_bytes":"resp_ip_bytes"}, inplace = True)
+        
+
+    # ADD MISSING ZEEK COLUMNS
+    df["uid"] = df.index + 1
+    df["id.orig_p"] = 0
+    df["id.orig_p"] = 0
+    df["proto"] = ""
+    df["service"] = ""
+    df["duration"] = 0    
+    df["orig_bytes"] = 0
+    df["resp_bytes"] = 0
+    df["conn_state"] = ""
+    df["local_orig"] = False
+    df["local_resp"] = False
+    df["missed_bytes"] = 0    
+    df["history"] = ""
+    df["orig_pkts"] = 0
+    df["resp_pkts"] = 0
+    df["community_id"] = ""
+    df["orig_mac_oui"] = ""
+
+    return df
+
+def load_delta_data(fname, ftype = "csv"):
+    """
+    Get a delta file data .\n
+    Column names must be 
+
+    Parameters:
+    ===========
+        fname: 
+            File name
+        ftype:
+            File type
+            CSV or Parquet
+
+
+    Returns:
+    ========
+        Pandas data frame will all data    
+    """
+
+    try:
+        if ftype.lower() == "csv":
+            df = pd.read_csv(fname)
+            df["source_file"] = fname
+            df["src_row_id"] = df.index
+
+            # GET THE CORRECT COLUMNS
+            df = check_delta_columns(df)
+        elif ftype.lower() == "parquet":
+            df = pd.read_parquet(fname)
+
+            print("RAW FILE: {}".format(len(fname)))
+            print("LOAD DELTA SIZE: {}".format(len(df)))
+            df["source_file"] = fname
+            df["src_row_id"] = df.index
+
+            # GET THE CORRECT COLUMNS
+            df = check_delta_columns(df)
+        else:
+            print("ERROR: Invaild delta file type must be either csv or parquet!")
+            df = pd.DataFrame(columns=["ts","uid","id.orig_h","id.orig_p","id.resp_h",
+                    "id.resp_p","proto","service","duration","orig_bytes",
+                    "resp_bytes","conn_state","local_orig","local_resp",
+                    "missed_bytes","history","orig_pkts","orig_ip_bytes",
+                    "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
+                    "source_file","src_row_id"
+                    ])
+
+    except Exception as err:
+        print("ERROR: {}".format(str(err)))
+        df = pd.DataFrame(columns=["ts","uid","id.orig_h","id.orig_p","id.resp_h",
+                "id.resp_p","proto","service","duration","orig_bytes",
+                "resp_bytes","conn_state","local_orig","local_resp",
+                "missed_bytes","history","orig_pkts","orig_ip_bytes",
+                "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
+                "source_file","src_row_id"
+                ])         
+
+    return df
