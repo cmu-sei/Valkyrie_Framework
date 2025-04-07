@@ -170,10 +170,10 @@ CREATE TABLE IF NOT EXISTS `beacon`.`mad_score`(
 `sip` varchar(256) DEFAULT NULL,
 `dip` varchar(256) DEFAULT NULL,
 `port` int DEFAULT NULL,
-`conn_count` decimal(6,2),
-`tsScore` decimal(6,2),
-`dsScore` decimal(6,2),
-`final_score` decimal(6,2),
+`conn_count` int,
+`tsScore` decimal(9,2),
+`dsScore` decimal(9,2),
+`final_score` decimal(9,2),
 `create_date` datetime DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`rowid`),
 CONSTRAINT `fk_madscore_group_id` FOREIGN KEY (`group_id`) REFERENCES `beacon`.`beacon_group` (`group_id`)
@@ -245,7 +245,8 @@ as
 select distinct ds.rowid,ds.ds_name,dt.ds_type,ds.data,ds.create_date,ds.active
 from `beacon`.`datasource` ds
 inner join `beacon`.`ds_type` dt on
-ds.ds_type_id = dt.rowid;
+ds.ds_type_id = dt.rowid
+order by ds.ds_name;
 
 CREATE OR REPLACE DEFINER = 'root'@'localhost'
 SQL SECURITY DEFINER VIEW `beacon`.`vw_dsfiles`
@@ -279,19 +280,27 @@ values
 ('Zeek Connection Logs'),
 ('Elastic'),
 ('Security Onion'),
-('Delta File');
+('Delta File'),
+('HTTP File'),
+('DNS File');
 
 insert into `beacon`.`datasource`
 (`ds_name`,`ds_type_id`,`data`)
 select distinct 'Zeek Connection Logs',`rowid`,''
 from `beacon`.`ds_type`
-where `ds_type` = 'Zeek Connection Logs';
-
-insert into `beacon`.`datasource`
-(`ds_name`,`ds_type_id`,`data`)
+where `ds_type` = 'Zeek Connection Logs'
+UNION
 select distinct 'Delta File',`rowid`,''
 from `beacon`.`ds_type`
-where `ds_type` = 'Delta File';
+where `ds_type` = 'Delta File'
+UNION
+select distinct 'HTTP File',`rowid`,''
+from `beacon`.`ds_type`
+where `ds_type` = 'HTTP File'
+UNION
+select distinct 'DNS File',`rowid`,''
+from `beacon`.`ds_type`
+where `ds_type` = 'DNS File';
 
 insert into `beacon`.`dns`
 (dns,ip)

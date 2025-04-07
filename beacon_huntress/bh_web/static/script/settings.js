@@ -1,6 +1,5 @@
 function navDropList(nav_name){
 
-    console.log("HERE")
     console.log(nav_name)
 
     document.getElementById(nav_name).classList.toggle("active");
@@ -9,7 +8,7 @@ function navDropList(nav_name){
     if (dropdownContent.style.display === "block") {
         dropdownContent.style.display = "none";
         localStorage.setItem(nav_name, false);
-    } 
+    }
     else {
         dropdownContent.style.display = "block";
         localStorage.setItem(nav_name, true);

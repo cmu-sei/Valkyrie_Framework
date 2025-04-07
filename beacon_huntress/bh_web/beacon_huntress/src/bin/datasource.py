@@ -17,6 +17,25 @@ import eland as ed
 from beacon_huntress.src.bin.data import add_data, get_data, ds_activate
 from elasticsearch import Elasticsearch
 from pathlib import Path
+import logging
+
+#####################################################################################
+##  LOGGING
+#####################################################################################
+
+logger = logging.getLogger("logger")
+
+if not logger.handlers:
+    formatter = logging.Formatter('%(asctime)s %(levelname)s:\t%(message)s',datefmt="%m-%d %H:%M:%S")
+    logger.setLevel(logging.INFO)
+    log_basic = logging.StreamHandler()
+    log_basic.setLevel(logging.INFO)
+    log_basic.setFormatter(formatter)
+    logger.addHandler(log_basic)
+
+#####################################################################################
+##  FUNCTIONS
+#####################################################################################
 
 def safe_load(row):
     """
@@ -415,7 +434,6 @@ def check_delta_columns(df):
         df["resp_ip_bytes"] = 0
     else:
         df.rename(columns={"destination_bytes":"resp_ip_bytes"}, inplace = True)
-        
 
     # ADD MISSING ZEEK COLUMNS
     df["uid"] = df.index + 1
@@ -439,6 +457,7 @@ def check_delta_columns(df):
     return df
 
 def load_delta_data(fname, ftype = "csv"):
+
     """
     Get a delta file data .\n
     Column names must be 
@@ -454,7 +473,7 @@ def load_delta_data(fname, ftype = "csv"):
 
     Returns:
     ========
-        Pandas data frame will all data    
+        Pandas data frame will all data
     """
 
     try:
@@ -493,6 +512,153 @@ def load_delta_data(fname, ftype = "csv"):
                 "missed_bytes","history","orig_pkts","orig_ip_bytes",
                 "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
                 "source_file","src_row_id"
-                ])         
+                ])
+
+    return df
+
+def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
+
+    """
+    Get a delta file data .\n
+
+    Parameters:
+    ===========
+        fname:
+            File name
+        ftype:
+            File type
+            CSV or Parquet
+
+
+    Returns:
+    ========
+        Pandas data frame will all data
+    """
+
+    try:
+        # if ftype.lower() == "csv":
+        #     df = pd.read_csv(fname)
+
+        #     df["source_file"] = fname
+        #     df["src_row_id"] = df.index
+
+        #     col_check = True
+        # elif ftype.lower() == "parquet":
+        #     df = pd.read_parquet(fname)
+
+        #     df["source_file"] = fname
+        #     df["src_row_id"] = df.index
+
+        #     col_check = True
+        if df.empty:
+            logger.warning("Empty file {}!".format(fname))
+            df = pd.DataFrame(columns=["ts","uid","id.orig_h","id.orig_p","id.resp_h",
+                    "id.resp_p","proto","service","duration","orig_bytes",
+                    "resp_bytes","conn_state","local_orig","local_resp",
+                    "missed_bytes","history","orig_pkts","orig_ip_bytes",
+                    "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
+                    "source_file","src_row_id"
+                    ])
+            col_check = False
+        else:
+            df["source_file"] = fname
+            df["src_row_id"] = df.index
+
+            col_check = True
+
+        if col_check:
+            df = check_ds_columns(df, dstype)
+
+    except Exception as err:
+        print("ERROR: {}".format(str(err)))
+        df = pd.DataFrame(columns=["ts","uid","id.orig_h","id.orig_p","id.resp_h",
+                "id.resp_p","proto","service","duration","orig_bytes",
+                "resp_bytes","conn_state","local_orig","local_resp",
+                "missed_bytes","history","orig_pkts","orig_ip_bytes",
+                "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
+                "source_file","src_row_id"
+                ])
+
+    return df
+
+def check_ds_columns(df, dstype = "delta"):
+
+    if dstype.lower() == "delta":
+        df.rename(columns={"source_ip":	"id.orig_h", "destination_ip": "id.resp_h", "port": "id.resp_p","datetime": "ts"},inplace=True)
+
+        if "source_bytes" not in df:
+            df["orig_ip_bytes"] = 0
+        else:
+            df.rename(columns={"source_bytes": "orig_ip_bytes"},inplace = True)
+
+        if "destination_bytes" not in df:
+            df["resp_ip_bytes"] = 0
+        else:
+            df.rename(columns={"destination_bytes":"resp_ip_bytes"}, inplace = True)
+
+        # ADD MISSING ZEEK COLUMNS
+        df["uid"] = df.index + 1
+        df["id.orig_p"] = 0
+        df["proto"] = ""
+        df["service"] = ""
+        df["duration"] = 0
+        df["orig_bytes"] = 0
+        df["resp_bytes"] = 0
+        df["conn_state"] = ""
+        df["local_orig"] = False
+        df["local_resp"] = False
+        df["missed_bytes"] = 0
+        df["history"] = ""
+        df["orig_pkts"] = 0
+        df["resp_pkts"] = 0
+        df["community_id"] = ""
+        df["orig_mac_oui"] = ""
+
+    elif dstype.lower() == "http":
+        # FIGURE OUT WHAT TO DO WITH HOST
+
+        # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
+        df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id"]]
+
+        # ADD MISSING ZEEK COLUMNS
+        df["proto"] = ""
+        df["service"] = ""
+        df["duration"] = 0
+        df["orig_ip_bytes"] = 0
+        df["resp_ip_bytes"] = 0
+        df["conn_state"] = ""
+        df["local_orig"] = False
+        df["local_resp"] = False
+        df["missed_bytes"] = 0
+        df["history"] = ""
+        df["orig_pkts"] = 0
+        df["resp_pkts"] = 0
+        df["community_id"] = ""
+        df["orig_mac_oui"] = ""
+
+    elif dstype.lower() == "dns":
+        # FIGURE OUT WHAT TO DO WITH TTLs & Query
+        # TWO RECORDS PER
+
+        # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
+        df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p", "proto","source_file","src_row_id"]]
+
+        # ADD MISSING ZEEK COLUMNS
+        df["service"] = ""
+        df["duration"] = 0
+        df["orig_ip_bytes"] = 0
+        df["resp_ip_bytes"] = 0
+        df["conn_state"] = ""
+        df["local_orig"] = False
+        df["local_resp"] = False
+        df["missed_bytes"] = 0
+        df["history"] = ""
+        df["orig_pkts"] = 0
+        df["resp_pkts"] = 0
+        df["community_id"] = ""
+        df["orig_mac_oui"] = ""
+    else:
+        print("ERROR: Data Source Type {} does not exist!".format(str(dstype)))
+        sys.exit(1)
 
     return df

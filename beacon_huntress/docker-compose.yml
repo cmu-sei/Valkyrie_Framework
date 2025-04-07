@@ -23,7 +23,7 @@ services:
       timeout: 20s
       retries: 10
     networks:
-      - bh_network          
+      - bh_network
 
   grafana:
     container_name: bh_grafana
@@ -51,7 +51,7 @@ services:
     container_name: beacon_huntress
     command: >
       sh -c "python3 manage.py migrate &&
-             daphne -b 0.0.0.0 -p 8000 bh_web.asgi:application"    
+             daphne -b 0.0.0.0 -p 8000 bh_web.asgi:application"
     restart: always
     volumes:
       - ./bh_web:/app
@@ -60,6 +60,8 @@ services:
       - ./bh_web/datasets/elastic:/elastic
       - ./bh_web/datasets/zeek:/zeek
       - ./bh_web/datasets/delta:/delta
+      - ./bh_web/datasets/http:/http
+      - ./bh_web/datasets/dns:/dns
     ports:
       - "8000:8000"
     environment:
@@ -67,7 +69,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - PYTHONPATH=/app
     networks:
-      - bh_network      
+      - bh_network
     depends_on:
       db:
         condition: service_healthy
@@ -78,7 +80,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - bh_network      
+      - bh_network
 
   celery:
     build:
@@ -86,7 +88,7 @@ services:
     container_name: bh_celery
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0        
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
       - ./bh_web:/app
       - /tmp:/tmp
@@ -94,13 +96,15 @@ services:
       - ./bh_web/datasets/elastic:/elastic
       - ./bh_web/datasets/zeek:/zeek
       - ./bh_web/datasets/delta:/delta
+      - ./bh_web/datasets/http:/http
+      - ./bh_web/datasets/dns:/dns
     depends_on:
       - web
       - redis
-    command: celery -A bh_web.celery worker --loglevel=debug    
+    command: celery -A bh_web.celery worker --loglevel=debug
     networks:
       - bh_network
 
 volumes:
-  db_data: 
+  db_data:
 

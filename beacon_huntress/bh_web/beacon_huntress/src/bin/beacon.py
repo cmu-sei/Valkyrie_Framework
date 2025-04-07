@@ -22,7 +22,7 @@ import shutil
 from beacon_huntress.src.bin.ingest import build_bronze_layer
 from beacon_huntress.src.bin.data import get_data
 from beacon_huntress.src.bin.dash import load_dashboard
-from beacon_huntress.src.bin.datasource import load_delta_data, get_file_data
+from beacon_huntress.src.bin.datasource import load_delta_data, get_file_data, load_ds_data
 
 #####################################################################################
 ##  LOGGING
@@ -776,7 +776,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
 
         (unique, counts) = np.unique(dbscan.labels_, return_counts=True)
         frequencies = np.asarray((unique, counts)).T
-        
+
         dbscan_cluster_data = pd.DataFrame()
         dbscan_cluster_data['delta'] = f["delta"]
         dbscan_cluster_data['cluster'] = dbscan.labels_
@@ -837,7 +837,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         logger.warning("All connection groups have 0.0 Epsilon! Try using a Detailed Cluster Search!")
 
     logger.info("Total runtime {}".format(endtime))
-    
+
     return gold_file
 
 def get_dns(ip):
@@ -1373,7 +1373,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
 
             # Blank DataFrame
             df_bronze = pd.DataFrame()
-        
+
     # DELTA DATASOURCE
     elif config["general"]["ds_type"] == "Delta File":
 
@@ -1381,7 +1381,101 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
         is_new_bronze = True
 
         # CREATE RAW DELTA ZEEK FORMAT FILE
+        # BACKHERE
         df_src_delta = load_delta_data(config["general"]["raw_loc"])
+        #df_src_delta = load_ds_data(config["general"]["raw_loc"], dstype = "delta")
+
+        # CREATE FOLDER
+        if os.path.exists("/delta/{}".format(beacon_group)):
+            pass
+        else:
+            Path("/delta/{}".format(beacon_group)).mkdir(parents=True, exist_ok=True)
+
+        df_src_delta.to_parquet("/delta/{}/{}_delta.parquet".format(beacon_group,beacon_group))
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc="/delta/{}".format(beacon_group),
+            bronze_loc=config["general"]["bronze_loc"],
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"],
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # HTTP DATASOURCE
+    elif config["general"]["ds_type"] == "HTTP File":
+
+        logger.info("Processing HTTP Files")
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # CREATE RAW DELTA ZEEK FORMAT FILE
+        # BACKHERE
+        #df_src_delta = load_delta_data(config["general"]["raw_loc"])
+        # df_src_delta = load_ds_data(config["general"]["raw_loc"], dstype = "http")
+
+        # # CREATE FOLDER
+        # if os.path.exists("/delta/{}".format(beacon_group)):
+        #     pass
+        # else:
+        #     Path("/delta/{}".format(beacon_group)).mkdir(parents=True, exist_ok=True)
+
+        # df_src_delta.to_parquet("/http/{}/{}_delta.parquet".format(beacon_group,beacon_group))
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc=config["general"]["raw_loc"], 
+            bronze_loc=config["general"]["bronze_loc"],
+            ds_type = "http",
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"], 
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # HTTP DATASOURCE
+    elif config["general"]["ds_type"] == "DNS File":
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # CREATE RAW DELTA ZEEK FORMAT FILE
+        # BACKHERE
+        df_src_delta = load_ds_data(config["general"]["raw_loc"], dstype = "dns")
 
         # CREATE FOLDER
         if os.path.exists("/delta/{}".format(beacon_group)):

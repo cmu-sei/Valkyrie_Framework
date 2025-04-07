@@ -145,7 +145,6 @@ def _get_epoch_dte(dte):
 ##  FUNCTIONS
 #####################################################################################
 
-
 def pipeline(conf):
 
     # Return Dictionary
@@ -160,7 +159,7 @@ def pipeline(conf):
 
     # DASHBOARD CONFIG
     dash_config = _load_config(config["dashboard"]["conf"])
-        
+
     #####################################################################################
     ##  LOGGING
     #####################################################################################  
@@ -191,7 +190,7 @@ def pipeline(conf):
 
     # ADD LOG HANDLERS
     logger.addHandler(log_fh)
-    logger.propagate = False    
+    logger.propagate = False
 
     #####################################################################################
     ##  LOAD CONSTANTS & LOCAL VARIABLES
@@ -274,11 +273,11 @@ def pipeline(conf):
 
     #####################################################################################
     ##  CONVERT START & END DATE TO UTC THEN EPOCH
-    #####################################################################################  
+    #####################################################################################
 
     start_dte = _get_epoch_dte(config["general"]["start_dte"])
     end_dte = _get_epoch_dte(config["general"]["end_dte"])
-    
+
     logger.info("Start Date >= {} and End Date <= {}".format(config["general"]["start_dte"], config["general"]["end_dte"]))
 
     #####################################################################################
@@ -292,7 +291,10 @@ def pipeline(conf):
         beacon_group = UID,
         group_id = group_id,
         logger = logger)
-        
+    
+    # BACKHERE
+    logger.info(df_bronze)
+
     # IF DATA FALLS IN THE DATE RANGE CONTINUE
     if len(df_bronze) > 0:
 
@@ -329,10 +331,10 @@ def pipeline(conf):
                     # match_filter = config["filter"]["dns_match"]["filter"],
                     # match_exclude = config["filter"]["dns_match"]["exclude"],
                     file_type = config["general"]["file_type"],
-                    overwrite = True, 
+                    overwrite = True,
                     verbose = config["general"]["verbose"]
-                    )            
-            else:        
+                    )
+            else:
                 is_new_filter = ingest.build_filter_files(
                     src_loc = config["general"]["bronze_loc"],
                     dest_file = config["general"]["filter_loc"],
@@ -397,12 +399,12 @@ def pipeline(conf):
                 #overwrite =  config["general"]["overwrite"]
                 overwrite = False
                 )
-                
+
                 new_delta = True
             else:
                 print("\t* WARNING: Bronze Files and Filters are the same.  Running with old delta file ({}).".format(config["beacon"]["agg"]["delta_file"]))
                 logger.warning("Bronze Files and Filters are the same.  Running with old delta file ({}).".format(config["beacon"]["agg"]["delta_file"]))
-                new_delta = False   
+                new_delta = False
 
         #####################################################################################
         ##  DELTA
@@ -435,11 +437,10 @@ def pipeline(conf):
 
         # Default Score for MAD
         likelihood = ".70"
-        
 
         # AGGLOMERATIVE CLUSTERING
-        if config["general"]["cluster_type"] == "agg":        
-            if config["dashboard"]["dashboard"] == True: 
+        if config["general"]["cluster_type"] == "agg":
+            if config["dashboard"]["dashboard"] == True:
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
 
                     # Default Score for MAD
@@ -480,11 +481,11 @@ def pipeline(conf):
                     gold_loc = config["general"]["gold_loc"],
                     overwrite = config["general"]["overwrite"],
                     verbose = config["general"]["verbose"]
-                )            
+                )
 
-        # DBSCAN 
+        # DBSCAN
         if config["general"]["cluster_type"] == "dbscan":
-            if config["dashboard"]["dashboard"] == True: 
+            if config["dashboard"]["dashboard"] == True:
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
 
                     # Default Score for MAD
@@ -522,7 +523,7 @@ def pipeline(conf):
                     gold_loc = config["general"]["gold_loc"],
                     overwrite = config["general"]["overwrite"],
                     verbose = config["general"]["verbose"]
-                )            
+                )
 
         # DBSCAN BY VARIANCE
         if config["general"]["cluster_type"] == "dbscan_var":
@@ -639,15 +640,14 @@ def pipeline(conf):
             is_p_conn = True
             beacon.p_conns(
                 delta_file = max_delta_file,
-                diff_time = config["beacon"]["by_p_conn"]["diff_time"], 
+                diff_time = config["beacon"]["by_p_conn"]["diff_time"],
                 diff_type = config["beacon"]["by_p_conn"]["diff_type"]
                 )
-            
 
         ###########################################################
         ##  MAD ALGO
         ###########################################################
-        # RUN MADMOM ALGO 
+        # RUN MADMOM ALGO
         # MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
         logger.info("Running MadMom algorithm")
 
@@ -668,12 +668,12 @@ def pipeline(conf):
             )
 
         df_mad.to_csv("/delta/rita.csv")
-        
+
         ###########################################################
         ##  MAD ALGO
-        ###########################################################        
+        ###########################################################
 
-        # LOAD DB DATA FOR DASHBOARD 
+        # LOAD DB DATA FOR DASHBOARD
         # ADDED IS_P_CONN FOR NOW AS PERSISTENT CONNECTIONS HAVE NO DASHBOARD
         if config["dashboard"]["dashboard"] == True and is_p_conn == False:
 
@@ -704,7 +704,7 @@ def pipeline(conf):
             if max_gold_file != None and os.path.exists(max_gold_file):
                 df_rt = pd.read_parquet(max_gold_file)
                 rt_cnt = len(df_rt)
-            
+
                 beacon_results["cnt"] = rt_cnt
                 beacon_results["log_file"] = log_file_name
             else:
@@ -744,7 +744,7 @@ def pipeline(conf):
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
     print("Beacon Huntress completed {}".format(endtime))
-    
+
     # RETURN RESULTS DICTIONARY
     return beacon_results
 

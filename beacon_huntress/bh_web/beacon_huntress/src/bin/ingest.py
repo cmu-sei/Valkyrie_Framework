@@ -20,6 +20,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import platform
+from beacon_huntress.src.bin.datasource import load_ds_data
 
 #####################################################################################
 ##  Logging
@@ -51,7 +52,7 @@ def _total_cnt(src_loc):
 ##  FUNCTIONS
 #####################################################################################
 
-def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwrite = False, verbose = False):
+def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end_dte = "", overwrite = False, verbose = False):
     """
     Build initial files
 
@@ -61,6 +62,8 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
             Source file.
         dest_parquet_file:
             Destination parquet file.
+        ds_type:
+            Data Source Type.
         start_dte: DATETIME
             Filter start date and time.
         end_dte: DATETIME
@@ -74,7 +77,7 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
 
     Returns:
     ========
-        Nothing    
+        Nothing
     """
     from pandas import json_normalize
 
@@ -88,7 +91,7 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
             handler.setLevel(lvl)
 
     #####################################################################################
-    ##  
+    ##
     #####################################################################################
 
     starttime = datetime.now()
@@ -104,7 +107,7 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
 
             endtime = datetime.now() - starttime
             logger.debug('Total Export process completed')
-            logger.debug('Total runtime {}'.format(endtime))        
+            logger.debug('Total runtime {}'.format(endtime))
 
             return
 
@@ -113,14 +116,15 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
     #####################################################################################
 
     ext = str(Path(src_file).suffix).replace(".","").lower()
-    print(f"SOURCE FILE: {src_file}")
-    print(f"EXTENSION: {ext}")
-    # print(src_file)
-    # print(ext)
+    #REMOVE
+    #logger.info(f"SOURCE FILE: {src_file}")
+    #logger.info(f"EXTENSION: {ext}")
 
-    ## BACKHERE
     if ext == "json" or ext == "gz":
         df = pd.read_json(src_file, lines=True)
+        #REMOVE
+        #logger.info("READ JSON")
+        #logger.info(len(df))
     elif ext == "parquet":
         print("PARQUET SECTION")
         df = pd.read_parquet(src_file)
@@ -131,7 +135,10 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
 
     # CHECK FOR DATES
     # START & END DATE
-    if start_dte != "" and end_dte != "":
+    if start_dte == "" and end_dte == "":
+        logger.info("No dates entered skipping!!")
+        pass
+    elif start_dte != "" and end_dte != "":
         df = df.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
     # ONLY START
     elif start_dte != "" and end_dte == "":
@@ -146,28 +153,39 @@ def build_raw(src_file, dest_parquet_file, start_dte = "", end_dte = "", overwri
     if df.empty:
         logger.warning("No data for file {}".format(dest_parquet_file))
     else:
-        # READ JSON AND NORMALIZE IT
-        # NORMALIZE JSON IF EVENTDATA TAG IS PRESENT
-        if "eventdata" in df:
-            nor_df = json_normalize(df["eventdata"])
-            final_df = nor_df.query("proto == 'tcp'")
-            new = final_df.copy()
-            new["source_file"] = dest_parquet_file
-            new["src_row_id"] = new.reset_index().index
-            final_df = new
-        else:
-            nor_df = df
-            final_df = nor_df.query("proto == 'tcp'")
-            final_df = df.astype({"id.resp_p": int}, errors="raise")
-            final_df["source_file"] = dest_parquet_file
-            final_df["src_row_id"] = df.reset_index().index
+        if ds_type == "conn":
+            logger.info("Data Source = {}".format(ds_type))
+            # READ JSON AND NORMALIZE IT
+            # NORMALIZE JSON IF EVENTDATA TAG IS PRESENT
+            if "eventdata" in df:
+                nor_df = json_normalize(df["eventdata"])
+                final_df = nor_df.query("proto == 'tcp'")
+                new = final_df.copy()
+                new["source_file"] = dest_parquet_file
+                new["src_row_id"] = new.reset_index().index
+                final_df = new
+            else:
+                nor_df = df
+                final_df = nor_df.query("proto == 'tcp'")
+                final_df = df.astype({"id.resp_p": int}, errors="raise")
+                final_df["source_file"] = dest_parquet_file
+                final_df["src_row_id"] = df.reset_index().index
+        #BACKHERE
+        elif ds_type == "http":
+            logger.info(src_file)
+            logger.info(df.info())
+            logger.info("Data Source = {}".format(ds_type))
+            # THIS IS NOT EFFICIENT FIX IT LATER
+            final_df = load_ds_data(df,dest_parquet_file,"http","parquet")
+
+            logger.info(final_df)
 
         logger.debug("Creating parquet file {}".format(dest_parquet_file))
         try:
             final_df.to_parquet(dest_parquet_file,compression="snappy")
         except BaseException as err:
             logger.error("Failure on file {}".format(dest_parquet_file))
-            logger.error(err)        
+            logger.error(err)
 
     #####################################################################################
     ##  FINAL RESULTS
@@ -1021,7 +1039,6 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
 
     # LOOP FOR BAR ONLY
     for i in range(5):
-        
         if os.path.exists(delta_file_loc) and overwrite == True:
             shutil.rmtree(delta_file_loc) 
 
@@ -1106,7 +1123,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
     endtime = datetime.now() - starttime
     logger.info('Delta process is completed {}'.format(endtime))
 
-def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", overwrite = False, verbose = False):
+def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", ds_type = "conn", overwrite = False, verbose = False):
     """
     Create a bronze data layer for a source folder location.  
     Bronze data will only use tcp data and will include source and destination DNS.
@@ -1167,7 +1184,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
     if tot_files == 0:
         logger.error("{} files located at {}!  Please use another location!".format(tot_files, src_loc))
         sys.exit(1)
-          
+
     # WALK DIR
     #for filename in os.listdir(src_loc):
     for root, dir, dir_f in os.walk(src_loc):
@@ -1199,6 +1216,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
 
                     build_raw(src_file = f,
                         dest_parquet_file = par_name,
+                        ds_type = ds_type,
                         start_dte = start_dte,
                         end_dte = end_dte,
                         overwrite = overwrite,

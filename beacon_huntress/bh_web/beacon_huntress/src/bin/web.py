@@ -45,14 +45,16 @@ def _get_ds(ds_id):
 
 def _build_local_conf(df,config,request):
         # BUILD OUT CONFIG FOR DATASOURCES
-        if ((str(df["ds_name"]) != "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs") or (str(df["ds_name"]) != "Delta File" and df["ds_type"] == "Delta File")):
+        if ((str(df["ds_name"]) != "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs") or (str(df["ds_name"]) != "Delta File" and df["ds_type"] == "Delta File")
+            or (str(df["ds_name"]) != "HTTP File" and df["ds_type"] == "HTTP File") or (str(df["ds_name"]) != "DNS File" and df["ds_type"] == "DNS File")):
             data = json.loads(df["data"].replace("'","\""))
             config["general"]["raw_loc"] = data["raw_log_loc"]
             config["general"]["ds_name"] = df["ds_name"]
-            config["general"]["ds_type"] = df["ds_type"]      
+            config["general"]["ds_type"] = df["ds_type"]
             config["general"]["start_dte"] = request["start_dte"]
             config["general"]["end_dte"] = request["end_dte"]
-        elif (df["ds_name"] == "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs") or (df["ds_name"] == "Delta File" and df["ds_type"] == "Delta File"):
+        elif ((df["ds_name"] == "Zeek Connection Logs" and df["ds_type"] == "Zeek Connection Logs") or (df["ds_name"] == "Delta File" and df["ds_type"] == "Delta File") 
+              or (df["ds_name"] == "HTTP File" and df["ds_type"] == "HTTP File") or (df["ds_name"] == "DNS File" and df["ds_type"] == "DNS File")):
             config["general"]["raw_loc"] = request["raw_log_loc"]
             config["general"]["ds_name"] = df["ds_name"]
             config["general"]["ds_type"] = df["ds_type"]
@@ -62,7 +64,7 @@ def _build_local_conf(df,config,request):
             data = json.loads(df["data"].replace("'","\""))
             config["general"]["raw_loc"] = "/elastic"
             config["general"]["ds_name"] = df["ds_name"]
-            config["general"]["ds_type"] = df["ds_type"]       
+            config["general"]["ds_type"] = df["ds_type"]
             config["general"]["start_dte"] = request["start_dte"]
             config["general"]["end_dte"] = request["end_dte"]
 
@@ -80,7 +82,7 @@ def _build_local_conf(df,config,request):
                               "index": index,
                               "data_type": df["ds_type"]}
         else:
-            pass    
+            pass
 
         return config
 
@@ -92,8 +94,8 @@ def exe_bh(request,type):
     ===========
         request:
             POST request
-        type: 
-            Type of algorithm to run.                 
+        type:
+            Type of algorithm to run.
 
     Returns:
     =======
@@ -117,7 +119,7 @@ def exe_bh(request,type):
     ret_val = beacon_huntress("bh_run.yaml")
 
     # DELETE TEMP YAML
-    os.remove("bh_run.yaml")
+    #os.remove("bh_run.yaml")
 
     return ret_val 
 
