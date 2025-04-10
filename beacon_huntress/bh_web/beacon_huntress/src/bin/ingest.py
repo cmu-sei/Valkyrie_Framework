@@ -20,7 +20,8 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import platform
-from beacon_huntress.src.bin.datasource import load_ds_data
+#from beacon_huntress.src.bin.datasource import load_ds_data
+from bin.datasource import load_ds_data
 
 #####################################################################################
 ##  Logging
@@ -131,12 +132,10 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
     else:
         print("ERROR: Extension option {} does not exist for a Raw File type!".format(ext))
 
-    print("RAW DATAFRAME LENGTH: {}".format(len(df)))
-
     # CHECK FOR DATES
     # START & END DATE
     if start_dte == "" and end_dte == "":
-        logger.info("No dates entered skipping!!")
+        logger.debug("No dates entered skipping!!")
         pass
     elif start_dte != "" and end_dte != "":
         df = df.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
@@ -154,7 +153,7 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
         logger.warning("No data for file {}".format(dest_parquet_file))
     else:
         if ds_type == "conn":
-            logger.info("Data Source = {}".format(ds_type))
+            logger.debug("Data Source = {}".format(ds_type))
             # READ JSON AND NORMALIZE IT
             # NORMALIZE JSON IF EVENTDATA TAG IS PRESENT
             if "eventdata" in df:
@@ -172,13 +171,8 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
                 final_df["src_row_id"] = df.reset_index().index
         #BACKHERE
         elif ds_type == "http":
-            logger.info(src_file)
-            logger.info(df.info())
-            logger.info("Data Source = {}".format(ds_type))
             # THIS IS NOT EFFICIENT FIX IT LATER
             final_df = load_ds_data(df,dest_parquet_file,"http","parquet")
-
-            logger.info(final_df)
 
         logger.debug("Creating parquet file {}".format(dest_parquet_file))
         try:

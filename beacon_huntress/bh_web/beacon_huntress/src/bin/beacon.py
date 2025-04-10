@@ -19,10 +19,16 @@ from datetime import datetime, timedelta
 import time
 import shutil
 
-from beacon_huntress.src.bin.ingest import build_bronze_layer
-from beacon_huntress.src.bin.data import get_data
-from beacon_huntress.src.bin.dash import load_dashboard
-from beacon_huntress.src.bin.datasource import load_delta_data, get_file_data, load_ds_data
+# from beacon_huntress.src.bin.ingest import build_bronze_layer
+# from beacon_huntress.src.bin.data import get_data
+# from beacon_huntress.src.bin.dash import load_dashboard
+# from beacon_huntress.src.bin.datasource import load_delta_data, get_file_data, load_ds_data
+
+from bin.ingest import build_bronze_layer
+#from bin.data import get_data
+#from bin.dash import load_dashboard
+from bin.datasource import load_delta_data, get_file_data, load_ds_data
+
 
 #####################################################################################
 ##  LOGGING
@@ -90,7 +96,7 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
     ##  
     #####################################################################################
 
-    logger.info("Building gold file")
+    logger.debug("Building gold file")
 
     # LOAD FULL DATASET (KEEP NULL DATES)
     dataset_full = pd.read_parquet(delta_file).sort_values(by=["connection_id"])
@@ -159,7 +165,7 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
     try:
         final_gold_df.sort_values(by=["id.orig_h", "id.resp_h", "ts"], inplace=True)
         final_gold_df.to_parquet(gold_file, compression="snappy", use_deprecated_int96_timestamps=True)
-        logger.info("Gold file {} created".format(gold_file))
+        logger.debug("Gold file {} created".format(gold_file))
     except BaseException as err:
         logger.error(err)
         try:
@@ -171,7 +177,7 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
             final_gold_df.sort_values(by=["id.orig_h", "id.resp_h", "ts"], inplace=True)
 
             final_gold_df.to_parquet(gold_file, compression="snappy", use_deprecated_int96_timestamps=True)
-            logger.info("Gold file {} created".format(gold_file))
+            logger.debug("Gold file {} created".format(gold_file))
         except BaseException as err:
             logger.error("Failure to create gold parquet file {}".format(gold_file))
             logger.error("Columns for final dataframe {}".format(final_gold_df.columns))
@@ -207,7 +213,7 @@ def _build_beacon_df(delta_file, beacons_conns, sort_by = "connection_count", pa
             # THIS ONLY APPLIES TO DBSCAN BY VARIANCE OPTION
             # EVERYTHING ELSE ZEROS WILL BE INCLUDED IN THE AVERAGE DELTA
             if avg_delta >= 5:
-                df_delta.loc[df_delta["delta_mins"]< 2.0, "delta_mins"] = np.nan        
+                df_delta.loc[df_delta["delta_mins"]< 2.0, "delta_mins"] = np.nan
 
             df_delta = df_delta.groupby(["source_ip", "dest_ip", "port"]).agg(
                 connection_count=("dt", "count"),
@@ -482,7 +488,7 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
     # get unique connection_ids {sip, dip, port, proto}
     start_time = time.time()
     connection_ids = ds.connection_id.unique()
-    logger.info("{} unique connection_ids found ({}) seconds".format(len(connection_ids), (time.time()-start_time)))
+    logger.debug("{} unique connection_ids found ({}) seconds".format(len(connection_ids), (time.time()-start_time)))
     beacons = {}
     beacon_num = 1
     dbl_break = False
@@ -578,7 +584,7 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
             # BREAK THE ORIGINAL FOR LOOP FOR THE CONNECTION                
             if dbl_break == True:
                 dbl_break = False
-                break                        
+                break
     
     logger.debug("Beacon connection_id/s {}".format(beacons))
 
@@ -667,8 +673,8 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
             handler.setLevel(lvl)
 
     #####################################################################################
-    ##  
-    #####################################################################################    
+    ##
+    #####################################################################################
 
     # BUILD DATASET BASED UPON THE DELTA AVG
     if avg_delta >= 5:
@@ -711,7 +717,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
     # GET UNIQUE CONNECTION_IDS {SIP, DIP, PORT, PROTO}
     start_time = time.time()
     connection_ids = ds.connection_id.unique()
-    logger.info("{} unique connection_ids found ({}) seconds".format(len(connection_ids), (time.time()-start_time)))
+    logger.debug("{} unique connection_ids found ({}) seconds".format(len(connection_ids), (time.time()-start_time)))
     beacons = {}
     beacon_num = 1
     dbl_break = False
@@ -744,7 +750,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         # PRINT MESSAGE AFTER 10% PERCENT COMPLETE
         if log_cnt == tot_cnt or connection_count == 1:
             log_cnt = 0
-            logger.info("Evaluation #{} of {} ID: {}: {} original records...".format(connection_count, len(connection_ids), connection_id, len(f)))
+            logger.debug("Evaluation #{} of {} ID: {}: {} original records...".format(connection_count, len(connection_ids), connection_id, len(f)))
 
         X = f[["connection_id","delta"]]
 
@@ -791,14 +797,9 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         logger.debug("Cluster Data = {}".format(dbscan_cluster_data))
         logger.debug("Cluster PTS = {}".format(dbscan.labels_))
 
-        print("Connection = {}".format(connection_id))
-        print("Likelihood = {}".format(likelihood))
-        print("Cluster Data = {}".format(dbscan_cluster_data))
-        print("Cluster PTS = {}".format(dbscan.labels_))        
-
         if dbscan_cluster_data["likelihood"].any() > (minimum_likelihood / 100):
 
-            logger.warning("Possible Beacon: \n\
+            logger.debug("Possible Beacon: \n\
             Session # {} \n\
             Src:    {} \n\
             Dst:    {} \n\
@@ -809,7 +810,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
             beacons[beacon_num]["likelihood"] = max(likelihood) * 100
             beacon_num +=1
 
-    logger.info("Beacon dictionary {}".format(beacons))
+    logger.debug("Beacon dictionary {}".format(beacons))
     logger.debug("Beacon connection_id/s {}".format(beacons))    
 
     # OVERWRITE DELETE GOLD FILES
@@ -830,8 +831,8 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         gold_file = None
 
     endtime = datetime.now() - starttime
-    logger.info("{} clusters processed".format(connection_count))
-    logger.info("Found {} possible beacons".format(len(beacons)))
+    logger.debug("{} clusters processed".format(connection_count))
+    logger.info("Found {} possible beacon/s".format(len(beacons)))
 
     if connection_count == eps_cnt:
         logger.warning("All connection groups have 0.0 Epsilon! Try using a Detailed Cluster Search!")
@@ -869,59 +870,59 @@ def get_dns(ip):
 
     return ret_val
 
-def cli_results(gold_file, file_type = "parquet", avg_delta = 0):
-    """
-    Display the results of a gold file in the Command Line Interface (CLI).\n
+# def cli_results(gold_file, file_type = "parquet", avg_delta = 0):
+#     """
+#     Display the results of a gold file in the Command Line Interface (CLI).\n
 
-    Parameters:
-    ===========
-    gold_file:
-        IP you want to lookup DNS entry.\n
-    file_type: STRING (Options = csv or parquet)
-        Destination file type (csv or parquet)\n
-        Default = parquet\n
-    avg_delta: INTEGER
-        Default = 0
+#     Parameters:
+#     ===========
+#     gold_file:
+#         IP you want to lookup DNS entry.\n
+#     file_type: STRING (Options = csv or parquet)
+#         Destination file type (csv or parquet)\n
+#         Default = parquet\n
+#     avg_delta: INTEGER
+#         Default = 0
 
-    Returns:
-    ========
-    Nothing
-    """
+#     Returns:
+#     ========
+#     Nothing
+#     """
 
-    if file_type == "CSV":
-        df = pd.read_csv(gold_file)
-    else:
-        df = pd.read_parquet(gold_file)
+#     if file_type == "CSV":
+#         df = pd.read_csv(gold_file)
+#     else:
+#         df = pd.read_parquet(gold_file)
 
-    df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt"}, inplace = True)
+#     df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt", "likelihood": "cluster_score"}, inplace = True)
 
-    # REMOVE ZERO'S IF DELTA AVG CHECK IS >= 5
-    # THIS ONLY APPLIES TO DBSCAN BY VARIANCE OPTION
-    # EVERYTHING ELSE ZEROS WILL BE INCLUDED IN THE AVERAGE DELTA
-    if avg_delta >= 5:
-        df.loc[df["delta_mins"]< 2.0, "delta_mins"] = np.nan
+#     # REMOVE ZERO'S IF DELTA AVG CHECK IS >= 5
+#     # THIS ONLY APPLIES TO DBSCAN BY VARIANCE OPTION
+#     # EVERYTHING ELSE ZEROS WILL BE INCLUDED IN THE AVERAGE DELTA
+#     if avg_delta >= 5:
+#         df.loc[df["delta_mins"]< 2.0, "delta_mins"] = np.nan
 
-    # BUILD AGGREGATIONS
-    df = df.groupby(["source_ip", "dest_ip", "port"]).agg(
-        connection_count=("dt", "count"),
-        avg_delta=("delta_mins", "mean"))
+#     # BUILD AGGREGATIONS
+#     df = df.groupby(["source_ip", "dest_ip", "port", "cluster_score"]).agg(
+#         connection_count=("dt", "count"),
+#         avg_delta=("delta_mins", "mean"))
 
-    # BUILD DISPLAY DATAFRAME
-    df2 = df.reset_index()
-    
-    # DISPLAY RESULTS
-    if len(df2) != 0:
-        df2.sort_values(by=["connection_count", "dest_ip"], inplace=True, ascending=False)
-        num_b = df2["dest_ip"].nunique()
+#     # BUILD DISPLAY DATAFRAME
+#     df2 = df.reset_index()
 
-        print("X" * 50, " POTENTIAL BEACONS ({})".format(num_b), "X" * 50)
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-            print(df2)
-        print("X" * 121)
-    else:
-        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
-        print("NONE")
-        print("X" * 121)        
+#     # DISPLAY RESULTS
+#     if len(df2) != 0:
+#         df2.sort_values(by=["connection_count", "dest_ip"], inplace=True, ascending=False)
+#         num_b = df2["dest_ip"].nunique()
+
+#         print("X" * 50, " POTENTIAL BEACONS ({})".format(num_b), "X" * 50)
+#         with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+#             print(df2)
+#         print("X" * 121)
+#     else:
+#         print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
+#         print("NONE")
+#         print("X" * 121)
 
 def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent = 5, gold_loc = "", overwrite = False, verbose = False):
     """
@@ -1315,64 +1316,20 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             )
 
         if config["dashboard"]["dashboard"] == True:
-
-            load_dashboard(
-                file_loc = [config["general"]["bronze_loc"]],
-                dash_config = config["dashboard"]["conf"],
-                dash_type = "raw_source",
-                is_new = is_new_bronze,
-                group_id = group_id,
-                overwrite = config["general"]["overwrite"],
-                verbose = config["general"]["verbose"]
-            )
+            pass
+            # COMMENTED FOR CLI
+            # load_dashboard(
+            #     file_loc = [config["general"]["bronze_loc"]],
+            #     dash_config = config["dashboard"]["conf"],
+            #     dash_type = "raw_source",
+            #     is_new = is_new_bronze,
+            #     group_id = group_id,
+            #     overwrite = config["general"]["overwrite"],
+            #     verbose = config["general"]["verbose"]
+            # )
 
         # CHECK BRONZE
         df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
-
-    # ELASTIC DATASOURCE
-    elif config["general"]["ds_type"] in ["Elastic", "Security Onion"]:
-
-        try:
-            es_starttime = datetime.now()
-
-            # VARIABLE INIT
-            is_new_bronze = True
-
-            logger.info("Elastic datasource selected")
-
-            logger.info("Gather file location")
-            df_files = get_data("ds_files_name", config["general"]["ds_name"])
-            df_files = df_files[["file_name"]]
-
-            df_bronze = get_file_data(df_files)
-
-            logger.info("Elastic data collected ({})".format(len(df_bronze)))
-
-            # FILTER BY DATES
-            if start_dte != "" and end_dte != "":
-                df_bronze = df_bronze.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
-            # ONLY START
-            elif start_dte != "" and end_dte == "":
-                df_bronze = df_bronze.query("ts >= {}".format(start_dte))
-            # ONLY END
-            elif start_dte == "" and end_dte != "":
-                df_bronze = df_bronze.query("ts <= {}".format(end_dte))
-            else:
-                pass  
-
-            Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
-
-            epoch = int(time.time())
-            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))     
-
-            endtime = datetime.now() - es_starttime
-            logger.info("Elastic runtime {}".format(endtime))
-        except BaseException as err:
-            logger.error("{} issue.".format(config["general"]["ds_type"]))
-            logger.error(err)
-
-            # Blank DataFrame
-            df_bronze = pd.DataFrame()
 
     # DELTA DATASOURCE
     elif config["general"]["ds_type"] == "Delta File":
@@ -1405,16 +1362,17 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             )
 
         if config["dashboard"]["dashboard"] == True:
-
-            load_dashboard(
-                file_loc = [config["general"]["bronze_loc"]],
-                dash_config = config["dashboard"]["conf"],
-                dash_type = "raw_source",
-                is_new = is_new_bronze,
-                group_id = group_id,
-                overwrite = config["general"]["overwrite"],
-                verbose = config["general"]["verbose"]
-            )
+            pass
+            # COMMENTED FOR CLI
+            # load_dashboard(
+            #     file_loc = [config["general"]["bronze_loc"]],
+            #     dash_config = config["dashboard"]["conf"],
+            #     dash_type = "raw_source",
+            #     is_new = is_new_bronze,
+            #     group_id = group_id,
+            #     overwrite = config["general"]["overwrite"],
+            #     verbose = config["general"]["verbose"]
+            # )
 
         # CHECK BRONZE
         df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
@@ -1453,16 +1411,17 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             )
 
         if config["dashboard"]["dashboard"] == True:
-
-            load_dashboard(
-                file_loc = [config["general"]["bronze_loc"]],
-                dash_config = config["dashboard"]["conf"],
-                dash_type = "raw_source",
-                is_new = is_new_bronze,
-                group_id = group_id,
-                overwrite = config["general"]["overwrite"],
-                verbose = config["general"]["verbose"]
-            )
+            pass
+            # COMMENTED FOR CLI
+            # load_dashboard(
+            #     file_loc = [config["general"]["bronze_loc"]],
+            #     dash_config = config["dashboard"]["conf"],
+            #     dash_type = "raw_source",
+            #     is_new = is_new_bronze,
+            #     group_id = group_id,
+            #     overwrite = config["general"]["overwrite"],
+            #     verbose = config["general"]["verbose"]
+            # )
 
         # CHECK BRONZE
         df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
@@ -1497,18 +1456,78 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             )
 
         if config["dashboard"]["dashboard"] == True:
-
-            load_dashboard(
-                file_loc = [config["general"]["bronze_loc"]],
-                dash_config = config["dashboard"]["conf"],
-                dash_type = "raw_source",
-                is_new = is_new_bronze,
-                group_id = group_id,
-                overwrite = config["general"]["overwrite"],
-                verbose = config["general"]["verbose"]
-            )
+            pass
+            # COMMENTED FOR CLI
+            # load_dashboard(
+            #     file_loc = [config["general"]["bronze_loc"]],
+            #     dash_config = config["dashboard"]["conf"],
+            #     dash_type = "raw_source",
+            #     is_new = is_new_bronze,
+            #     group_id = group_id,
+            #     overwrite = config["general"]["overwrite"],
+            #     verbose = config["general"]["verbose"]
+            # )
 
         # CHECK BRONZE
         df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
 
     return df_bronze, is_new_bronze
+
+def cli_results(beacon_df, mad_df, avg_delta = 0):
+    """
+    Display the results of a gold file in the Command Line Interface (CLI).\n
+
+    Parameters:
+    ===========
+    gold_file:
+        IP you want to lookup DNS entry.\n
+    file_type: STRING (Options = csv or parquet)
+        Destination file type (csv or parquet)\n
+        Default = parquet\n
+    avg_delta: INTEGER
+        Default = 0
+
+    Returns:
+    ========
+    Nothing
+    """
+
+    beacon_df.rename(columns={"id.orig_h": "source_ip", "id.resp_h": "dest_ip", "id.resp_p": "port", "id.orig_p": "source_port", "datetime": "dt", "likelihood": "cluster_score"}, inplace = True)
+    mad_df.rename(columns={"sip": "source_ip", "dip": "dest_ip", "final_score": "mad_score", "conn_count": "connection_count"}, inplace=True)
+
+    # REMOVE ZERO'S IF DELTA AVG CHECK IS >= 5
+    # THIS ONLY APPLIES TO DBSCAN BY VARIANCE OPTION
+    # EVERYTHING ELSE ZEROS WILL BE INCLUDED IN THE AVERAGE DELTA
+    if avg_delta >= 5:
+        beacon_df.loc[beacon_df["delta_mins"]< 2.0, "delta_mins"] = np.nan
+
+    # BUILD AGGREGATIONS
+    beacon_df = beacon_df.groupby(["source_ip", "dest_ip", "port", "cluster_score"]).agg(
+        connection_count=("dt", "count"),
+        avg_delta=("delta_mins", "mean")).reset_index()
+
+    # MERGE
+    df_merge = pd.concat([beacon_df[["source_ip", "dest_ip", "port","connection_count"]], mad_df[["source_ip", "dest_ip", "port", "connection_count"]]], ignore_index=True).drop_duplicates()
+    df2 = df_merge.merge(beacon_df[["source_ip", "dest_ip", "port", "cluster_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left").\
+            merge(mad_df[["source_ip", "dest_ip", "port", "mad_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left")
+
+    # BUILD DISPLAY DATAFRAME
+    df2.fillna(0, inplace=True)
+
+    # DISPLAY RESULTS
+    if len(df2) != 0:
+        #df2.sort_values(by=["connection_count", "dest_ip"], inplace=True, ascending=False)
+        df2.sort_values(by=["cluster_score", "mad_score"], inplace=True, ascending=False)
+        num_b = df2["dest_ip"].nunique()
+
+        logger.info("Only top 25 results are displayed!")
+        print("X" * 50, " POTENTIAL BEACONS ({})".format(num_b), "X" * 50)
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):  # more options can be specified also
+            print(df2.head(25))
+        print("X" * 121)
+    else:
+        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
+        print("NONE")
+        print("X" * 121)
+
+    return df2
