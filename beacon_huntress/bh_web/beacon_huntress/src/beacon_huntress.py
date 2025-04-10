@@ -1005,6 +1005,7 @@ def cli_results_files(path):
         dates.append(datetime.fromtimestamp(folder_dte))
 
     df = pd.DataFrame({"Group_ID": folders, "Run_Date": dates})
+    df.index.name = "Run_ID"
 
     return df
 
