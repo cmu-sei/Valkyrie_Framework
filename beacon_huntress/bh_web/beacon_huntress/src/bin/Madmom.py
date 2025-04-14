@@ -21,7 +21,7 @@ class Analyzer:
     def aggregate_connections(self, data):
         data['datetime'] = pd.to_datetime(data['datetime'])
 
-        grouped = data.groupby(['sip', 'dip']).agg({
+        grouped = data.groupby(['sip', 'dip', 'dns']).agg({
             'datetime': lambda x: sorted(x),
             'delta_ms': list,
             'dest_bytes': list,
@@ -97,13 +97,13 @@ class Analyzer:
     def display_results(self):
         # Display top results
         print(self.results.sort_values(by='final_score', ascending=False)[
-        ['sip', 'dip', 'port', 'proto', 'conn_count', 'tsSkewScore', 'tsMadmScore', 'tsConnCountScore', 'tsScore', 'dsScore', 'final_score']
+        ['sip', 'dip', 'port', 'proto', 'conn_count', 'tsSkewScore', 'tsMadmScore', 'tsConnCountScore', 'tsScore', 'dsScore', 'final_score', 'dns']
         ].head(30))
 
     def get_results(self, likelihood = 0.0):
         return self.results.\
             loc[self.results["final_score"] >= likelihood].sort_values(by='final_score', ascending=False)[
-            ['sip', 'dip', 'port', 'proto', 'conn_count', 'tsScore', 'dsScore', 'final_score']
+            ['sip', 'dip', 'port', 'proto', 'conn_count', 'tsScore', 'dsScore', 'final_score', 'dns']
             ]
 
 def run_mad(max_delta_file,likelihood):

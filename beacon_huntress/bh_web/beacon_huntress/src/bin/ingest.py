@@ -82,6 +82,12 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
     """
     from pandas import json_normalize
 
+    # DNS DATAFRAME
+    if os.path.exists("dns/dns.parquet"):
+        df_dns = pd.read_parquet("dns/dns.parquet")
+    else:
+        df_dns = pd.DataFrame()
+
     #####################################################################################
     ##  Logging
     #####################################################################################
@@ -169,14 +175,25 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
                 final_df = df.astype({"id.resp_p": int}, errors="raise")
                 final_df["source_file"] = dest_parquet_file
                 final_df["src_row_id"] = df.reset_index().index
-        #BACKHERE
+                # NEW FOR CLI
+                final_df["dns"] = ""
+
         elif ds_type == "http":
+            # CREATE DNS DATA
+            # df["ip_port"] = df["id.resp_h"] + ":" + df["id.resp_p"].astype(str)
+            # df_f_dns = df[["id.resp_h","host"]].loc[(df["host"] != "") & (df["host"] != df["ip_port"])].drop_duplicates()
+            # df.drop(columns = ["ip_port"], inplace=True)
+
+            # if df_f_dns.empty == False:
+            #     df_dns = pd.concat([df_dns, df_f_dns.rename(columns={"id.resp_h": "dest_ip", "host": "dns"}, inplace=True)],ignore_index=True)
+
             # THIS IS NOT EFFICIENT FIX IT LATER
             final_df = load_ds_data(df,dest_parquet_file,"http","parquet")
 
         logger.debug("Creating parquet file {}".format(dest_parquet_file))
         try:
             final_df.to_parquet(dest_parquet_file,compression="snappy")
+            #df_dns.to_parquet("dns/dns.parquet",compression="snappy")
         except BaseException as err:
             logger.error("Failure on file {}".format(dest_parquet_file))
             logger.error(err)
@@ -1034,19 +1051,28 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
     # LOOP FOR BAR ONLY
     for i in range(5):
         if os.path.exists(delta_file_loc) and overwrite == True:
-            shutil.rmtree(delta_file_loc) 
+            shutil.rmtree(delta_file_loc)
 
         Path(delta_file_loc).mkdir(parents=True, exist_ok=True)
 
         logger.debug("Loading Parquet/s from {}".format(src_loc))
 
         try:
-            df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id"])
+            # NEW FOR CLI
+            # if "dns" not in df:
+            #     print("HERE")
+            #     df["dns"] = ""
+
+            #print(pd.read_parquet(src_loc).columns)
+
+            df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id","dns"])
             df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port", "orig_ip_bytes": "src_bytes", "resp_ip_bytes": "dest_bytes"}, inplace=True)
+
+            print(df)
         except:
             logger.debug("columns (id.orig_h, id.resp_h, id.resp_p, proto, ts) not found.  Trying renamed columns (sip, dip, port, proto, ts)")
             try:
-                df = pd.read_parquet(src_loc, columns=["sip", "dip", "port", "proto", "ts", "src_bytes", "dest_bytes", "source_file", "src_row_id"])
+                df = pd.read_parquet(src_loc, columns=["sip", "dip", "port", "proto", "ts", "src_bytes", "dest_bytes", "source_file", "src_row_id", "dns"])
             except BaseException as err:
                 logger.error("Failure to load parquet files in folder {}".format(src_loc))
                 logger.error(err)
@@ -1103,10 +1129,10 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         # DUMP FILE AS CSV OR PARQUET
         if delta_file_type == "csv":   
             delta_file = os.path.join(delta_file_loc,"delta_{}.csv".format(epoch))
-            df.to_csv(delta_file, columns = ["connection_id", "sip", "dip", "port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id"])
+            df.to_csv(delta_file, columns = ["connection_id", "sip", "dip", "port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id", "dns"])
         else:
             delta_file = os.path.join(delta_file_loc,"delta_{}.parquet".format(epoch))
-            export_df = df[["connection_id", "sip", "dip","port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id"]]
+            export_df = df[["connection_id", "sip", "dip","port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id", "dns"]]
             # MIGHT HAVE TO ENABLE AT A LATER TIME
             #export_df.to_parquet(delta_file, compression= "snappy", allow_truncated_timestamps=True)
             export_df.to_parquet(delta_file, compression= "snappy", use_deprecated_int96_timestamps=True)

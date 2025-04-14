@@ -124,12 +124,11 @@ def _config_changed(filter_path,config):
     return config_change
 
 def _delete_folders(folder,logger = ""):
-    
     try:
         if isinstance(folder, list):
             for x in folder:
                 if os.path.exists(str(x)):
-                    shutil.rmtree(str(x))            
+                    shutil.rmtree(str(x))
         else:
             if os.path.exists(folder):
                 shutil.rmtree(folder)
@@ -455,7 +454,7 @@ def pipeline(conf):
 
         # COMMENTED FOR CLI
         # LOAD DASHBOARD DATA (DELTA)
-        # if config["dashboard"]["dashboard"] == True:    
+        # if config["dashboard"]["dashboard"] == True:
             # dash.load_dashboard(
             #     file_loc = [max_delta_file],
             #     dash_config = config["dashboard"]["conf"],
@@ -475,31 +474,33 @@ def pipeline(conf):
 
         # AGGLOMERATIVE CLUSTERING
         if config["general"]["cluster_type"] == "agg":
+            # COMMENTED FOR CLI
             if config["dashboard"]["dashboard"] == True:
-                if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+                pass
+            #     if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
 
-                    # Default Score for MAD
-                    likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
+            #         # Default Score for MAD
+            #         likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
 
-                    ret_gold_file = beacon.agglomerative_clustering(
-                        delta_file = max_delta_file,
-                        delta_column = config["beacon"]["delta_column"],
-                        max_variance = config["beacon"]["agg"]["max_variance"],
-                        min_records = config["beacon"]["agg"]["min_records"],
-                        cluster_factor = config["beacon"]["agg"]["cluster_factor"],
-                        line_amounts = config["beacon"]["agg"]["line_amounts"],
-                        min_delta_time = config["beacon"]["agg"]["min_delta_time"],
-                        gold_loc = config["general"]["gold_loc"],
-                        overwrite = config["general"]["overwrite"],
-                        verbose = config["general"]["verbose"]
-                    )
+            #         ret_gold_file = beacon.agglomerative_clustering(
+            #             delta_file = max_delta_file,
+            #             delta_column = config["beacon"]["delta_column"],
+            #             max_variance = config["beacon"]["agg"]["max_variance"],
+            #             min_records = config["beacon"]["agg"]["min_records"],
+            #             cluster_factor = config["beacon"]["agg"]["cluster_factor"],
+            #             line_amounts = config["beacon"]["agg"]["line_amounts"],
+            #             min_delta_time = config["beacon"]["agg"]["min_delta_time"],
+            #             gold_loc = config["general"]["gold_loc"],
+            #             overwrite = config["general"]["overwrite"],
+            #             verbose = config["general"]["verbose"]
+            #         )
 
-                    if config["dashboard"]["dashboard"] == True:
-                        dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
-                else:
-                    logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                    print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                    return
+                    # if config["dashboard"]["dashboard"] == True:
+                    #     dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
+                # else:
+                #     logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
+                #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
+                #     return
             else:
 
                 # Default Score for MAD
@@ -689,12 +690,15 @@ def pipeline(conf):
 
         ###########################################################
         ##  MAD ALGO
+        ## MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
         ###########################################################
-        # RUN MADMOM ALGO
-        # MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
+
         logger.info("Running MAD algorithm")
 
         df_mad = mm.run_mad(max_delta_file, likelihood)
+
+        # FIX
+        #df_mad["dns"] = ""
 
         if df_mad.empty:
             logger.warning("No results for Median Absolute Deviation!")
@@ -819,7 +823,7 @@ def pipeline(conf):
         df_delta = df_delta[~df_delta["dip"].isin(df_filter["ip"])]
 
         # BUILD TOP TALKER
-        df_delta = df_delta.groupby(["sip","dip","port"]).agg(
+        df_delta = df_delta.groupby(["sip","dip","port", "dns"]).agg(
             count=("sip", "size"),
             min_time=("datetime","min"),
             max_time=("datetime","max")
@@ -896,7 +900,7 @@ def cli():
         print("3. Results")
         print("4. Quit\n")
 
-        option = int(input("Enter option [1-3]: "))
+        option = int(input("Enter option [1-4]: "))
 
         if option in [1, 2, 3, 4]:
             break

@@ -111,12 +111,12 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
     # ADDED FILE NAME COLUMN TO SEARCH BY FILE_NAME REGUARDLESS OF OS
     # df_delta["file_name"] = df_delta["source_file"].apply(lambda z: os.path.basename(z))
     df_delta["file_name"] = df_delta["source_file"].str.replace(chr(92),chr(47), regex=False)
-    
+
     logger.debug("Total delta file records {}".format(len(df_delta)))
 
     # FINAL DATAFRAME
     final_gold_df = pd.DataFrame()
-        
+
     # LOOP THROUGH ORIGINAL FILES FOR FULL DATA
     for x in df_delta["source_file"].unique():
 
@@ -139,11 +139,13 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
             # PANDAS TREATS \ AS AN ESCAPE CHARACTER
             org_df["file_name"] = fn_x
 
-            df_og = pd.merge(org_df,vals[["src_row_id", "file_name", "datetime", "likelihood", "{}".format(delta_column)]],how="inner", left_on=['src_row_id', 'file_name'], right_on=['src_row_id', 'file_name'])
+            # NEW FOR CLI
+            df_og = pd.merge(org_df,vals[["src_row_id", "file_name", "datetime", "likelihood", "{}".format(delta_column, "dns")]],how="inner", left_on=['src_row_id', 'file_name'], right_on=['src_row_id', 'file_name'])
             logger.debug("Total records found {} for file {}".format(len(df_og),x))
         else:
             logger.info("Source File {} does not exist...skipping".format(x))
-            df_og = df_delta[["sip", "dip", "port", "src_row_id", "file_name", "datetime", "likelihood", "{}".format(delta_column)]].query("file_name == '{}'".format(fn_x))
+            # NEW FOR CLI
+            df_og = df_delta[["sip", "dip", "port", "src_row_id", "file_name", "datetime", "likelihood", "{}".format(delta_column)], "dns"].query("file_name == '{}'".format(fn_x))
             df_og[["uid", "id.orig_p", "id.resp_p", "proto", "service", "duration", "orig_bytes", "resp_bytes", "conn_state", "local_orig", "local_resp", "missed_bytes", "history", "orig_pkts", "orig_ip_bytes", "resp_pkts", "resp_ip_bytes", "community_id", "likelihood"]] = np.NaN
             df_og["ts"] = df_og["datetime"]
             df_og["id.resp_p"] = df_og["port"]
@@ -156,12 +158,12 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
 
     # DUMP GOLD DATA TO PARQUET
     Path(gold_loc).mkdir(parents=True, exist_ok=True)
-    
+
     #GET EPOCH TIME
     epoch = int(time.time())
-    
+
     gold_file = os.path.join(gold_loc, "beacon_{}.parquet".format(epoch))
-    
+
     try:
         final_gold_df.sort_values(by=["id.orig_h", "id.resp_h", "ts"], inplace=True)
         final_gold_df.to_parquet(gold_file, compression="snappy", use_deprecated_int96_timestamps=True)
@@ -1184,7 +1186,7 @@ def cluster_conns(delta_file, delta_column, conn_cnt = 5, conn_group = 5, thresh
     logger.info("{} connections processed".format(connection_count))
     logger.info("Found {} possible beacons".format(len(beacons)))
     logger.info("Total runtime {}".format(endtime))
-    
+
     return gold_file
 
 def p_conns(delta_file, diff_time = 60, diff_type = "mi"):
@@ -1502,16 +1504,18 @@ def cli_results(beacon_df, mad_df, avg_delta = 0):
         beacon_df.loc[beacon_df["delta_mins"]< 2.0, "delta_mins"] = np.nan
 
     # BUILD AGGREGATIONS
-    beacon_df = beacon_df.groupby(["source_ip", "dest_ip", "port", "cluster_score"]).agg(
+    beacon_df = beacon_df.groupby(["source_ip", "dest_ip", "port", "dns", "cluster_score"]).agg(
         connection_count=("dt", "count"),
         avg_delta=("delta_mins", "mean")).reset_index()
 
     # MERGE
-    df_merge = pd.concat([beacon_df[["source_ip", "dest_ip", "port","connection_count"]], mad_df[["source_ip", "dest_ip", "port", "connection_count"]]], ignore_index=True).drop_duplicates()
-    df2 = df_merge.merge(beacon_df[["source_ip", "dest_ip", "port", "cluster_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left").\
+    df_merge = pd.concat([beacon_df[["source_ip", "dest_ip", "port", "dns", "connection_count"]], mad_df[["source_ip", "dest_ip", "port", "dns", "connection_count"]]], ignore_index=True).drop_duplicates()
+    df2 = df_merge.merge(beacon_df[["source_ip", "dest_ip", "port", "dns", "cluster_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left").\
             merge(mad_df[["source_ip", "dest_ip", "port", "mad_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left")
 
     # BUILD DISPLAY DATAFRAME
+    df2["dns"] = df2["dns_x"].combine_first(df2["dns_y"])
+    df2.drop(columns=["dns_x", "dns_y"], inplace=True)
     df2.fillna(0, inplace=True)
 
     # DISPLAY RESULTS

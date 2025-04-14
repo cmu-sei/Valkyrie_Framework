@@ -201,7 +201,7 @@ def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
                     "resp_bytes","conn_state","local_orig","local_resp",
                     "missed_bytes","history","orig_pkts","orig_ip_bytes",
                     "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
-                    "source_file","src_row_id"
+                    "source_file","src_row_id", "dns"
                     ])
             col_check = False
         else:
@@ -220,7 +220,7 @@ def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
                 "resp_bytes","conn_state","local_orig","local_resp",
                 "missed_bytes","history","orig_pkts","orig_ip_bytes",
                 "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
-                "source_file","src_row_id"
+                "source_file","src_row_id","dns"
                 ])
 
     return df
@@ -259,12 +259,14 @@ def check_ds_columns(df, dstype = "delta"):
         df_new["resp_pkts"] = 0
         df_new["community_id"] = ""
         df_new["orig_mac_oui"] = ""
+        # NEW FOR CLI
+        df_new["dns"] = ""
 
     elif dstype.lower() == "http":
         # FIGURE OUT WHAT TO DO WITH HOST
 
         # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
-        df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id"]]
+        df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].rename(columns={"host": "dns"})
 
         df_new = df.copy()
 
@@ -307,6 +309,8 @@ def check_ds_columns(df, dstype = "delta"):
         df_new["resp_pkts"] = 0
         df_new["community_id"] = ""
         df_new["orig_mac_oui"] = ""
+        # NEW FOR CLI
+        df_new["dns"] = ""
     else:
         print("ERROR: Data Source Type {} does not exist!".format(str(dstype)))
         sys.exit(1)
