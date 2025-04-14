@@ -1068,7 +1068,6 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
             df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id","dns"])
             df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port", "orig_ip_bytes": "src_bytes", "resp_ip_bytes": "dest_bytes"}, inplace=True)
 
-            print(df)
         except:
             logger.debug("columns (id.orig_h, id.resp_h, id.resp_p, proto, ts) not found.  Trying renamed columns (sip, dip, port, proto, ts)")
             try:
