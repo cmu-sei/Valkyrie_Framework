@@ -133,8 +133,9 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
         #logger.info("READ JSON")
         #logger.info(len(df))
     elif ext == "parquet":
-        print("PARQUET SECTION")
         df = pd.read_parquet(src_file)
+    elif ext == "csv":
+        df = pd.read_csv(src_file)
     else:
         print("ERROR: Extension option {} does not exist for a Raw File type!".format(ext))
 

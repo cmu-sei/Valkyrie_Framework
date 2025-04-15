@@ -266,7 +266,18 @@ def check_ds_columns(df, dstype = "delta"):
         # FIGURE OUT WHAT TO DO WITH HOST
 
         # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
-        df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].rename(columns={"host": "dns"})
+        # CODE FOR DIFFERENT HTTP FILE TYPES
+        if all(col in df.columns for col in ["_timestamp", "domain", "source_ip", "destination_ip"]):
+            df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
+                rename(columns={"domain": "dns", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "id.resp_h"})
+
+            # CREATE ZEEK HTTP MISSING COLUMNS
+            df["uid"] = ""
+            df["id.orig_p"] = ""
+            df["id.resp_p"] = ""
+        # ZEEK
+        else:
+            df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].rename(columns={"host": "dns"})
 
         df_new = df.copy()
 

@@ -276,7 +276,10 @@ def pipeline(conf):
     #####################################################################################
 
     build_path = Path(config["general"]["raw_loc"])
-    lst_path = list(build_path.parts[0:2])
+    # CLI COMMENT
+    #lst_path = list(build_path.parts[0:2])
+    # CLI SPECIFIC
+    lst_path = [os.path.join(Path.cwd().parent,"data"), str(group_id)]
 
     config["general"]["bronze_loc"] = os.path.join(lst_path[0], lst_path[1], "bronze", "data")
     config["general"]["silver_loc"] = os.path.join(lst_path[0], lst_path[1], "silver", "data")
@@ -947,7 +950,7 @@ def cli_run():
     elif algo == 2:
         conf["general"]["cluster_type"] = "dbscan"
         conf["beacon"]["dbscan"]["minimum_delta"] = avg_delta
-        conf["beacon"]["dbscan"]["spans"] = [[0, 5], [2, 15], [15, 35], [30, 60]]
+        conf["beacon"]["dbscan"]["spans"] = [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
         conf["beacon"]["dbscan"]["minimum_points_in_cluster"] = conn_cnt
         conf["beacon"]["dbscan"]["minimum_likelihood"] = minimum_likelihood
 
@@ -1050,7 +1053,7 @@ if __name__ == "__main__":
         elif option == 3:
             df_results = cli_results_files("cli_results")
             print(df_results)
-            
+
             break
         elif option == 4:
             print("\nGoodbye!\n")
