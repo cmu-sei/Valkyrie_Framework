@@ -5,8 +5,8 @@ import logging
 class Analyzer:
     def __init__(self, parquet_file, thresholds):
         self.parquet_file = parquet_file
-        self.thresholds = thresholds
         self.results = None
+        self.thresholds = thresholds
 
     def analyze(self):
         logging.info("load data")
@@ -19,86 +19,98 @@ class Analyzer:
         self.results = self.calculate_scores(aggregated_data)
 
     def aggregate_connections(self, data):
-        data['datetime'] = pd.to_datetime(data['datetime'])
 
-        grouped = data.groupby(['sip', 'dip', 'dns']).agg({
-            'datetime': lambda x: sorted(x),
-            'delta_ms': list,
+        data.rename(columns={
+            'ts': 'datetime', 
+            'source_ip' : 'sip', 
+            'destination_ip' : 'dip',
+            'destination_bytes' : 'dest_bytes',
+        }, inplace=True)
+
+        data['datetime'] = pd.to_datetime(data['datetime'], unit='ms')
+        prevalence = data.groupby('dip')['sip'].nunique().reset_index(name='unique_sips')
+        data = data.merge(prevalence, on='dip')
+        data = data[data['unique_sips'] <= 3]
+
+        grouped = data.groupby(['sip', 'dip', "dns"]).agg({
+            'datetime': list,
             'dest_bytes': list,
             'port' : 'first',
             'proto' : 'first',
         }).reset_index()
 
+        grouped['datetime'] = grouped['datetime'].apply(lambda x: sorted(x))
         grouped['conn_count'] = grouped['datetime'].apply(len)
 
         #filter out low conn count
-        grouped = grouped[grouped['conn_count'] > 0]
+        grouped = grouped[grouped['conn_count'] > 100]
 
         return grouped
 
     def calculate_scores(self, grouped):
-        # Calculate time deltas
-        grouped['deltas'] = grouped['datetime'].apply(lambda x: pd.Series(x).diff().dt.total_seconds().dropna().tolist())
 
-        # Advanced metrics for time deltas
-        grouped['tsLow'] = grouped['deltas'].apply(lambda x: np.percentile(x, 20) if x else 0)
-        grouped['tsMid'] = grouped['deltas'].apply(lambda x: np.percentile(x, 50) if x else 0)
-        grouped['tsHigh'] = grouped['deltas'].apply(lambda x: np.percentile(x, 80) if x else 0)
+        #data scoring
+        grouped['dsMadm'] = grouped['dest_bytes'].apply(
+        lambda x: np.median(np.abs(np.array(x) - np.median(x))) if x else 0)
+        grouped['dsSkew'] = grouped['dest_bytes'].apply(
+        lambda x: (np.percentile(x, 20) + np.percentile(x, 80) - 2 * np.percentile(x, 50)) / (np.percentile(x, 80) - np.percentile(x, 20)) if len(x) >= 3 and (np.percentile(x, 80) - np.percentile(x, 20)) != 0 else 0)
+
+        grouped['dsMadmScore'] = grouped['dsMadm'].apply(lambda x: 1.0 / (1.0 + np.sqrt(x)))
+        grouped['dsSkewScore'] = grouped['dsSkew'].apply(lambda x: max(0.0, 1.0 - abs(x)))
+        grouped['dsScore'] = (grouped['dsMadmScore'] + grouped['dsSkewScore']) / 2.0
+
+        # Calculate time deltas
+        grouped['deltas'] = grouped['datetime'].apply(
+        lambda x: pd.Series(x).diff().dt.total_seconds().dropna().tolist()
+        )
+
+        # Bowley skew components
+        grouped['tsLow'] = grouped['deltas'].apply(lambda x: np.percentile(np.array(x), 20) if x else 0)
+        grouped['tsMid'] = grouped['deltas'].apply(lambda x: np.percentile(np.array(x), 50) if x else 0)
+        grouped['tsHigh'] = grouped['deltas'].apply(lambda x: np.percentile(np.array(x), 80) if x else 0)
+
         grouped['tsBowleyNum'] = grouped['tsLow'] + grouped['tsHigh'] - 2 * grouped['tsMid']
         grouped['tsBowleyDen'] = grouped['tsHigh'] - grouped['tsLow']
+
         grouped['tsSkew'] = grouped.apply(
-            lambda x: x['tsBowleyNum'] / x['tsBowleyDen'] if x['tsBowleyDen'] != 0 else 0, axis=1
-        )
-        grouped['tsMadm'] = grouped['deltas'].apply(lambda x: np.median(np.abs(x - np.median(x))) if x else 0)
-
-        #time connection division
-        grouped['tsConnDiv'] = grouped['datetime'].apply(lambda x: (x[-1] - x[0]).total_seconds() / 90 if len(x) > 1 else 1)
-
-        # Time delta scoring
-        grouped['tsSkewScore'] = 1.0 - abs(grouped['tsSkew'])
-        grouped['tsMadmScore'] = grouped['tsMadm'].apply(lambda x: max(0, 1.0 - x / 30.0))
-        grouped['tsConnCountScore'] = (grouped['conn_count']) / (grouped['tsConnDiv'] + 1e-6)
-        grouped['tsConnCountScore'] = grouped['tsConnCountScore'].apply(lambda x: min(1.0, x))
-        grouped['tsScore'] = (grouped['tsSkewScore'] + grouped['tsMadmScore']) / 2.0
-
-        # grouped['dsLow'] = grouped['dest_ip_bytes'].apply(lambda x: np.percentile(x, 20) if x else 0)
-        # grouped['dsMid'] = grouped['dest_ip_bytes'].apply(lambda x: np.percentile(x, 50) if x else 0)
-        # grouped['dsHigh'] = grouped['dest_ip_bytes'].apply(lambda x: np.percentile(x, 80) if x else 0)
-        grouped['dsLow'] = grouped['dest_bytes'].apply(lambda x: np.percentile(x, 20) if x else 0)
-        grouped['dsMid'] = grouped['dest_bytes'].apply(lambda x: np.percentile(x, 50) if x else 0)
-        grouped['dsHigh'] = grouped['dest_bytes'].apply(lambda x: np.percentile(x, 80) if x else 0)
-
-        grouped['dsBowleyNum'] = grouped['dsLow'] + grouped['dsHigh'] - 2 * grouped['dsMid']
-        grouped['dsBowleyDen'] = grouped['dsHigh'] - grouped['dsLow']
-        grouped['dsSkew'] = grouped.apply(
-            lambda x: x['dsBowleyNum'] / x['dsBowleyDen'] if x['dsBowleyDen'] != 0 else 0, axis=1
-        )
-        # grouped['dsMadm'] = grouped['dest_ip_bytes'].apply(
-        #     lambda x: np.median(np.abs(np.array(x) - np.median(x))) if x else 0
-        # )
-        grouped['dsMadm'] = grouped['dest_bytes'].apply(
-            lambda x: np.median(np.abs(np.array(x) - np.median(x))) if x else 0
+        lambda x: x['tsBowleyNum'] / x['tsBowleyDen']
+        if x['tsBowleyDen'] != 0 and x['tsMid'] != x['tsLow'] and x['tsMid'] != x['tsHigh']
+        else 0.0,
+        axis=1
         )
 
-        # Data size scoring
-        grouped['dsSkewScore'] = 1.0 - abs(grouped['dsSkew'])
-        grouped['dsMadmScore'] = grouped['dsMadm'].apply(lambda x: max(0, 1.0 - x / 60.0))
-        grouped['dsScore'] = (grouped['dsSkewScore'] + grouped['dsMadmScore']) / 2.0
+        # Median Absolute Deviation
+        grouped['tsMadm'] = grouped['deltas'].apply(
+        lambda x: np.median(np.abs(np.array(x) - np.median(x))) if x else 0
+        )
 
-        #data size smallness score
-        grouped['dsSmallnessScore'] = 1.0 - (grouped['dsMadm'] / 4096.0)
-        grouped['dsSmallnessScore'] = grouped['dsSmallnessScore'].apply(lambda x: max(0, x))
+        # Optional: normalized connection duration (used in RITA)
+        grouped['tsConnDiv'] = grouped['datetime'].apply(
+        lambda x: (x[-1].to_pydatetime() - x[0].to_pydatetime()).seconds / 90 if len(x) > 1 else 0
+        )
 
-        # Final score
-        grouped['final_score'] = (grouped['tsScore'] + grouped['dsScore']) / 2.0
+        # Normalize scores
+        grouped['tsMadmScore'] = grouped['tsMadm'].apply(lambda x: 1.0 / (1.0 + np.sqrt(x + 1e-6)))
+        grouped['tsSkewScore'] = grouped['tsSkew'].apply(lambda x: max(0.0, 1.0 - abs(x)))
+
+        # Final composite score
+        grouped['tsScore'] = 0.5 * grouped['tsMadmScore'] + 0.5 * grouped['tsSkewScore']
+        grouped['final_score'] = (grouped['tsScore'] + grouped['dsScore']) / 2
+
+        # Filter if needed
+        grouped = grouped[grouped['final_score'] > 0.1]
 
         return grouped
 
     def display_results(self):
         # Display top results
-        print(self.results.sort_values(by='final_score', ascending=False)[
-        ['sip', 'dip', 'port', 'proto', 'conn_count', 'tsSkewScore', 'tsMadmScore', 'tsConnCountScore', 'tsScore', 'dsScore', 'final_score', 'dns']
-        ].head(30))
+        results = self.results.sort_values(by='final_score', ascending=False)[
+        ['sip', 'dip', 'port', 'conn_count', 'tsSkewScore', 'tsMadmScore', 'tsScore', 'final_score']
+        ]
+
+        print(results)
+        print(f"\n Total number of unique (sip, dip, port) connections analyzed: {len(self.results)}")
+        #results.to_csv('madmom_output.txt', index=False)
 
     def get_results(self, likelihood = 0.0):
         return self.results.\
@@ -129,46 +141,31 @@ def run_mad(max_delta_file,likelihood):
 
         return df_mad
 
-def main():
-     # Example usage
-    parquet_file = '/home/step-admin/bh_web/two_beacon_48_hr_noisy_deltas_20250303_183854.parquet'
+# def main():
+#      # Example usage
+#     parquet_file = ''
 
-    thresholds = {
-    'deviation': [0.0, 0.2, 0.4, 0.6],
-    'long_conn': 3600,
-    'strobe': 80000,
-    }
+#     while True:
+#         print("\n=== MADMOM MENU ===")
+#         print("1. Run Analysis")
+#         print("2. Change Parquet File")
+#         print("3. Exit")
 
-    while True:
-        print("\n=== MADMOM MENU ===")
-        print("1. Run Analysis")
-        print("2. Change Parquet File")
-        print("3. Modify Thresholds")
-        print("4. Exit")
+#         choice = input("Select an option: ")
 
-        choice = input("Select an option: ")
-
-        if choice == '1':
-            analyzer = Analyzer(parquet_file, thresholds)
-            analyzer.analyze()
-            analyzer.display_results()
-        elif choice == '2':
-            parquet_file = input("Enter new parquet file path: ")
-            print(f"Parquet file changed to: {parquet_file}")
-        elif choice == '3':
-            try:
-                thresholds['deviation'] = list(map(float, input("Enter deviation thresholds (comma separated): ").split(',')))
-                thresholds['long_conn'] = int(input("Enter long connection threshold: "))
-                thresholds['strobe'] = int(input("Enter strobe threshold: "))
-                print("Thresholds updated successfully")
-            except ValueError:
-                print("invalid input. please try again")
-        elif choice == '4':
-            print("Exiting...")
-            break
-        else:
-            print("invalid choice.")
+#         if choice == '1':
+#             analyzer = Analyzer(parquet_file)
+#             analyzer.analyze() 
+#             analyzer.display_results()
+#         elif choice == '2':
+#             parquet_file = input("Enter new parquet file path: ")
+#             print(f"Parquet file changed to: {parquet_file}")
+#         elif choice == '3':
+#             print("Exiting...")
+#             break
+#         else:
+#             print("invalid choice.")
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -815,15 +815,29 @@ def pipeline(conf):
     # FILTER OUT IPs
     # WRITE FILES IF YOU HAVE RESULTS
     if df_rt.empty == False:
+        # DNS FLIP & FILTER
+        if conf["general"]["ds_type"] == "HTTP File":
+            df_rt = df_rt.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
+            df_rt = df_rt[~df_rt["dns"].isin(df_filter["dns"])]
+
         df_rt = df_rt[~df_rt["id.resp_h"].isin(df_filter["ip"])]
         df_rt.to_csv("cli_results/{}/cluster_results.csv".format(group_id))
 
     if df_mad.empty == False:
+        # DNS FLIP & FILTER
+        if conf["general"]["ds_type"] == "HTTP File":
+            df_mad = df_mad.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
+            df_mad = df_mad[~df_mad["dns"].isin(df_filter["dns"])]
+
         df_mad = df_mad[~df_mad["dip"].isin(df_filter["ip"])]
         df_mad.to_csv("cli_results/{}/mad_results.csv".format(group_id))
 
     if df_delta.empty == False:
         df_delta = df_delta[~df_delta["dip"].isin(df_filter["ip"])]
+
+        if conf["general"]["ds_type"] == "HTTP File":
+            df_delta = df_delta.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
+            df_delta = df_delta[~df_delta["dns"].isin(df_filter["dns"])]
 
         # BUILD TOP TALKER
         df_delta = df_delta.groupby(["sip","dip","port", "dns"]).agg(
@@ -864,8 +878,9 @@ def pipeline(conf):
     else:
         _delete_folders([os.path.join(lst_path[0], lst_path[1], "bronze"),
                      os.path.join(lst_path[0], lst_path[1], "silver"),
-                     os.path.join(lst_path[0], lst_path[1], "gold")
-                     ],logger)
+                     os.path.join(lst_path[0], lst_path[1], "gold"),
+                     os.path.join(lst_path[0], lst_path[1])],
+                     logger)
 
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
@@ -963,10 +978,14 @@ def cli_run():
 
     return conf
 
-def cli_filter(option):
+def cli_filter(option,is_dns):
 
     df_fil_ips = pd.read_parquet("filter/filtered_ips.parquet")
-    print("For multiples values use a list (e.g. [127.0.0.1, 255.255.255.255])")
+
+    if is_dns:
+        print("For multiples values use a list (e.g. [microsoft.com, amazon.com])")
+    else:
+        print("For multiples values use a list (e.g. [127.0.0.1, 255.255.255.255])")
 
     # SHOW FILTERED IPS
     if option == 3:
@@ -974,7 +993,10 @@ def cli_filter(option):
             print(df_fil_ips)
     # ADD OR DELETE VALUES
     else:
-        vals = input("Enter IPs: ")
+        if is_dns:
+            vals = input("Enter DNS: ")
+        else:
+            vals = input("Enter IPs: ")
 
         # CONVERT TO LIST
         vals = [str(x) for x in vals.strip("[]").split(",")]
@@ -984,7 +1006,10 @@ def cli_filter(option):
             opt = "added"
             if isinstance(vals,list):
                 for x in vals:
-                    new_val = {"dns": "", "ip": x}
+                    if is_dns:
+                        new_val = {"dns": x, "ip": ""}
+                    else:
+                        new_val = {"dns": "", "ip": x}
                     df_fil_ips = pd.concat([df_fil_ips, pd.DataFrame([new_val])], ignore_index=True)
             else:
                 print("\nERROR: Invaild Type!\n")
@@ -993,7 +1018,10 @@ def cli_filter(option):
             opt = "deleted"
             if isinstance(vals,list):
                 for x in vals:
-                    df_fil_ips = df_fil_ips[df_fil_ips["ip"] != x]
+                    if is_dns:
+                        df_fil_ips = df_fil_ips[df_fil_ips["dns"] != x]
+                    else:
+                        df_fil_ips = df_fil_ips[df_fil_ips["ip"] != x]
             else:
                 print("\nERROR: Invaild Type!\n")
 
@@ -1012,11 +1040,68 @@ def cli_results_files(path):
         dates.append(datetime.fromtimestamp(folder_dte))
 
     df = pd.DataFrame({"Group_ID": folders, "Run_Date": dates})
-    df.index.name = "Run_ID"
+    df["Run_ID"] = df.index + 1
+    df = df[["Run_ID", "Group_ID", "Run_Date"]]
+    #df.index.name = "Run_ID"
 
     return df
 
-#def results():
+def cli_view_results(df_results):
+
+
+    while True:
+        run_id = int(input("Enter Run_ID: "))
+        run_guid = df_results.loc[df_results["Run_ID"] == run_id]["Group_ID"].iloc[0]
+        while True:
+            v_or_d = int(input("View or Delete [1 = View, 2 = Delete]: "))
+
+            if v_or_d == 1:
+                break
+            elif v_or_d == 2:
+                _delete_folders([os.path.join("cli_results",run_guid)])
+                print("Results deleted!!")
+                return
+
+        option = int(input("Enter result option [1 = Aggregrate, 2 = Clustered Results, 3 = MAD Results, 4 = Top Talker Results, 5 = Run Configuration, 6 = Log File]"))
+
+        # BACKHER
+        if option == 1:
+            path = os.path.join("cli_results",run_guid,"aggregate_results.csv")
+            opt = "Aggregate Results"
+            break
+        elif option == 2:
+            path = os.path.join("cli_results",run_guid,"cluster_results.csv")
+            opt = "Cluster Results"
+            break
+        elif option == 3:
+            path = os.path.join("cli_results",run_guid,"mad_results.csv")
+            opt = "MAD Results"
+            break
+        elif option == 4:
+            path =  os.path.join("cli_results",run_guid,"top_talker_results.csv")
+            opt = "Top Talker Results"
+            break
+        elif option == 5:
+            path = os.path.join("cli_results",run_guid,"run_conf.csv")
+            opt = "Run Config"
+            break
+
+    if os.path.exists(path):
+        df_view = pd.read_csv(path)
+
+        if df_view.empty:
+            print("X" * 100)
+            print("No Results!!")
+            print("X" * 100)
+        else:
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):
+                print("X" * 50, f"{opt}", "X" * 50)
+                print(df_view.reset_index())
+                print("X" * (100 + len(opt)+2))
+    else:
+        print("X" * 100)
+        print("No Results!!")
+        print("X" * 100)
 
 #####################################################################################
 ##  MAIN
@@ -1031,7 +1116,6 @@ def main(conf):
 
     return ret_val
 
-
 if __name__ == "__main__":
 
     while True:
@@ -1045,16 +1129,33 @@ if __name__ == "__main__":
         elif option == 2:
             while True:
                 fil_opt = int(input("Enter filter option [1 = Add, 2 = Delete, 3 = View]: "))
-                if fil_opt in [1, 2, 3]:
+                if fil_opt in [1, 2]:
+                    while True:
+                        fil_type = int(input("Enter filter type [1 = DNS, 2 = IPs]: "))
+                        if fil_type in [1,2]:
+                            if fil_type == 1:
+                                is_dns = True
+                            else:
+                                is_dns = False
+                            break
+                    break
+                elif fil_opt == 3:
+                    is_dns = False
+                    break
+                elif fil_opt == 0:
                     break
                 else:
                     print("Invaild filter option! Must be [1 = Add, 2 = Delete, 3 = View]!")
-            cli_filter(fil_opt)
+
+            if fil_opt != 0:
+                cli_filter(fil_opt,is_dns)
         elif option == 3:
             df_results = cli_results_files("cli_results")
-            print(df_results)
+            print(df_results.to_string(index=False))
 
-            break
+            cli_view_results(df_results)
+
+            #break
         elif option == 4:
             print("\nGoodbye!\n")
             break

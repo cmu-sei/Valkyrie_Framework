@@ -189,6 +189,7 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
             #     df_dns = pd.concat([df_dns, df_f_dns.rename(columns={"id.resp_h": "dest_ip", "host": "dns"}, inplace=True)],ignore_index=True)
 
             # THIS IS NOT EFFICIENT FIX IT LATER
+            dest_parquet_file = dest_parquet_file.replace(".csv",".parquet")
             final_df = load_ds_data(df,dest_parquet_file,"http","parquet")
 
         logger.debug("Creating parquet file {}".format(dest_parquet_file))

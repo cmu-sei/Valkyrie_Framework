@@ -268,16 +268,25 @@ def check_ds_columns(df, dstype = "delta"):
         # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
         # CODE FOR DIFFERENT HTTP FILE TYPES
         if all(col in df.columns for col in ["_timestamp", "domain", "source_ip", "destination_ip"]):
+            # FOR HTTP DNS HAS TO BE IN FOR DESTINATION IP
+            # df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
+            #     rename(columns={"domain": "dns", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "id.resp_h"})
+
             df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
-                rename(columns={"domain": "dns", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "id.resp_h"})
+                rename(columns={"domain": "id.resp_h", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "dns"})
 
             # CREATE ZEEK HTTP MISSING COLUMNS
             df["uid"] = ""
             df["id.orig_p"] = ""
-            df["id.resp_p"] = ""
+            df["id.resp_p"] = 80
+
         # ZEEK
         else:
-            df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].rename(columns={"host": "dns"})
+            # FOR HTTP DNS HAS TO BE IN FOR DESTINATION IP
+            #df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].rename(columns={"host": "dns"})
+
+            df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].\
+                rename(columns={"id.resp_h": "dns", "host": "id.resp_h"})
 
         df_new = df.copy()
 
