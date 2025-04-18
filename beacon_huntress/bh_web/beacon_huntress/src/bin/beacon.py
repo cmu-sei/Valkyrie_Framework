@@ -772,7 +772,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
 
         # EPS = 0 DO NOT SCAN
         if eps == 0.0:
-            logger.warning("EPS is 0.0! Not scanning!")
+            logger.debug("EPS is 0.0! Not scanning!")
             eps_cnt += 1
             continue
 
@@ -1295,7 +1295,7 @@ def p_conns(delta_file, diff_time = 60, diff_type = "mi"):
         print("NONE")
         print("X" * 129)
 
-def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
+def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id, filter_ds = None,logger = ""):
 
     is_new_bronze = False
 
@@ -1313,6 +1313,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             start_dte = start_dte,
             end_dte = end_dte,
             dns_file=config["bronze"]["dns_file"],
+            filter_ds = filter_ds,
             overwrite = config["general"]["overwrite"], 
             verbose = config["general"]["verbose"]
             )
@@ -1359,6 +1360,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             start_dte = start_dte,
             end_dte = end_dte,
             dns_file=config["bronze"]["dns_file"],
+            filter_ds = filter_ds,
             overwrite = config["general"]["overwrite"],
             verbose = config["general"]["verbose"]
             )
@@ -1408,6 +1410,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             start_dte = start_dte,
             end_dte = end_dte,
             dns_file=config["bronze"]["dns_file"],
+            filter_ds = filter_ds,
             overwrite = config["general"]["overwrite"], 
             verbose = config["general"]["verbose"]
             )
@@ -1453,6 +1456,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             start_dte = start_dte,
             end_dte = end_dte,
             dns_file=config["bronze"]["dns_file"],
+            filter_ds = filter_ds,
             overwrite = config["general"]["overwrite"], 
             verbose = config["general"]["verbose"]
             )

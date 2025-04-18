@@ -53,7 +53,7 @@ def _total_cnt(src_loc):
 ##  FUNCTIONS
 #####################################################################################
 
-def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end_dte = "", overwrite = False, verbose = False):
+def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end_dte = "", filter_ds = None, overwrite = False, verbose = False):
     """
     Build initial files
 
@@ -129,9 +129,6 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
 
     if ext == "json" or ext == "gz":
         df = pd.read_json(src_file, lines=True)
-        #REMOVE
-        #logger.info("READ JSON")
-        #logger.info(len(df))
     elif ext == "parquet":
         df = pd.read_parquet(src_file)
     elif ext == "csv":
@@ -154,6 +151,21 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
         df = df.query("ts <= {}".format(end_dte))
     else:
         pass
+
+    # CHECK FOR USER FILTERED DNS
+    if filter_ds is None:
+        filter_ds = pd.DataFrame()
+
+    if filter_ds.empty == False:
+        if "dns" in df.columns:
+            df = df[~df["dns"].isin(filter_ds["dns"])].reset_index()
+        elif "domain" in df.columns:
+            df = df[~df["domain"].isin(filter_ds["dns"])].reset_index()
+        elif "host" in df.columns:
+            df = df[~df["host"].isin(filter_ds["dns"])].reset_index()
+
+        if "id.resp_h" in df.columns:
+            df = df[~df["id.resp_h"].isin(filter_ds["ip"])].reset_index()
 
     # PROCESS IF THERE IS DATA
     if df.empty:
@@ -1144,7 +1156,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
     endtime = datetime.now() - starttime
     logger.info('Delta process is completed {}'.format(endtime))
 
-def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", ds_type = "conn", overwrite = False, verbose = False):
+def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", ds_type = "conn", filter_ds = None, overwrite = False, verbose = False):
     """
     Create a bronze data layer for a source folder location.  
     Bronze data will only use tcp data and will include source and destination DNS.
@@ -1153,7 +1165,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
     ===========
         src_loc: STRING 
             Source raw data folder.
-            Folder example: /source/       
+            Folder example: /source/
         bronze_loc: STRING
             Bronze folder location. Files will be parquet format.
             Example: /bronze/raw/parquet
@@ -1168,11 +1180,11 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
             Default = False
         verbose:
             Verbose logger.
-            Default = False        
+            Default = False
     Returns:
     ========
         BOOLEAN: Is a new file
-    """ 
+    """
 
     starttime = datetime.now()
     logger.debug("Starting Bronze Layer Process")
@@ -1191,7 +1203,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
     else:
         dns_df = pd.read_parquet(dns_file)
         dns_df = dns_df[dns_df["wildcard_ip"].str.contains("-") == False]
-        dns_df[["oct1", "oct2", "oct3", "oct4"]] = dns_df['whitelist_ip'].str.split('.', expand=True).replace("X","0").astype("int32")    
+        dns_df[["oct1", "oct2", "oct3", "oct4"]] = dns_df['whitelist_ip'].str.split('.', expand=True).replace("X","0").astype("int32")
         is_dns = True
 
     #tot_files = len(os.listdir(src_loc))
@@ -1240,6 +1252,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
                         ds_type = ds_type,
                         start_dte = start_dte,
                         end_dte = end_dte,
+                        filter_ds = filter_ds,
                         overwrite = overwrite,
                         verbose = verbose)
 

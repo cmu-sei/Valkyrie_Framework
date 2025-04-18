@@ -323,13 +323,24 @@ def pipeline(conf):
     ##  BRONZE LAYER
     #####################################################################################
 
+    # GET FILTERS
+    df_filter = pd.read_parquet("filter/filtered_ips.parquet")
+
+    # CLI CHANGE
     df_bronze, is_new_bronze = beacon.build_bronze_ds(
         config = config,
         start_dte = start_dte,
         end_dte = end_dte,
         beacon_group = UID,
+        filter_ds = df_filter,
         group_id = group_id,
         logger = logger)
+
+
+    #####################################################################################
+    ##  BRONZE LAYER
+    #####################################################################################
+
 
     # IF DATA FALLS IN THE DATE RANGE CONTINUE
     if len(df_bronze) > 0:
@@ -812,32 +823,37 @@ def pipeline(conf):
     # CREATE CLI RESULTS DIRECTORY
     Path("cli_results/{}".format(group_id)).mkdir(parents=True, exist_ok=True)
 
-    # FILTER OUT IPs
     # WRITE FILES IF YOU HAVE RESULTS
     if df_rt.empty == False:
         # DNS FLIP & FILTER
         if conf["general"]["ds_type"] == "HTTP File":
             df_rt = df_rt.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
-            df_rt = df_rt[~df_rt["dns"].isin(df_filter["dns"])]
+            #df_rt = df_rt[~df_rt["dns"].isin(df_filter["dns"])]
 
-        df_rt = df_rt[~df_rt["id.resp_h"].isin(df_filter["ip"])]
+        #df_rt = df_rt[~df_rt["id.resp_h"].isin(df_filter["ip"])]
         df_rt.to_csv("cli_results/{}/cluster_results.csv".format(group_id))
+    else:
+        # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
+        df_rt = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "source_port", "dt", "cluster_score", "dns", "delta_mins"])
 
     if df_mad.empty == False:
         # DNS FLIP & FILTER
         if conf["general"]["ds_type"] == "HTTP File":
             df_mad = df_mad.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
-            df_mad = df_mad[~df_mad["dns"].isin(df_filter["dns"])]
+            #df_mad = df_mad[~df_mad["dns"].isin(df_filter["dns"])]
 
-        df_mad = df_mad[~df_mad["dip"].isin(df_filter["ip"])]
+        #df_mad = df_mad[~df_mad["dip"].isin(df_filter["ip"])]
         df_mad.to_csv("cli_results/{}/mad_results.csv".format(group_id))
+    else:
+        # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
+        df_mad = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "mad_score", "connection_count", "dns"])
 
     if df_delta.empty == False:
         df_delta = df_delta[~df_delta["dip"].isin(df_filter["ip"])]
 
         if conf["general"]["ds_type"] == "HTTP File":
             df_delta = df_delta.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
-            df_delta = df_delta[~df_delta["dns"].isin(df_filter["dns"])]
+            #df_delta = df_delta[~df_delta["dns"].isin(df_filter["dns"])]
 
         # BUILD TOP TALKER
         df_delta = df_delta.groupby(["sip","dip","port", "dns"]).agg(
