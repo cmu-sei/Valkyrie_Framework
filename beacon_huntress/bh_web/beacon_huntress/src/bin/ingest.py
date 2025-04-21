@@ -20,6 +20,7 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timedelta
 import platform
+import re
 #from beacon_huntress.src.bin.datasource import load_ds_data
 from bin.datasource import load_ds_data
 
@@ -157,12 +158,20 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
         filter_ds = pd.DataFrame()
 
     if filter_ds.empty == False:
+        # REGEX FOR DOMAIN PATTERNS
+        # filtered_domains = filter_ds["dns"].dropna().tolist()
+        # r_pattern = [fr'(?:www\.)?{re.escape(x)}' for x in filtered_domains]
+        # regex_pat = "|".join(r_pattern)
+
         if "dns" in df.columns:
             df = df[~df["dns"].isin(filter_ds["dns"])].reset_index()
+            #df = df[~df["dns"].str.contains(regex_pat, regex=True, na=False)]
         elif "domain" in df.columns:
             df = df[~df["domain"].isin(filter_ds["dns"])].reset_index()
+            #df = df[~df["domain"].str.contains(regex_pat, regex=True, na=False)]
         elif "host" in df.columns:
             df = df[~df["host"].isin(filter_ds["dns"])].reset_index()
+            #df = df[~df["host"].str.contains(regex_pat, regex=True, na=False)]
 
         if "id.resp_h" in df.columns:
             df = df[~df["id.resp_h"].isin(filter_ds["ip"])].reset_index()

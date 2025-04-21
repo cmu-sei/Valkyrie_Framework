@@ -484,7 +484,7 @@ def pipeline(conf):
         #####################################################################################
 
         # Default Score for MAD
-        likelihood = ".70"
+        likelihood = ".50"
 
         # AGGLOMERATIVE CLUSTERING
         if config["general"]["cluster_type"] == "agg":
@@ -709,6 +709,7 @@ def pipeline(conf):
 
         logger.info("Running MAD algorithm")
 
+        likelihood = 0.50
         df_mad = mm.run_mad(max_delta_file, likelihood)
 
         # FIX
@@ -839,7 +840,8 @@ def pipeline(conf):
     if df_mad.empty == False:
         # DNS FLIP & FILTER
         if conf["general"]["ds_type"] == "HTTP File":
-            df_mad = df_mad.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
+            df_mad = df_mad.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
+            #df_mad = df_mad.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
             #df_mad = df_mad[~df_mad["dns"].isin(df_filter["dns"])]
 
         #df_mad = df_mad[~df_mad["dip"].isin(df_filter["ip"])]
