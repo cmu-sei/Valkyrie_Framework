@@ -20,7 +20,6 @@ class Analyzer:
         self.results = self.calculate_scores(aggregated_data)
 
     def aggregate_connections(self, data):
-        print("Columns available:", data.columns.tolist())
         data.rename(columns={
             'ts': 'datetime', 
             'source_ip' : 'sip', 

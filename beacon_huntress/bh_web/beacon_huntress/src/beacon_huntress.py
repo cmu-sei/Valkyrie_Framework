@@ -485,6 +485,7 @@ def pipeline(conf):
 
         # Default Score for MAD
         likelihood = ".50"
+        final_conn_count = 1
 
         # AGGLOMERATIVE CLUSTERING
         if config["general"]["cluster_type"] == "agg":
@@ -516,6 +517,8 @@ def pipeline(conf):
                 #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
                 #     return
             else:
+
+                final_conn_count = config["beacon"]["agg"]["min_records"]
 
                 # Default Score for MAD
                 likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
@@ -565,6 +568,8 @@ def pipeline(conf):
                 # Default Score for MAD
                 likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
 
+                final_conn_count = config["beacon"]["dbscan"]["minimum_points_in_cluster"]
+
                 ret_gold_file = beacon.dbscan_clustering(
                     delta_file = max_delta_file,
                     delta_column = config["beacon"]["delta_column"],
@@ -609,6 +614,7 @@ def pipeline(conf):
 
                 # Default Score for MAD
                 likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+                final_conn_count = config["beacon"]["dbscan_var"]["conn_cnt"]
 
                 ret_gold_file = beacon.dbscan_by_variance(
                     delta_file = max_delta_file,
@@ -646,6 +652,8 @@ def pipeline(conf):
                 #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
                 #     return
             else:
+                final_conn_count = config["beacon"]["by_packet"]["conn_cnt"]
+
                 ret_gold_file = beacon.packet(
                     delta_file = max_delta_file,
                     delta_column = config["beacon"]["delta_column"],
@@ -680,6 +688,8 @@ def pipeline(conf):
                 #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
                 #     return
             else:
+                final_conn_count = config["beacon"]["by_conn_group"]["conn_cnt"]
+
                 ret_gold_file = beacon.cluster_conns(
                         delta_file = max_delta_file,
                         delta_column = config["beacon"]["delta_column"],
@@ -829,22 +839,20 @@ def pipeline(conf):
         # DNS FLIP & FILTER
         if conf["general"]["ds_type"] == "HTTP File":
             df_rt = df_rt.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
-            #df_rt = df_rt[~df_rt["dns"].isin(df_filter["dns"])]
 
-        #df_rt = df_rt[~df_rt["id.resp_h"].isin(df_filter["ip"])]
         df_rt.to_csv("cli_results/{}/cluster_results.csv".format(group_id))
     else:
         # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
         df_rt = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "source_port", "dt", "cluster_score", "dns", "delta_mins"])
 
     if df_mad.empty == False:
+        # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
+        df_mad = df_mad[df_mad["conn_count"] > final_conn_count]
+
         # DNS FLIP & FILTER
         if conf["general"]["ds_type"] == "HTTP File":
             df_mad = df_mad.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
-            #df_mad = df_mad.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
-            #df_mad = df_mad[~df_mad["dns"].isin(df_filter["dns"])]
 
-        #df_mad = df_mad[~df_mad["dip"].isin(df_filter["ip"])]
         df_mad.to_csv("cli_results/{}/mad_results.csv".format(group_id))
     else:
         # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
@@ -855,7 +863,6 @@ def pipeline(conf):
 
         if conf["general"]["ds_type"] == "HTTP File":
             df_delta = df_delta.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
-            #df_delta = df_delta[~df_delta["dns"].isin(df_filter["dns"])]
 
         # BUILD TOP TALKER
         df_delta = df_delta.groupby(["sip","dip","port", "dns"]).agg(

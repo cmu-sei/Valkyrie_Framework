@@ -813,12 +813,12 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
             beacon_num +=1
 
     logger.debug("Beacon dictionary {}".format(beacons))
-    logger.debug("Beacon connection_id/s {}".format(beacons))    
+    logger.debug("Beacon connection_id/s {}".format(beacons))
 
     # OVERWRITE DELETE GOLD FILES
     if overwrite == True:
         if os.path.exists(gold_loc) and overwrite == True:
-            shutil.rmtree(gold_loc)        
+            shutil.rmtree(gold_loc)
 
     # BUILD GOLD FILE
     if len(gold_loc) > 0 and len(beacons) > 0:
