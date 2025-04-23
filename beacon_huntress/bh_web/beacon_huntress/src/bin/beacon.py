@@ -1479,7 +1479,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id, filter_ds = 
 
     return df_bronze, is_new_bronze
 
-def cli_results(beacon_df, mad_df, avg_delta = 0):
+def cli_results(beacon_df, mad_df, conn_cnt = 0, avg_delta = 0):
     """
     Display the results of a gold file in the Command Line Interface (CLI).\n
 
@@ -1522,11 +1522,13 @@ def cli_results(beacon_df, mad_df, avg_delta = 0):
     df2.drop(columns=["dns_x", "dns_y"], inplace=True)
     df2.fillna(0, inplace=True)
 
+    # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
+    df2 = df2.loc[df2["connection_count"] >= conn_cnt]
+
     # DISPLAY RESULTS
     if len(df2) != 0:
-        #df2.sort_values(by=["connection_count", "dest_ip"], inplace=True, ascending=False)
         df2.sort_values(by=["cluster_score", "mad_score"], inplace=True, ascending=False)
-        num_b = df2["dest_ip"].nunique()
+        num_b = df2["dns"].nunique()
 
         logger.info("Only top 25 results are displayed!")
         print("X" * 50, " POTENTIAL BEACONS ({})".format(num_b), "X" * 50)

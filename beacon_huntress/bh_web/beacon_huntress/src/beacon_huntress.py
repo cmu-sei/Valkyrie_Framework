@@ -518,10 +518,9 @@ def pipeline(conf):
                 #     return
             else:
 
-                final_conn_count = config["beacon"]["agg"]["min_records"]
-
                 # Default Score for MAD
                 likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
+                final_conn_count = config["beacon"]["agg"]["min_records"]
 
                 ret_gold_file = beacon.agglomerative_clustering(
                     delta_file = max_delta_file,
@@ -567,7 +566,6 @@ def pipeline(conf):
 
                 # Default Score for MAD
                 likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
-
                 final_conn_count = config["beacon"]["dbscan"]["minimum_points_in_cluster"]
 
                 ret_gold_file = beacon.dbscan_clustering(
@@ -847,7 +845,7 @@ def pipeline(conf):
 
     if df_mad.empty == False:
         # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
-        df_mad = df_mad[df_mad["conn_count"] > final_conn_count]
+        df_mad = df_mad[df_mad["conn_count"] >= final_conn_count]
 
         # DNS FLIP & FILTER
         if conf["general"]["ds_type"] == "HTTP File":
@@ -874,7 +872,7 @@ def pipeline(conf):
         df_delta.to_csv("cli_results/{}/top_talker_results.csv".format(group_id))
 
     # FINAL AGGREGATE RESULTS
-    df_agg = beacon.cli_results(df_rt, df_mad)
+    df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count)
     df_agg.to_csv("cli_results/{}/aggregate_results.csv".format(group_id))
 
     with open("cli_results/{}/run_conf.yaml".format(group_id), "w") as file:
@@ -939,7 +937,7 @@ def cli():
         print("Menu")
         print("="*10)
         print("1. Run Beacon Huntress")
-        print("2. Filtered IPs")
+        print("2. Filtered DNS/IPs")
         print("3. Results")
         print("4. Quit\n")
 
@@ -1065,14 +1063,47 @@ def cli_results_files(path):
         dates.append(datetime.fromtimestamp(folder_dte))
 
     df = pd.DataFrame({"Group_ID": folders, "Run_Date": dates})
+    df = df.sort_values(by=["Run_Date"]).reset_index(drop=True)
     df["Run_ID"] = df.index + 1
     df = df[["Run_ID", "Group_ID", "Run_Date"]]
-    #df.index.name = "Run_ID"
 
     return df
 
-def cli_view_results(df_results):
+def page_cli(df,opt,page_size=25):
 
+    if df.empty:
+        print("X" * 100)
+        print("No Results!!")
+        print("X" * 100)
+    else:
+        page = 0
+        total = len(df)
+        est_pg = (total + page_size - 1) // page_size
+        while True:
+            pg_start = page * page_size
+            pg_end = pg_start + page_size
+
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):
+                print("X" * 50, f"{opt}", "X" * 50)
+                print(df[pg_start:pg_end])
+                print("X" * (100 + len(opt)+2))
+                print("Page {} of {}".format(page+1,est_pg))
+                print("Total Records: {}".format(total))
+
+            if pg_end >= total:
+                break
+            else:
+                cmd = input("Q to Quit: ")
+                if cmd.lower() == "q" or cmd.lower() == "quit":
+                    break
+                else:
+                    if pg_end < total:
+                        page += 1
+                    else:
+                        print("End of results!")
+                        break
+
+def cli_view_results(df_results):
 
     while True:
         run_id = int(input("Enter Run_ID: "))
@@ -1087,7 +1118,7 @@ def cli_view_results(df_results):
                 print("Results deleted!!")
                 return
 
-        option = int(input("Enter result option [1 = Aggregrate, 2 = Clustered Results, 3 = MAD Results, 4 = Top Talker Results, 5 = Run Configuration, 6 = Log File]"))
+        option = int(input("Enter result option [1 = Aggregrate, 2 = Clustered Results, 3 = MAD Results, 4 = Top Talker Results, 5 = Run Configuration, 6 = Log File]: "))
 
         # BACKHER
         if option == 1:
@@ -1107,26 +1138,33 @@ def cli_view_results(df_results):
             opt = "Top Talker Results"
             break
         elif option == 5:
-            path = os.path.join("cli_results",run_guid,"run_conf.csv")
+            path = os.path.join("cli_results",run_guid,"run_conf.yaml")
             opt = "Run Config"
             break
+        elif option == 6:
+            f_list = os.listdir(os.path.join("cli_results",run_guid))
+            log_items = [x for x in f_list if "log" in x]
+            path = os.path.join("cli_results",run_guid,log_items[0])
+            opt = "Log Results"
+            break
+        else:
+            print("Invaild Option!!")
 
-    if os.path.exists(path):
-        df_view = pd.read_csv(path)
+    if option in [1, 2, 3, 4]:
+        if os.path.exists(path):
+            df_view = pd.read_csv(path)
 
-        if df_view.empty:
+            page_cli(df_view,opt)
+        else:
             print("X" * 100)
             print("No Results!!")
             print("X" * 100)
-        else:
-            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):
-                print("X" * 50, f"{opt}", "X" * 50)
-                print(df_view.reset_index())
-                print("X" * (100 + len(opt)+2))
     else:
-        print("X" * 100)
-        print("No Results!!")
-        print("X" * 100)
+        if option in [5, 6]:
+            with open(path) as file:
+                for line in file:
+                    print(line,end='')
+
 
 #####################################################################################
 ##  MAIN
@@ -1176,7 +1214,7 @@ if __name__ == "__main__":
                 cli_filter(fil_opt,is_dns)
         elif option == 3:
             df_results = cli_results_files("cli_results")
-            print(df_results.to_string(index=False))
+            print(df_results.sort_values(by=["Run_Date"]).to_string(index=False))
 
             cli_view_results(df_results)
 
