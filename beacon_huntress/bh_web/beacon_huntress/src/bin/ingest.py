@@ -21,6 +21,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import platform
 import re
+import numpy as np
 #from beacon_huntress.src.bin.datasource import load_ds_data
 from bin.datasource import load_ds_data
 
@@ -53,6 +54,20 @@ def _total_cnt(src_loc):
 #####################################################################################
 ##  FUNCTIONS
 #####################################################################################
+
+def normalize_ts(df, column = "ts"):
+
+    # CONVERT STRING TO DATETIME IF NECESSARY
+    if df[column].dtype == object or df[column].dtype == 'string':
+        df[column] = pd.to_datetime(df[column], errors='coerce')
+
+    # CONVERT DATETIME TO EPOCH
+    # ONLY IF ITS STILL DATETIME AFTER PARSING
+    if np.issubdtype(df[column].dtype, np.datetime64):
+        df[column] = df[column].astype('int64') // 10**9  # epoch seconds
+
+    return df
+
 
 def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end_dte = "", filter_ds = None, overwrite = False, verbose = False):
     """
@@ -124,9 +139,6 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
     #####################################################################################
 
     ext = str(Path(src_file).suffix).replace(".","").lower()
-    #REMOVE
-    #logger.info(f"SOURCE FILE: {src_file}")
-    #logger.info(f"EXTENSION: {ext}")
 
     if ext == "json" or ext == "gz":
         df = pd.read_json(src_file, lines=True)
@@ -142,16 +154,25 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
     if start_dte == "" and end_dte == "":
         logger.debug("No dates entered skipping!!")
         pass
-    elif start_dte != "" and end_dte != "":
-        df = df.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
-    # ONLY START
-    elif start_dte != "" and end_dte == "":
-        df = df.query("ts >= {}".format(start_dte))
-    # ONLY END
-    elif start_dte == "" and end_dte != "":
-        df = df.query("ts <= {}".format(end_dte))
     else:
-        pass
+
+        # CHECK FOR THE CORRECT TIMESTAMP COLUMN
+        chk_col = next((col for col in ["ts", "_timestamp", "timestamp"] if col in df.columns), "ts")
+
+        # NORMALIZE TIMESTAMP IF NOT INT
+        if df[chk_col].dtype == "object" or df[chk_col].dtype == "string":
+            df = normalize_ts(df,chk_col)
+
+        if start_dte != "" and end_dte != "":
+            df = df.query("{0} >= {1} and {0} <= {2}".format(chk_col,start_dte, end_dte))
+        # ONLY START
+        elif start_dte != "" and end_dte == "":
+            df = df.query("{} >= {}".format(chk_col,start_dte))
+        # ONLY END
+        elif start_dte == "" and end_dte != "":
+            df = df.query("{} <= {}".format(chk_col,end_dte))
+        else:
+            pass
 
     # CHECK FOR USER FILTERED DNS
     if filter_ds is None:
@@ -164,22 +185,25 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
         # regex_pat = "|".join(r_pattern)
 
         if "dns" in df.columns:
-            df = df[~df["dns"].isin(filter_ds["dns"])].reset_index()
+            df = df[~df["dns"].isin(filter_ds["dns"])]
             #df = df[~df["dns"].str.contains(regex_pat, regex=True, na=False)]
         elif "domain" in df.columns:
-            df = df[~df["domain"].isin(filter_ds["dns"])].reset_index()
+            df = df[~df["domain"].isin(filter_ds["dns"])]
             #df = df[~df["domain"].str.contains(regex_pat, regex=True, na=False)]
         elif "host" in df.columns:
-            df = df[~df["host"].isin(filter_ds["dns"])].reset_index()
+            df = df[~df["host"].isin(filter_ds["dns"])]
             #df = df[~df["host"].str.contains(regex_pat, regex=True, na=False)]
 
         if "id.resp_h" in df.columns:
-            df = df[~df["id.resp_h"].isin(filter_ds["ip"])].reset_index()
+            df = df[~df["id.resp_h"].isin(filter_ds["ip"])]
 
     # PROCESS IF THERE IS DATA
     if df.empty:
         logger.warning("No data for file {}".format(dest_parquet_file))
     else:
+        # RESET THE INDEX DROP ANY PREVIOUS
+        df.reset_index(drop=True)
+
         if ds_type == "conn":
             logger.debug("Data Source = {}".format(ds_type))
             # READ JSON AND NORMALIZE IT
@@ -866,8 +890,8 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
         Path(dest_file).mkdir(parents=True, exist_ok=True)
 
         with open(os.path.join(dest_file,"metadata.json"), "w") as f:
-            json.dump(json_data, f)    
-        
+            json.dump(json_data, f)
+
         dest_file = os.path.join(dest_file,"data")
         Path(dest_file).mkdir(parents=True, exist_ok=True)
 
@@ -894,7 +918,7 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
 
             if log_cnt == per_cnt or tot_cnt == 1:
                 logger.debug("Processed {} of {}".format(tot_cnt, tot_files))
-                log_cnt = 0        
+                log_cnt = 0
 
             starttime = datetime.now()
             logger.debug("Starting filter process for {}".format(filename))
@@ -903,10 +927,10 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
 
             # BUILD DIRECTORY
             if os.path.isfile(f):
-                
+
                 raw_name = f
                 dest_name = os.path.join(dest_file,base_folder,str(os.path.basename(f)))
-                
+
                 Path(os.path.join(dest_file,base_folder)).mkdir(parents=True, exist_ok=True)
 
             #CHECK IF FILE ALREADY EXISTS
@@ -915,7 +939,7 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
                 continue
             elif overwrite == True:
                 if os.path.exists(dest_name):
-                    os.remove(dest_name)                           
+                    os.remove(dest_name)
 
             logger.debug("Building Dataframe/s")
             df = pd.read_parquet(raw_name)
@@ -930,8 +954,8 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
             #####################################################################################
 
             if len(port_filter) > 0:
-                port_df = filter_dataframe(df = df, 
-                    filter_vals = port_filter, 
+                port_df = filter_dataframe(df = df,
+                    filter_vals = port_filter,
                     filter_column = "port",
                     data_type = "int",
                     filter_exclude = port_exclude,
@@ -941,8 +965,8 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
                 port_df = pd.DataFrame()
 
             if len(src_filter) > 0:
-                src_df = filter_dataframe(df = port_df, 
-                    filter_vals = src_filter, 
+                src_df = filter_dataframe(df = port_df,
+                    filter_vals = src_filter,
                     filter_column = "sip",
                     data_type = "string",
                     filter_exclude = src_exclude,
@@ -952,19 +976,19 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
                 src_df = pd.DataFrame()
 
             if len(dest_filter) > 0:
-                dest_df = filter_dataframe(df = port_df, 
-                    filter_vals = dest_filter, 
+                dest_df = filter_dataframe(df = port_df,
+                    filter_vals = dest_filter,
                     filter_column = "dip",
                     data_type = "string",
                     filter_exclude = dest_exclude,
                     ret_org = False,
                     verbose = verbose)
             else:
-                dest_df = pd.DataFrame()            
+                dest_df = pd.DataFrame()
 
             if len(s_dns_filter) > 0:
-                s_dns_df = filter_dataframe(df = port_df, 
-                    filter_vals = s_dns_filter, 
+                s_dns_df = filter_dataframe(df = port_df,
+                    filter_vals = s_dns_filter,
                     filter_column = "s_dns",
                     data_type = "string",
                     filter_exclude = s_dns_exclude,
@@ -973,9 +997,9 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
             else:
                 s_dns_df = pd.DataFrame()
 
-            if len(d_dns_filter) > 0: 
-                d_dns_df = filter_dataframe(df = port_df, 
-                    filter_vals = d_dns_filter, 
+            if len(d_dns_filter) > 0:
+                d_dns_df = filter_dataframe(df = port_df,
+                    filter_vals = d_dns_filter,
                     filter_column = "d_dns",
                     data_type = "string",
                     filter_exclude = d_dns_exclude,
@@ -1016,7 +1040,7 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
                 if file_type == "csv":
                     df_nomatch.to_csv(str(dest_name).replace(".parquet",".csv"), header = True)
                 else:
-                    df_nomatch.to_parquet(dest_name, compression= "snappy")   
+                    df_nomatch.to_parquet(dest_name, compression= "snappy")
 
             del [df, src_df, dest_df, match_df, s_dns_df, d_dns_df, filter_df, df_match, df_nomatch]
 
@@ -1025,7 +1049,7 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
             logger.debug('File filter runtime {}'.format(endtime))
 
             #####################################################################################
-            ##  
+            ##
             #####################################################################################
 
     endtime = datetime.now() - overall_start
@@ -1033,7 +1057,7 @@ match_filter = None, match_exclude = True, file_type = "parquet", overwrite = Fa
 
     return is_new
 
-def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", overwrite = False):
+def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", ds_type = 'zeek', overwrite = False):
     """
     Create a delta file from a parquet folder location or file.
     Current unit of measurement is milliseconds and minutes.
@@ -1079,6 +1103,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         Path(delta_file_loc).mkdir(parents=True, exist_ok=True)
 
         logger.debug("Loading Parquet/s from {}".format(src_loc))
+        logger.debug("Datasource = {}".format(ds_type))
 
         try:
             # NEW FOR CLI
@@ -1088,8 +1113,13 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
 
             #print(pd.read_parquet(src_loc).columns)
 
-            df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id","dns"])
-            df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port", "orig_ip_bytes": "src_bytes", "resp_ip_bytes": "dest_bytes"}, inplace=True)
+            #BACKHERE
+            if ds_type == "Zeek Connection Logs":
+                df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id","dns"])
+                df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port", "orig_ip_bytes": "src_bytes", "resp_ip_bytes": "dest_bytes"}, inplace=True)
+            else:
+                df = pd.read_parquet(src_loc, columns=["id.orig_h", "id.resp_h", "id.resp_p", "proto", "ts", "orig_ip_bytes", "resp_ip_bytes", "source_file", "src_row_id","dns"])
+                df.rename(columns={"id.orig_h": "sip", "id.resp_h": "dip", "id.resp_p": "port", "orig_ip_bytes": "src_bytes", "resp_ip_bytes": "dest_bytes"}, inplace=True)
 
         except:
             logger.debug("columns (id.orig_h, id.resp_h, id.resp_p, proto, ts) not found.  Trying renamed columns (sip, dip, port, proto, ts)")
@@ -1125,7 +1155,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
             except BaseException as err:
                 logger.error("Error with date conversion")
                 logger.error(err)
-        
+
         df["connection_id"] = df.groupby(["sip", "dip",	"port", "proto"]).ngroup() 
         df.sort_values(["connection_id", "datetime"], inplace=True)
 
@@ -1139,7 +1169,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         st_fm_tm = datetime.now()
 
         df["delta"] = df.groupby("connection_id")["datetime"].diff()
-        
+
         # FIX FOR PANDAS 2.0
         #df["delta_ms"] = df["delta"].astype("timedelta64[ms]").astype(float)
         df["delta_ms"] = df["delta"].dt.total_seconds() * 1000
@@ -1149,7 +1179,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
         epoch = int(time.time())
 
         # DUMP FILE AS CSV OR PARQUET
-        if delta_file_type == "csv":   
+        if delta_file_type == "csv":
             delta_file = os.path.join(delta_file_loc,"delta_{}.csv".format(epoch))
             df.to_csv(delta_file, columns = ["connection_id", "sip", "dip", "port", "proto", "datetime", "src_bytes", "dest_bytes", "delta_ms", "delta_mins", "source_file", "src_row_id", "dns"])
         else:
@@ -1167,7 +1197,7 @@ def build_delta_files(src_loc, delta_file_loc, delta_file_type = "parquet", over
 
 def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_file = "", ds_type = "conn", filter_ds = None, overwrite = False, verbose = False):
     """
-    Create a bronze data layer for a source folder location.  
+    Create a bronze data layer for a source folder location.
     Bronze data will only use tcp data and will include source and destination DNS.
 
     Parameters:
@@ -1266,8 +1296,8 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
                         verbose = verbose)
 
                     if is_dns == True:
-                        add_dns(src_file = par_name, 
-                        dest_loc = dest_loc, 
+                        add_dns(src_file = par_name,
+                        dest_loc = dest_loc,
                         file_type = "parquet",
                         dns_df = dns_df,
                         verbose = verbose)
@@ -1275,7 +1305,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
                 except BaseException as err:
                     logger.error("Failure on file {}".format(f))
                     logger.error(err)
-    
+
     endtime = datetime.now() - starttime
     logger.info("Bronze file process completed {}".format(endtime))
 

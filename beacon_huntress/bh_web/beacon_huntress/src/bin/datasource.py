@@ -45,7 +45,7 @@ def get_file_data(df):
 
     Parameters:
     ===========
-        df: 
+        df:
             Pandas data frame with all file names
 
     Returns:
@@ -87,13 +87,13 @@ def check_delta_columns(df):
     df["id.orig_p"] = 0
     df["proto"] = ""
     df["service"] = ""
-    df["duration"] = 0    
+    df["duration"] = 0
     df["orig_bytes"] = 0
     df["resp_bytes"] = 0
     df["conn_state"] = ""
     df["local_orig"] = False
     df["local_resp"] = False
-    df["missed_bytes"] = 0    
+    df["missed_bytes"] = 0
     df["history"] = ""
     df["orig_pkts"] = 0
     df["resp_pkts"] = 0
@@ -209,6 +209,8 @@ def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
             df["src_row_id"] = df.index
 
             col_check = True
+            #col_check = False
+            #df["id.resp_p"] = 80
 
         if col_check:
             df = check_ds_columns(df, dstype)
@@ -268,17 +270,22 @@ def check_ds_columns(df, dstype = "delta"):
         # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
         # CODE FOR DIFFERENT HTTP FILE TYPES
         if all(col in df.columns for col in ["_timestamp", "domain", "source_ip", "destination_ip"]):
-            # FOR HTTP DNS HAS TO BE IN FOR DESTINATION IP
-            # df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
-            #     rename(columns={"domain": "dns", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "id.resp_h"})
 
-            df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
-                rename(columns={"domain": "id.resp_h", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "dns"})
+            # BACKHERE COMMENTED
+            # df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
+            #     rename(columns={"domain": "id.resp_h", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "dns"})
+
+            df.rename(columns={"domain": "id.resp_h", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "dns"}, inplace=True)
 
             # CREATE ZEEK HTTP MISSING COLUMNS
-            df["uid"] = ""
-            df["id.orig_p"] = ""
-            df["id.resp_p"] = 80
+            df["proto"] = ""
+            df["orig_bytes"] = 0
+            df["resp_bytes"] = 0
+            df["orig_ip_bytes"] = 0
+            df["resp_ip_bytes"] = 0
+            #df["id.resp_p"] = 80
+            # USE THE ORIGINAL PORT
+            df["id.resp_p"] = df["destination_port"]
 
         # ZEEK
         else:
@@ -290,21 +297,21 @@ def check_ds_columns(df, dstype = "delta"):
 
         df_new = df.copy()
 
-        # ADD MISSING ZEEK COLUMNS
-        df_new["proto"] = ""
-        df_new["service"] = ""
-        df_new["duration"] = 0
-        df_new["orig_ip_bytes"] = 0
-        df_new["resp_ip_bytes"] = 0
-        df_new["conn_state"] = ""
-        df_new["local_orig"] = False
-        df_new["local_resp"] = False
-        df_new["missed_bytes"] = 0
-        df_new["history"] = ""
-        df_new["orig_pkts"] = 0
-        df_new["resp_pkts"] = 0
-        df_new["community_id"] = ""
-        df_new["orig_mac_oui"] = ""
+        # # ADD MISSING ZEEK COLUMNS
+        # df_new["proto"] = ""
+        # df_new["service"] = ""
+        # df_new["duration"] = 0
+        # df_new["orig_ip_bytes"] = 0
+        # df_new["resp_ip_bytes"] = 0
+        # df_new["conn_state"] = ""
+        # df_new["local_orig"] = False
+        # df_new["local_resp"] = False
+        # df_new["missed_bytes"] = 0
+        # df_new["history"] = ""
+        # df_new["orig_pkts"] = 0
+        # df_new["resp_pkts"] = 0
+        # df_new["community_id"] = ""
+        # df_new["orig_mac_oui"] = ""
 
     elif dstype.lower() == "dns":
         # FIGURE OUT WHAT TO DO WITH TTLs & Query

@@ -81,7 +81,7 @@ def _find_beacons(y_hc, deltas, max_variance, min_records):
             curr_list = clusters[cluster]
             failed = False
             if len(curr_list) >= min_records:
-                median = np.median(curr_list)             
+                median = np.median(curr_list)
                 for number in curr_list:
                     if curr not in beacons:
                         if not abs(number - median) / median <= max_variance:
@@ -93,7 +93,7 @@ def _find_beacons(y_hc, deltas, max_variance, min_records):
 def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwrite = False):
 
     #####################################################################################
-    ##  
+    ##
     #####################################################################################
 
     logger.debug("Building gold file")
@@ -140,7 +140,13 @@ def _build_gold_beacons(delta_file, delta_column, gold_loc, beacon_conns, overwr
             org_df["file_name"] = fn_x
 
             # NEW FOR CLI
-            df_og = pd.merge(org_df,vals[["src_row_id", "file_name", "datetime", "likelihood", "{}".format(delta_column, "dns")]],how="inner", left_on=['src_row_id', 'file_name'], right_on=['src_row_id', 'file_name'])
+            df_og = pd.merge(org_df,vals[["datetime", "likelihood", "{}".format(delta_column, "dns"), "src_row_id", "file_name"]],how="inner", left_on=['src_row_id', 'file_name'], right_on=['src_row_id', 'file_name'])
+            df_og.drop(columns=["file_name"],inplace=True)
+
+            # MOVE COLUMNS
+            mve_cols = ["source_file", "src_row_id"]
+            df_og = df_og[[col for col in df_og.columns if col not in mve_cols] + mve_cols]
+
             logger.debug("Total records found {} for file {}".format(len(df_og),x))
         else:
             logger.info("Source File {} does not exist...skipping".format(x))
@@ -373,7 +379,7 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
 
             if delta[0] != curr_id or (i == len(X) - 1):
                 if (len(curr_deltas) >= int(max_lines) and len(curr_deltas) >= int(min_records)):
-                    
+
                     num_clusters = round(cluster_factor * len(curr_deltas)) + 1
 
                     # RUN THE CLUSTERING
@@ -404,7 +410,7 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
     # OVERWRITE DELETE GOLD FILES
     if overwrite == True:
         if os.path.exists(gold_loc) and overwrite == True:
-            shutil.rmtree(gold_loc)        
+            shutil.rmtree(gold_loc)
 
     # BUILD GOLD FILE
     if len(gold_loc) > 0 and len(beacons) > 0:
@@ -565,7 +571,7 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
                 for index, row in dbscan_cluster_data.iterrows():
                     if row['cluster'] > -1:
                         if row["likelihood"] > minimum_likelihood:
-                            
+
                             logger.warning("Possible Beacon: \n\
                             Session # {} \n\
                             Src:    {} \n\
@@ -576,24 +582,24 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
                             beacons[beacon_num]["connection_id"] = connection_id
                             beacons[beacon_num]["likelihood"] = row["likelihood"] * 100
                             beacon_num +=1
-                            
+
                             #beacons.append(f["connection_id"].iloc[0])
 
                             # POSSIBLE BEACON FOUND NO NEED TO CONTINUE
                             # SET A DOUBLE BREAK VARIABLE
                             dbl_break = True
 
-            # BREAK THE ORIGINAL FOR LOOP FOR THE CONNECTION                
+            # BREAK THE ORIGINAL FOR LOOP FOR THE CONNECTION
             if dbl_break == True:
                 dbl_break = False
                 break
-    
+
     logger.debug("Beacon connection_id/s {}".format(beacons))
 
     # OVERWRITE DELETE GOLD FILES
     if overwrite == True:
         if os.path.exists(gold_loc) and overwrite == True:
-            shutil.rmtree(gold_loc)        
+            shutil.rmtree(gold_loc)
 
     # BUILD GOLD FILE
     if len(gold_loc) > 0 and len(beacons) > 0:
@@ -699,8 +705,15 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         df["variance"] = df.groupby(["connection_id"])["{}".format(delta_column)].transform("var")
         df["variance_per"] = (df["variance"] / df["avg_time"]) * 100
 
+    # SLOW (>= 8 hrs) OR FAST BEACON (< 8 hrs)
+    if avg_delta >= 480:
+        logger.info("Slow Beacon Search")
+        df_conns = df.query("avg_time >= {} and variance_per <= {}".format(avg_delta,variance_per))
+    else:
+        logger.info("Fast Beacon Search")
+        df_conns = df.query("avg_time <= {} and variance_per <= {}".format(avg_delta,variance_per))
+
     # GET CONNECTION COUNTS
-    df_conns = df.query("avg_time <= {} and variance_per <= {}".format(avg_delta,variance_per))
     df_conns = df_conns[df_conns["{}".format(delta_column)].notna()]
     df_conns["conn_cnt"] = df_conns.groupby("connection_id")["connection_id"].transform("count")
     df_conns = df_conns.query("conn_cnt >= {}".format(conn_cnt))
@@ -710,7 +723,6 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
 
     # SET DELTA COLUMN
     ds["delta"] = ds["{}".format(delta_column)]
-    ds.head(10)
 
     #####################################################################################
     ##
@@ -865,7 +877,7 @@ def get_dns(ip):
         # IF RETURNED SAME IP THEN SET TO UNKNOWN
         if val == ip:
             val = "UNKNOWN"
-        
+
         ret_val = val
     except BaseException as err:
         ret_val = "UNKNOWN" 
@@ -1524,6 +1536,7 @@ def cli_results(beacon_df, mad_df, conn_cnt = 0, avg_delta = 0):
 
     # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
     df2 = df2.loc[df2["connection_count"] >= conn_cnt]
+    df2.drop_duplicates(inplace=True)
 
     # DISPLAY RESULTS
     if len(df2) != 0:

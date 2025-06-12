@@ -21,6 +21,7 @@ import yaml
 from pathlib import Path
 import uuid
 import pandas as pd
+import argparse
 #from django.utils import timezone
 
 #####################################################################################
@@ -137,26 +138,51 @@ def _delete_folders(folder,logger = ""):
 
 def _get_epoch_dte(dte):
 
-    if dte != "" or len(dte) > 0:
-        fix_dte = datetime.strptime(dte, "%Y-%m-%dT%H:%M")
-        dte_utc = fix_dte.replace(tzinfo=timezone.utc)
-        dte = int(dte_utc.timestamp())
-    else:
-        dte = ""
-    
+    if not dte:
+        return ""
+
+    try:
+        # CONVERT DTE & TIME (HH:MM:SS)
+        fix_dte = datetime.strptime(dte, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        try:
+            # CONVERT DTE & TIME (HH:MM)
+            fix_dte = datetime.strptime(dte, "%Y-%m-%d %H:%M")
+        except ValueError:
+            try:
+                # CONVERT JUST DTE
+                fix_dte = datetime.strptime(dte, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError(f"Invalid date format: '{dte}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM'.")
+
+    dte_utc = fix_dte.replace(tzinfo=timezone.utc)
+    dte = int(dte_utc.timestamp())
+
     return dte
 
-def _get_ds_types(type_id):
+def _get_ds_types(type):
 
-    if type_id == 1:
+    # if type_id == 1:
+    #     ds_name = "Zeek Connection Logs"
+    #     ds_type = "Zeek Connection Logs"
+    # elif type_id == 2:
+    #     ds_name = "HTTP File"
+    #     ds_type = "HTTP File"
+    # elif type_id == 3:
+    #     ds_name = "Delta File"
+    #     ds_type = "Delta File"
+    # else:
+    #     ds_name = ""
+    #     ds_type = ""
+    if type.lower() in ["c", "conn"]:
         ds_name = "Zeek Connection Logs"
         ds_type = "Zeek Connection Logs"
-    elif type_id == 2:
+    elif type.lower() in ["h", "http"]:
         ds_name = "HTTP File"
         ds_type = "HTTP File"
-    elif type_id == 3:
-        ds_name = "Delta File"
-        ds_type = "Delta File"
+    elif type.lower() in ["d", "delta"]:
+        ds_name = "HTTP File"
+        ds_type = "HTTP File"
     else:
         ds_name = ""
         ds_type = ""
@@ -192,7 +218,7 @@ def pipeline(conf):
 
     #####################################################################################
     ##  LOGGING
-    #####################################################################################  
+    #####################################################################################
 
     build_path = Path(config["general"]["raw_loc"])
     lst_path = list(build_path.parts[0:2])
@@ -336,11 +362,9 @@ def pipeline(conf):
         group_id = group_id,
         logger = logger)
 
-
     #####################################################################################
     ##  BRONZE LAYER
     #####################################################################################
-
 
     # IF DATA FALLS IN THE DATE RANGE CONTINUE
     if len(df_bronze) > 0:
@@ -350,7 +374,7 @@ def pipeline(conf):
         #####################################################################################
 
         # CREATE FILTERED & DELTA FILES
-        if config["general"]["filter"] == True: 
+        if config["general"]["filter"] == True:
 
             # CHECK FOR CONFIG FILTER CHANGE
             conf_changed = _config_changed(config["general"]["filter_loc"],config)
@@ -411,6 +435,7 @@ def pipeline(conf):
                 src_loc = os.path.join(config["general"]["filter_loc"],"data"),
                 delta_file_loc = config["general"]["silver_loc"],
                 delta_file_type = config["general"]["file_type"],
+                ds_type =  conf["general"]["ds_type"],
                 overwrite =  config["general"]["overwrite"]
                 )
 
@@ -431,12 +456,14 @@ def pipeline(conf):
             src_loc = config["general"]["bronze_loc"],
             delta_file_loc = config["general"]["silver_loc"],
             delta_file_type = config["general"]["file_type"],
+            ds_type =  conf["general"]["ds_type"],
             overwrite =  config["general"]["overwrite"]
             )
 
             new_delta = False
         else:
             # ONLY BUILD A NEW DELTA FILE IF THERE IS A NEW FILTER FILE OR NEW BRONZE FILE
+            # BACKHERE
             if is_new_filter == True or is_new_bronze == True:
                 # BUILD DELTA FILE
                 ingest.build_delta_files(
@@ -444,6 +471,7 @@ def pipeline(conf):
                 delta_file_loc = config["general"]["silver_loc"],
                 delta_file_type = config["general"]["file_type"],
                 #overwrite =  config["general"]["overwrite"]
+                ds_type =  conf["general"]["ds_type"],
                 overwrite = False
                 )
 
@@ -818,63 +846,73 @@ def pipeline(conf):
         logger.warning("No data falls within the date range of {} & {}".format(config["general"]["start_dte"], config["general"]["end_dte"]))
         beacon_results["cnt"] = 0
         beacon_results["log_file"] = log_file_name
+        max_delta_file = None
 
     #####################################################################################
-    ##  Final Results
+    ##  FINAL RESULTS
     #####################################################################################
+
+    logger.info("Gathering final results!")
 
     # GET FILTERS
     df_filter = pd.read_parquet("filter/filtered_ips.parquet")
 
-    # GET DELTA FOR TOP TALKER
-    df_delta = pd.read_parquet(max_delta_file)
-
     # CREATE CLI RESULTS DIRECTORY
     Path("cli_results/{}".format(group_id)).mkdir(parents=True, exist_ok=True)
 
-    # WRITE FILES IF YOU HAVE RESULTS
-    if df_rt.empty == False:
-        # DNS FLIP & FILTER
-        if conf["general"]["ds_type"] == "HTTP File":
-            df_rt = df_rt.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
-
-        df_rt.to_csv("cli_results/{}/cluster_results.csv".format(group_id))
+    # GET RESULTS
+    if max_delta_file is None:
+        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
+        print("NONE")
+        print("X" * 121)
     else:
-        # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
-        df_rt = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "source_port", "dt", "cluster_score", "dns", "delta_mins"])
+        # GET DELTA FOR TOP TALKER
+        df_delta = pd.read_parquet(max_delta_file)
 
-    if df_mad.empty == False:
-        # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
-        df_mad = df_mad[df_mad["conn_count"] >= final_conn_count]
+        # WRITE FILES IF YOU HAVE RESULTS
+        if df_rt.empty == False:
+            # DNS FLIP & FILTER
+            if conf["general"]["ds_type"] == "HTTP File":
+                df_rt = df_rt.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
 
-        # DNS FLIP & FILTER
-        if conf["general"]["ds_type"] == "HTTP File":
-            df_mad = df_mad.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
+            df_rt.to_csv("cli_results/{}/cluster_results.csv".format(group_id))
+        else:
+            # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
+            df_rt = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "source_port", "dt", "cluster_score", "dns", "delta_mins"])
 
-        df_mad.to_csv("cli_results/{}/mad_results.csv".format(group_id))
-    else:
-        # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
-        df_mad = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "mad_score", "connection_count", "dns"])
+        if df_mad.empty == False:
+            # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
+            df_mad = df_mad[df_mad["conn_count"] >= final_conn_count]
 
-    if df_delta.empty == False:
-        df_delta = df_delta[~df_delta["dip"].isin(df_filter["ip"])]
+            # DNS FLIP & FILTER
+            if conf["general"]["ds_type"] == "HTTP File":
+                df_mad = df_mad.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
 
-        if conf["general"]["ds_type"] == "HTTP File":
-            df_delta = df_delta.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
+            df_mad.to_csv("cli_results/{}/mad_results.csv".format(group_id))
+        else:
+            # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
+            df_mad = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "mad_score", "connection_count", "dns"])
 
-        # BUILD TOP TALKER
-        df_delta = df_delta.groupby(["sip","dip","port", "dns"]).agg(
-            count=("sip", "size"),
-            min_time=("datetime","min"),
-            max_time=("datetime","max")
-        ).rename(columns={"sip": "source_ip", "dip": "dest_ip"}).sort_values("count",ascending=False).reset_index()
+        if df_delta.empty == False:
+            df_delta = df_delta[~df_delta["dip"].isin(df_filter["ip"])]
 
-        df_delta.to_csv("cli_results/{}/top_talker_results.csv".format(group_id))
+            if conf["general"]["ds_type"] == "HTTP File":
+                df_delta = df_delta.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
 
-    # FINAL AGGREGATE RESULTS
-    df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count)
-    df_agg.to_csv("cli_results/{}/aggregate_results.csv".format(group_id))
+            # BUILD TOP TALKER
+            df_delta = df_delta.groupby(["sip","dip","port", "dns"]).agg(
+                count=("sip", "size"),
+                min_time=("datetime","min"),
+                max_time=("datetime","max")
+            ).rename(columns={"sip": "source_ip", "dip": "dest_ip"}).sort_values("count",ascending=False).reset_index()
 
+            df_delta.to_csv("cli_results/{}/top_talker_results.csv".format(group_id))
+
+        # FINAL AGGREGATE RESULTS
+        df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count)
+        df_agg.to_csv("cli_results/{}/aggregate_results.csv".format(group_id))
+
+    # RUN CONFIG
     with open("cli_results/{}/run_conf.yaml".format(group_id), "w") as file:
         yaml.dump(config, file, sort_keys=False)
 
@@ -1165,6 +1203,50 @@ def cli_view_results(df_results):
                 for line in file:
                     print(line,end='')
 
+def build_conf(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,start_dte,end_dte,zip,verbose):
+
+    # LOAD BEACON HUNTRESS CONFIG
+    conf = _load_config(os.path.join("config", "config.conf"))
+    db_conf = _load_config(os.path.join("config", "dashboard.conf"))
+
+    ds_name, ds_type = _get_ds_types(log_type)
+
+    conf["general"]["raw_loc"] = log_dir
+    conf["general"]["ds_name"] = ds_name
+    conf["general"]["ds_type"] = ds_type
+    conf["general"]["start_dte"] = str(start_dte)
+    conf["general"]["end_dte"] = str(end_dte)
+
+    if algo.lower() in ["q", "quick"]:
+        conf["general"]["cluster_type"] = "dbscan_var"
+        conf["beacon"]["dbscan_var"]["avg_delta"] = delta
+        conf["beacon"]["dbscan_var"]["conn_cnt"] = call_back
+        conf["beacon"]["dbscan_var"]["span_avg"] = span_avg
+        conf["beacon"]["dbscan_var"]["variance_per"] = variance
+        conf["beacon"]["dbscan_var"]["minimum_likelihood"] = percent
+    elif algo.lower() in ["c", "cluster"]:
+        conf["general"]["cluster_type"] = "dbscan"
+        conf["beacon"]["dbscan"]["minimum_delta"] = delta
+        conf["beacon"]["dbscan"]["spans"] = spans
+        conf["beacon"]["dbscan"]["minimum_points_in_cluster"] = call_back
+        conf["beacon"]["dbscan"]["minimum_likelihood"] = percent
+
+    return conf
+
+def parse_arg_date(dte):
+
+    if dte == "":
+        return ""
+
+    for fmt_dte in ('%Y-%m-%d %H:%M', '%Y-%m-%d'):
+        try:
+            return datetime.strptime(dte,fmt_dte)
+        except ValueError:
+            continue
+
+    raise argparse.ArgumentTypeError(
+        "Invalid date/time: '{}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank.".format(dte)
+    )
 
 #####################################################################################
 ##  MAIN
@@ -1181,46 +1263,75 @@ def main(conf):
 
 if __name__ == "__main__":
 
-    while True:
-        option = cli()
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description="Beacon Huntress Help Menu")
 
-        #CLI RUN
-        if option == 1:
-            conf = cli_run()
-            main(conf)
-        # FILTER
-        elif option == 2:
-            while True:
-                fil_opt = int(input("Enter filter option [1 = Add, 2 = Delete, 3 = View]: "))
-                if fil_opt in [1, 2]:
-                    while True:
-                        fil_type = int(input("Enter filter type [1 = DNS, 2 = IPs]: "))
-                        if fil_type in [1,2]:
-                            if fil_type == 1:
-                                is_dns = True
-                            else:
-                                is_dns = False
-                            break
-                    break
-                elif fil_opt == 3:
-                    is_dns = False
-                    break
-                elif fil_opt == 0:
-                    break
-                else:
-                    print("Invaild filter option! Must be [1 = Add, 2 = Delete, 3 = View]!")
+    parser.add_argument("-a", "--algo",type=str,
+        help = "Beacon Algorithm \nQuick Cluster Search = q or quick\nCluster Search = c or cluster\nAgglomerative Clustering = a or agg\n"
+    )
+    parser.add_argument("-lt", "--log_type",type=str,
+        help = "Log File Type \nZeek Connection = conn or c\nHttp = http or h\nDelta File = delta or d"
+    ),
+    parser.add_argument("-ld", "--log_dir",type=str,
+        help = "Log Directory \nExample: --log_dir '/tutorial'"
+    ),
+    parser.add_argument("-d", "--delta",type=int,
+        help = "Average Delta time in minutes \nExample: 25"
+    ),
+    parser.add_argument("-c", "--call_back", type=int,
+        help = "Number of Beacon Callbacks\nExample: --call_back 10"
+    ),
+    parser.add_argument("-p", "--percent", type=int,
+        help = "Likelihood Percentage Filter (Clustering Only)\nExample: --percent 85"
+    ),
 
-            if fil_opt != 0:
-                cli_filter(fil_opt,is_dns)
-        elif option == 3:
-            df_results = cli_results_files("cli_results")
-            print(df_results.sort_values(by=["Run_Date"]).to_string(index=False))
+    parser.add_argument("-s", "--spans", type=list, default=[[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]],
+        help = "CLUSTER SEARCH ONLY(c/cluster) Spans you wish to search, in list format. Minimum number of delta records to search using your delta column.\nEnter spans as a list \nExample: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]"
+    ),
+    parser.add_argument("-sa", "--span_avg", type=int, default=15,
+        help = "QUICK CLUSTER SEARCH ONLY(q/quick) The percentage to increase and decrease from the connections total delta span.\nExample: 15\n15 will decrease 15%% from the minimum and maximum delta span.\nDefault: 15"
+    ),
+    parser.add_argument("-vp", "--variance_per", type=int, default=15,
+        help = "QUICK CLUSTER SEARCH ONLY(q/quick) The amount of allowed variance or jitter in percentage.\nDefault: 15"
+    ),
 
-            cli_view_results(df_results)
+    parser.add_argument("-sd", "--start_dte",
+        type=parse_arg_date,
+        default='',
+        help="Start Date for filters\nDate or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM', or blank('').\nDefault: ''"
+    ),
+    parser.add_argument("-ed", "--end_dte",
+        type=parse_arg_date,
+        default='',
+        help="End Date for filters\nDate or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM', or blank('').\nDefault: ''"
+    ),
 
-            #break
-        elif option == 4:
-            print("\nGoodbye!\n")
-            break
-        else:
-            print("\nERROR: Invaild option!!\n")
+    parser.add_argument("-z", "--zip", type=bool, default=False,
+        help="log/s zip files (True/False)\nDefault: False"
+    ),
+    parser.add_argument("-v", "--verbose", type=bool, default=False,
+        help="Enable Verbose logging (True/False)\nDefault: False"
+    )
+
+    args = parser.parse_args()
+    if not vars(args):
+        parser.print_help()
+        parser.exit(1)
+        sys.exit(1)
+
+    conf = build_conf(
+        algo = args.algo,
+        log_type = args.log_type,
+        log_dir = args.log_dir,
+        delta = args.delta,
+        call_back = args.call_back,
+        percent = args.percent,
+        spans = args.spans,
+        span_avg = args.span_avg,
+        variance = args.variance_per,
+        start_dte = args.start_dte,
+        end_dte = args.end_dte,
+        zip = args.zip,
+        verbose = args.verbose
+        )
+
+    main(conf)
