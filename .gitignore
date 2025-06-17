@@ -9,6 +9,8 @@ package-lock.json
 package.json
 */package-lock.json
 
+beacon_huntress/bh_web/datasets/tutorial/*.log
+
 ip_maven/src/app.log
 ip_maven/src/ipmaven_www/data/*
 ip_maven/_data
