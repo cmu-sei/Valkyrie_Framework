@@ -1,6 +1,12 @@
+import yaml
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from routers import searches, application, datasources
+
+
+def load_conf(path="../bh_web/beacon_huntress/src/config/config.conf"):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
 
 app = FastAPI(title="Beacon Huntress API")
 
@@ -28,6 +34,11 @@ def custom_openapi():
     return schema
 
 app.openapi = custom_openapi
+
+@app.on_event("startup")
+def load_config_once():
+    app.state.config = load_conf()
+    print(app.state.config)
 
 app.include_router(application.router)
 app.include_router(datasources.router)
