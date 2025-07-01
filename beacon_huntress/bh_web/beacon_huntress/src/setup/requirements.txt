@@ -26,3 +26,4 @@ daphne==4.1.2
 whitenoise==6.8.2
 eland==8.7.0
 elasticsearch==8.17.1
+fastapi
