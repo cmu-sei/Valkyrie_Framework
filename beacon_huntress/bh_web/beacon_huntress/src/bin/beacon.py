@@ -63,7 +63,7 @@ def _find_beacons(y_hc, deltas, max_variance, min_records):
                     curr_list = clusters[cluster]
                     failed = False
                     if len(curr_list) >= min_records:
-                        median = np.median(curr_list)                      
+                        median = np.median(curr_list)
                         for number in curr_list:
                             if curr not in beacons:
                                 if not abs(number - median) / median <= max_variance:
@@ -1525,14 +1525,16 @@ def cli_results(beacon_df, mad_df, conn_cnt = 0, avg_delta = 0):
         avg_delta=("delta_mins", "mean")).reset_index()
 
     # MERGE
-    df_merge = pd.concat([beacon_df[["source_ip", "dest_ip", "port", "dns", "connection_count"]], mad_df[["source_ip", "dest_ip", "port", "dns", "connection_count"]]], ignore_index=True).drop_duplicates()
+    df_merge = pd.concat([beacon_df[["source_ip", "dest_ip", "port", "dns", "connection_count"]], mad_df[["source_ip", "dest_ip", "port", "dns", "connection_count"]]], ignore_index=True).drop_duplicates()    
     df2 = df_merge.merge(beacon_df[["source_ip", "dest_ip", "port", "dns", "cluster_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left").\
-            merge(mad_df[["source_ip", "dest_ip", "port", "mad_score"]], left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"], how="left")
+            merge(mad_df[["source_ip", "dest_ip", "port", "dns", "mad_score"]], left_on=["source_ip", "dest_ip", "port", "dns_x"], right_on=["source_ip", "dest_ip", "port", "dns"], how="left").\
+            rename(columns={"dns": "dns_z"})
 
     # BUILD DISPLAY DATAFRAME
     df2["dns"] = df2["dns_x"].combine_first(df2["dns_y"])
-    df2.drop(columns=["dns_x", "dns_y"], inplace=True)
+    df2.drop(columns=["dns_x", "dns_y", "dns_z"], inplace=True)
     df2.fillna(0, inplace=True)
+
 
     # FILTER BASED UPON THE USERS FINAL CONNECTION COUNT
     df2 = df2.loc[df2["connection_count"] >= conn_cnt]
