@@ -680,7 +680,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         df = pd.read_parquet(delta_file).query("delta_ms >= 120000")
         df["avg_time"] = df.groupby(["connection_id"])["{}".format(delta_column)].transform("mean")
         df["avg_low"] = df["avg_time"] - (df["avg_time"] * (span_avg / 100))
-        df["avg_high"] = df["avg_time"] + (df["avg_time"] * (span_avg / 100))     
+        df["avg_high"] = df["avg_time"] + (df["avg_time"] * (span_avg / 100))
 
         df["variance"] = df.groupby(["connection_id"])["{}".format(delta_column)].transform("var")
 
@@ -691,10 +691,18 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         df = pd.read_parquet(delta_file)
         df["avg_time"] = df.groupby(["connection_id"])["{}".format(delta_column)].transform("mean")
         df["avg_low"] = df["avg_time"] - (df["avg_time"] * (span_avg / 100))
-        df["avg_high"] = df["avg_time"] + (df["avg_time"] * (span_avg / 100))  
+        df["avg_high"] = df["avg_time"] + (df["avg_time"] * (span_avg / 100))
 
         df["variance"] = df.groupby(["connection_id"])["{}".format(delta_column)].transform("var")
         df["variance_per"] = (df["variance"] / df["avg_time"]) * 100
+
+    # SLOW (>= 8 hrs) OR FAST BEACON (< 8 hrs)
+    if avg_delta >= 480:
+        logger.info("Slow Beacon Search")
+        df_conns = df.query("avg_time >= {} and variance_per <= {}".format(avg_delta,variance_per))
+    else:
+        logger.info("Fast Beacon Search")
+        df_conns = df.query("avg_time <= {} and variance_per <= {}".format(avg_delta,variance_per))
 
     # GET CONNECTION COUNTS
     df_conns = df.query("avg_time <= {} and variance_per <= {}".format(avg_delta,variance_per))
@@ -710,7 +718,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
     ds.head(10)
 
     #####################################################################################
-    ##  
+    ##
     #####################################################################################
 
     # GET UNIQUE CONNECTION_IDS {SIP, DIP, PORT, PROTO}

@@ -52,7 +52,7 @@ CONF = os.path.join(_get_parent_dir(os.path.abspath(__file__),2),"config","dashb
 def get_conn_str(conf = CONF):
     """
     Get the configuration DB connection string
-    
+
     Parameters:
     ----------
     conf:
@@ -76,7 +76,7 @@ def get_conn_str(conf = CONF):
 
     #####################################################################################
     ##  
-    #####################################################################################    
+    #####################################################################################
 
     my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]))
 
@@ -133,16 +133,19 @@ def get_data(type,value = None):
     Returns:
     ========
     Pandas Dataframe: PANDAS DATAFRAME
-    """    
-    
+    """
+
     #####################################################################################
-    ##  
-    #####################################################################################    
+    ##
+    #####################################################################################
 
     my_conn = get_conn_str(CONF)
 
     if type == "group":
-        df = pd.read_sql("select * from vw_beacon_group order by dt desc;", my_conn)
+        if value == None:
+            df = pd.read_sql("select * from vw_beacon_group order by dt desc;", my_conn)
+        else:
+            df = pd.read_sql("select * from vw_beacon_group where uid = '{}' order by dt desc;".format(value), my_conn)
     elif type == "filtered_beacons":
         df = pd.read_sql("select * from vw_filtered_beacons", my_conn)
     elif type == "data_sources":
@@ -153,16 +156,16 @@ def get_data(type,value = None):
     elif type == "data_type":
         df = pd.read_sql("select * from ds_type order by ds_type", my_conn)
     elif type == "ds_by_name":
-        df = pd.read_sql("select * from vw_datasources where ds_name = '{}' order by create_date".format(value), my_conn)        
+        df = pd.read_sql("select * from vw_datasources where ds_name = '{}' order by create_date".format(value), my_conn)
     elif type == "ds_files":
-        df = pd.read_sql("select * from vw_dsfiles where rowid = {}".format(value), my_conn)    
+        df = pd.read_sql("select * from vw_dsfiles where rowid = {}".format(value), my_conn)
     elif type == "ds_files_name":
-        df = pd.read_sql("select * from vw_dsfiles where ds_name = '{}' and active = True".format(value), my_conn)        
+        df = pd.read_sql("select * from vw_dsfiles where ds_name = '{}' and active = True".format(value), my_conn)
     elif type == "active_ds":
         if value == None:
             df = pd.read_sql("select * from vw_datasources where active = True order by create_date", my_conn)
         else:
-            df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)               
+            df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)
     else:
         if value == None:
             df = pd.read_sql("select * from vw_beacon", my_conn)
@@ -271,7 +274,7 @@ def del_data(type,value=None):
         if int(value) != 1:
             # CHECK FOR DS FILES
             df = get_data("ds_files",value)
-            
+
             # IF NO LOCAL FILES DELETE THE DATSOURCE
             if df.empty:
                 query = "delete from datasource where rowid = {}".format(value)
@@ -374,16 +377,16 @@ def add_beacon_group(uid):
 
     Returns:
     ========
-    Beacon Huntress group id table primary key: INT   
+    Beacon Huntress group id table primary key: INT
     """
-    
+
     try:
         group_id = []
         my_conn = get_conn_str(CONF)
 
         query = "insert into beacon_group (uid) values('{}')".format(uid)
         my_conn.connect()
-        
+
         my_conn.execute(query)
 
         query = "select group_id from beacon_group where uid = '{}'".format(uid)
@@ -648,4 +651,4 @@ def ds_activate(ds_name):
     query = "update datasource set active = True where ds_name = '{}'".format(ds_name)
 
     my_conn = get_conn_str(CONF)
-    my_conn.connect().execute(query)    
+    my_conn.connect().execute(query)

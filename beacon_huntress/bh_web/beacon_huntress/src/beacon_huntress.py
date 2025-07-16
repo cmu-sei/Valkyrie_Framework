@@ -106,7 +106,7 @@ def _config_changed(filter_path,config):
         json_data = {}
         json_data["Port_Filter"] = port_filter
         json_data["Source_IP_Filter"] = src_filter
-        json_data["Destination_IP_Filter"] = dest_filter    
+        json_data["Destination_IP_Filter"] = dest_filter
         json_data["Source_DNS_Filter"] = s_dns_filter
         json_data["Destination_DNS_Filter"] = d_dns_filter
         json_data["Match_Filter"] = match_filter
@@ -116,15 +116,15 @@ def _config_changed(filter_path,config):
         else:
             config_change = True
 
-    return config_change    
+    return config_change
 
 def _delete_folders(folder,logger = ""):
-    
+
     try:
         if isinstance(folder, list):
             for x in folder:
                 if os.path.exists(str(x)):
-                    shutil.rmtree(str(x))            
+                    shutil.rmtree(str(x))
         else:
             if os.path.exists(folder):
                 shutil.rmtree(folder)
@@ -139,8 +139,25 @@ def _get_epoch_dte(dte):
         dte = int(dte_utc.timestamp())
     else:
         dte = ""
-    
+
     return dte
+
+def _get_ds_types(type):
+
+    if type.lower() in ["c", "conn"]:
+        ds_name = "Zeek Connection Logs"
+        ds_type = "Zeek Connection Logs"
+    elif type.lower() in ["h", "http"]:
+        ds_name = "HTTP File"
+        ds_type = "HTTP File"
+    elif type.lower() in ["d", "delta"]:
+        ds_name = "HTTP File"
+        ds_type = "HTTP File"
+    else:
+        ds_name = ""
+        ds_type = ""
+
+    return ds_name, ds_type
 
 #####################################################################################
 ##  FUNCTIONS
@@ -153,17 +170,22 @@ def pipeline(conf):
 
     #####################################################################################
     ##  LOAD CONFIGURATIONS
-    #####################################################################################  
+    #####################################################################################
 
-    # LOAD GENERAL CONFIG
-    config = _load_config(conf)
+    if conf == "bh_run.yaml":
+        # WEB UI RUN CONFIG
+        # LOAD GENERAL CONFIG
+        config = _load_config(conf)
+    else:
+        # API/CLI SPECIFIC
+        config = conf
 
     # DASHBOARD CONFIG
     dash_config = _load_config(config["dashboard"]["conf"])
-        
+
     #####################################################################################
     ##  LOGGING
-    #####################################################################################  
+    #####################################################################################
 
     build_path = Path(config["general"]["raw_loc"])
     lst_path = list(build_path.parts[0:2])
@@ -191,16 +213,17 @@ def pipeline(conf):
 
     # ADD LOG HANDLERS
     logger.addHandler(log_fh)
-    logger.propagate = False    
+    logger.propagate = False
 
     #####################################################################################
     ##  LOAD CONSTANTS & LOCAL VARIABLES
-    #####################################################################################  
+    #####################################################################################
 
     # RUN BEACON GROUP UUID
     UID = uuid.uuid4()
 
-    beacon_results["beacon_group"] = UID
+    # CHANGE TO STR FOR API
+    beacon_results["beacon_group"] = str(UID)
 
     print("Beacon Huntress starting the hunt!")
     logger.info("Beacon Huntress starting the hunt!")
@@ -274,11 +297,11 @@ def pipeline(conf):
 
     #####################################################################################
     ##  CONVERT START & END DATE TO UTC THEN EPOCH
-    #####################################################################################  
+    #####################################################################################
 
     start_dte = _get_epoch_dte(config["general"]["start_dte"])
     end_dte = _get_epoch_dte(config["general"]["end_dte"])
-    
+
     logger.info("Start Date >= {} and End Date <= {}".format(config["general"]["start_dte"], config["general"]["end_dte"]))
 
     #####################################################################################
@@ -294,12 +317,12 @@ def pipeline(conf):
 
         # BUILD BRONZE LAYER
         is_new_bronze = ingest.build_bronze_layer(
-            src_loc=config["general"]["raw_loc"], 
+            src_loc=config["general"]["raw_loc"],
             bronze_loc=config["general"]["bronze_loc"],
             start_dte = start_dte,
             end_dte = end_dte,
             dns_file=config["bronze"]["dns_file"],
-            overwrite = config["general"]["overwrite"], 
+            overwrite = config["general"]["overwrite"],
             verbose = config["general"]["verbose"]
             )
 
@@ -404,10 +427,10 @@ def pipeline(conf):
                     # match_filter = config["filter"]["dns_match"]["filter"],
                     # match_exclude = config["filter"]["dns_match"]["exclude"],
                     file_type = config["general"]["file_type"],
-                    overwrite = True, 
+                    overwrite = True,
                     verbose = config["general"]["verbose"]
-                    )            
-            else:        
+                    )
+            else:
                 is_new_filter = ingest.build_filter_files(
                     src_loc = config["general"]["bronze_loc"],
                     dest_file = config["general"]["filter_loc"],
@@ -511,8 +534,8 @@ def pipeline(conf):
         #####################################################################################
 
         # AGGLOMERATIVE CLUSTERING
-        if config["general"]["cluster_type"] == "agg":        
-            if config["dashboard"]["dashboard"] == True: 
+        if config["general"]["cluster_type"] == "agg":
+            if config["dashboard"]["dashboard"] == True:
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
                     ret_gold_file = beacon.agglomerative_clustering(
                         delta_file = max_delta_file,
@@ -545,9 +568,9 @@ def pipeline(conf):
                     gold_loc = config["general"]["gold_loc"],
                     overwrite = config["general"]["overwrite"],
                     verbose = config["general"]["verbose"]
-                )            
+                )
 
-        # DBSCAN 
+        # DBSCAN
         if config["general"]["cluster_type"] == "dbscan":
             if config["dashboard"]["dashboard"] == True: 
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
@@ -579,7 +602,7 @@ def pipeline(conf):
                     gold_loc = config["general"]["gold_loc"],
                     overwrite = config["general"]["overwrite"],
                     verbose = config["general"]["verbose"]
-                )            
+                )
 
         # DBSCAN BY VARIANCE
         if config["general"]["cluster_type"] == "dbscan_var":
@@ -724,7 +747,7 @@ def pipeline(conf):
             if max_gold_file != None and os.path.exists(max_gold_file):
                 df_rt = pd.read_parquet(max_gold_file)
                 rt_cnt = len(df_rt)
-            
+
                 beacon_results["cnt"] = rt_cnt
                 beacon_results["log_file"] = log_file_name
             else:
@@ -744,7 +767,7 @@ def pipeline(conf):
     bz_f = os.path.join(lst_path[0], lst_path[1], "bronze")
     sv_f = os.path.join(lst_path[0], lst_path[1], "silver")
     gd_f = os.path.join(lst_path[0], lst_path[1], "gold")
-    
+
     _delete_folders([os.path.join(lst_path[0], lst_path[1], "bronze"),
                      os.path.join(lst_path[0], lst_path[1], "silver"),
                      os.path.join(lst_path[0], lst_path[1], "gold")
@@ -753,9 +776,54 @@ def pipeline(conf):
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
     print("Beacon Huntress completed {}".format(endtime))
-    
+
     # RETURN RESULTS DICTIONARY
     return beacon_results
+
+def build_conf(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,line_amounts,start_dte,end_dte,zip,verbose):
+
+    # LOAD BEACON HUNTRESS CONFIG
+    conf = _load_config(os.path.join("beacon_huntress", "src", "config", "config.conf"))
+    db_conf = _load_config(os.path.join("beacon_huntress", "src", "config", "dashboard.conf"))
+
+    ds_name, ds_type = _get_ds_types(log_type)
+
+    conf["general"]["raw_loc"] = log_dir
+    conf["general"]["ds_name"] = ds_name
+    conf["general"]["ds_type"] = ds_type
+    conf["general"]["start_dte"] = str(start_dte)
+    conf["general"]["end_dte"] = str(end_dte)
+    conf["general"]["verbose"] = verbose
+
+    if zip:
+        conf["zip"]["unzip"] = zip
+        conf["zip"]["zip_loc"] = log_dir
+
+    if algo.lower() in ["q", "quick"]:
+        conf["general"]["cluster_type"] = "dbscan_var"
+        conf["beacon"]["dbscan_var"]["avg_delta"] = delta
+        conf["beacon"]["dbscan_var"]["conn_cnt"] = call_back
+        conf["beacon"]["dbscan_var"]["span_avg"] = span_avg
+        conf["beacon"]["dbscan_var"]["variance_per"] = variance
+        conf["beacon"]["dbscan_var"]["minimum_likelihood"] = percent
+    elif algo.lower() in ["c", "cluster"]:
+        conf["general"]["cluster_type"] = "dbscan"
+        conf["beacon"]["dbscan"]["minimum_delta"] = delta
+        conf["beacon"]["dbscan"]["spans"] = spans
+        conf["beacon"]["dbscan"]["minimum_points_in_cluster"] = call_back
+        conf["beacon"]["dbscan"]["minimum_likelihood"] = percent
+    # FOR HIERARCHICAL WILL NEED TO MAKE SOME CONVERSIONS
+    # CONVERT DELTA TO MILLISECONDS
+    # CONVERT PERCENTAGE FROM NUMERIC TO DECIMAL
+    elif algo.lower() in ["h", "hierarchical"]:
+        conf["general"]["cluster_type"] = "agg"
+        conf["beacon"]["agg"]["max_variance"] = (variance /100)
+        conf["beacon"]["agg"]["min_records"] = call_back
+        conf["beacon"]["agg"]["cluster_factor"] = (percent /100)
+        conf["beacon"]["agg"]["line_amounts"] = line_amounts
+        conf["beacon"]["agg"]["min_delta_time"] = (delta * 60 * 1000)
+
+    return conf
 
 #####################################################################################
 ##  MAIN
@@ -763,7 +831,8 @@ def pipeline(conf):
 
 def main(conf):
 
-    config = _load_config(conf)
+    # WILL NEED TO FIX FROM THE WEB END
+    #config = _load_config(conf)
 
     ret_val = pipeline(conf = conf)
 

@@ -16,10 +16,10 @@ from beacon_huntress.src.bin.beacon import get_dns
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 def _get_context(df):
-    df_html = df.to_html(escape=False, 
-                         index=False, 
+    df_html = df.to_html(escape=False,
+                         index=False,
                          #justify="left",
-                         classes="table table-striped", 
+                         classes="table table-striped",
                          table_id="grid"
                          )
 
@@ -47,7 +47,7 @@ def _get_file_size(path):
     return file_size
 
 def index(request):
-    
+
     return render(request, os.path.join(BASE_DIR, "index.html"))
 
 def log_view(request):
@@ -66,13 +66,13 @@ def log_detail_view(request):
         with open(full_path, "r") as f:
             log_txt = f.read()
 
-        context = {"file_content": log_txt}    
+        context = {"file_content": log_txt}
     else:
         context = {"file_content": "{} does not exist!".format(fname)}
 
-    
+
     return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "LogDetails.html"), context)
-    
+
 def walk_dir(walk_dir,page):
 
     df = pd.DataFrame()
@@ -145,7 +145,7 @@ def result_grid_group(request):
             axis =1
         )
         df["log_file"] = df["log_file"].apply(lambda x: '<a href="/LogDetails.html?filename={}"><i class="fas fa-file"></i></a>'.format(x))
-        
+
         # ADD NEW COLUMN FOR NEW VALUES
         df["new"] = False
         if pd.to_datetime(df.iloc[0]["dt"],utc=True) > pd.Timestamp.utcnow() - pd.Timedelta(minutes=30):
@@ -183,6 +183,7 @@ def result_detail_view(request):
     df = df[["ID", "source_ip", "dest_ip", "port", "score", "dns", "conn_cnt", "min_dt", "max_dt", "Filter"]].rename(columns={"source_ip": "Source IP", "port": "Port", "dest_ip": "Destination IP", "score": "Score", "dns": "DNS", "conn_cnt": "Connection Count", "min_dt": "First Occurrence", "max_dt": "Last Occurrence"})
 
     context = _get_context(df)
+
     return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "ResultDetails.html"), context)
 
 def doc_view(request):
@@ -201,7 +202,7 @@ def del_log(request):
 
     # RELOAD LOG VIEW
     return HttpResponseRedirect("/Logs.html")
-    
+
 def del_result(request):
     uid = request.GET.get("uid")
 
@@ -210,7 +211,7 @@ def del_result(request):
 
     # DELETE LOGS
     del_logfile(request,BASE_DIR)
-    
+
     # RELOAD RESULTS VIEW
     return HttpResponseRedirect("/Results.html")
 

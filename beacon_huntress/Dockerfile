@@ -14,3 +14,4 @@ WORKDIR /app
 # GATHER PYTHON MODULES
 RUN pip install --upgrade pip
 RUN pip install -r /app/beacon_huntress/src/setup/requirements.txt
+
