@@ -207,23 +207,6 @@ def hierarchical_search(hierarchical_search_params: HierarchicalSearchParams):
         - Beacon Huntress run results log file\n
     """
 
-{
-  "log_type": "conn",
-  "log_dir": "/tutorial",
-  "delta": 20,
-  "line_amounts": [
-    1
-  ],
-  "call_back": 10,
-  "variance": 15,
-  "percent": 85,
-  "start_dte": "",
-  "end_dte": "",
-  "zip": false,
-  "verbose": false
-}
-
-
     # Run Beacon Huntress
     conf = bh.build_conf(
         algo = "hierarchical",

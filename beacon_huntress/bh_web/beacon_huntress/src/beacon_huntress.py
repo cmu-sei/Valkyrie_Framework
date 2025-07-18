@@ -831,9 +831,6 @@ def build_conf(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,vari
 
 def main(conf):
 
-    # WILL NEED TO FIX FROM THE WEB END
-    #config = _load_config(conf)
-
     ret_val = pipeline(conf = conf)
 
     return ret_val
