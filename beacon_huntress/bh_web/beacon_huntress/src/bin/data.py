@@ -133,11 +133,11 @@ def get_data(type,value = None):
     Returns:
     ========
     Pandas Dataframe: PANDAS DATAFRAME
-    """    
-    
+    """
+
     #####################################################################################
-    ##  
-    #####################################################################################    
+    ##
+    #####################################################################################
 
     my_conn = get_conn_str(CONF)
 
@@ -153,16 +153,16 @@ def get_data(type,value = None):
     elif type == "data_type":
         df = pd.read_sql("select * from ds_type order by ds_type", my_conn)
     elif type == "ds_by_name":
-        df = pd.read_sql("select * from vw_datasources where ds_name = '{}' order by create_date".format(value), my_conn)        
+        df = pd.read_sql("select * from vw_datasources where ds_name = '{}' order by create_date".format(value), my_conn)
     elif type == "ds_files":
-        df = pd.read_sql("select * from vw_dsfiles where rowid = {}".format(value), my_conn)    
+        df = pd.read_sql("select * from vw_dsfiles where rowid = {}".format(value), my_conn)
     elif type == "ds_files_name":
-        df = pd.read_sql("select * from vw_dsfiles where ds_name = '{}' and active = True".format(value), my_conn)        
+        df = pd.read_sql("select * from vw_dsfiles where ds_name = '{}' and active = True".format(value), my_conn)
     elif type == "active_ds":
         if value == None:
             df = pd.read_sql("select * from vw_datasources where active = True order by create_date", my_conn)
         else:
-            df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)               
+            df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)
     else:
         if value == None:
             df = pd.read_sql("select * from vw_beacon", my_conn)

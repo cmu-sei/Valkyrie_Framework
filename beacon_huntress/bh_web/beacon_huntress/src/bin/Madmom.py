@@ -2,6 +2,22 @@ import pandas as pd
 import numpy as np
 import logging
 
+
+#####################################################################################
+##  Logging
+#####################################################################################
+
+logger = logging.getLogger("logger")
+
+if not logger.handlers:
+    formatter = logging.Formatter('%(asctime)s %(levelname)s:\t%(message)s',datefmt="%m-%d %H:%M:%S")
+    logger.setLevel(logging.INFO)
+    log_basic = logging.StreamHandler()
+    log_basic.setLevel(logging.INFO)
+    log_basic.setFormatter(formatter)
+    logger.addHandler(log_basic)
+
+
 class Analyzer:
 
     def __init__(self, parquet_file, thresholds):
@@ -10,25 +26,25 @@ class Analyzer:
         self.thresholds = thresholds
 
     def analyze(self):
-        logging.info("load data")
+        logger.debug("MadMom: load data")
         data = pd.read_parquet(self.parquet_file)
 
-        logging.info("aggregating")
+        logger.debug("MadMom: aggregating")
         aggregated_data = self.aggregate_connections(data)
 
-        logging.info("calculating metrics and scores")
+        logger.debug("MadMom: calculating metrics and scores")
         self.results = self.calculate_scores(aggregated_data)
 
     def aggregate_connections(self, data):
         data.rename(columns={
-            'ts': 'datetime', 
-            'source_ip' : 'sip', 
+            'ts': 'datetime',
+            'source_ip' : 'sip',
             'destination_ip' : 'dip',
             'destination_bytes' : 'dest_bytes',
         }, inplace=True)
 
         logging.debug("Columns available:", data.columns.tolist())
-        data['datetime'] = pd.to_datetime(data['datetime'], unit='ms')
+
         prevalence = data.groupby('dip')['sip'].nunique().reset_index(name='unique_sips')
         data = data.merge(prevalence, on='dip')
 
@@ -37,7 +53,7 @@ class Analyzer:
 
         grouped = data.groupby(['sip', 'dip', "dns"]).agg({
         'datetime': list,
-        'dest_bytes': list, 
+        'dest_bytes': list,
         'port' : 'first',
         'proto' : 'first'
         }).reset_index()
@@ -51,6 +67,7 @@ class Analyzer:
         return grouped
 
     def calculate_scores(self, grouped):
+
         # DATA SCORES
         grouped['dsMadm'] = grouped['dest_bytes'].apply(
         lambda x: np.median(np.abs(np.array(x) - np.median(x))) if x else 0)
@@ -61,8 +78,9 @@ class Analyzer:
 
         grouped['dsSkew'] = grouped['dsSkew'].apply(lambda x: min(max(x, -10), 10))
         grouped['dsSmallness'] = grouped['dest_bytes'].apply(
-                lambda x: max(0.0, min(1.0, 1.0 - (min(max(set(x), key=x.count), 65535) / 65535.0))) if x else 0.0) 
+                lambda x: max(0.0, min(1.0, 1.0 - (min(max(set(x), key=x.count), 65535) / 65535.0))) if x else 0.0)
 
+        logger.info("MadMom: 4. calculating metrics and scores")
         grouped['dsMadmScore'] = grouped['dsMadm'].apply(lambda x: max(0.0, 1.0 - min(x / 32.0, 1.0)))
         grouped['dsSkewScore'] = grouped['dsSkew'].apply(lambda x: max(0.0, 1.0 - abs(x)))
 
@@ -92,6 +110,7 @@ class Analyzer:
 
         # FINAL COMPOSITE SCORE
         grouped['final_score'] = grouped['tsScore'] *0.9 + grouped['dsScore'] *0.1
+        logger.info(grouped)
         return grouped
 
     def display_results(self):
@@ -110,7 +129,7 @@ class Analyzer:
 
 def run_mad(max_delta_file,likelihood):
 
-        # RUN MADMOM ALGO 
+        # RUN MADMOM ALGO
         # MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
 
         # DEFAULT THRESHOLDS
@@ -120,8 +139,13 @@ def run_mad(max_delta_file,likelihood):
         'strobe': 80000,
         }
 
+        logger.debug("MadMom: 1. Analyzer")
         analyzer = Analyzer(max_delta_file, thresholds)
+
+        logger.debug("2. Analyze")
         analyzer.analyze()
+
+        logging.debug("3. Results")
         df_mad = analyzer.get_results(likelihood)
 
         # CONVERT SCORES TO PERCENTAGES

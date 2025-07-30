@@ -557,7 +557,7 @@ def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
                     "resp_bytes","conn_state","local_orig","local_resp",
                     "missed_bytes","history","orig_pkts","orig_ip_bytes",
                     "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
-                    "source_file","src_row_id"
+                    "source_file","src_row_id", "dns"
                     ])
             col_check = False
         else:
@@ -576,7 +576,7 @@ def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
                 "resp_bytes","conn_state","local_orig","local_resp",
                 "missed_bytes","history","orig_pkts","orig_ip_bytes",
                 "resp_pkts","resp_ip_bytes","community_id","orig_mac_oui",
-                "source_file","src_row_id"
+                "source_file","src_row_id","dns"
                 ])
 
     return df
@@ -596,45 +596,74 @@ def check_ds_columns(df, dstype = "delta"):
         else:
             df.rename(columns={"destination_bytes":"resp_ip_bytes"}, inplace = True)
 
+        df_new = df.copy()
+
         # ADD MISSING ZEEK COLUMNS
-        df["uid"] = df.index + 1
-        df["id.orig_p"] = 0
-        df["proto"] = ""
-        df["service"] = ""
-        df["duration"] = 0
-        df["orig_bytes"] = 0
-        df["resp_bytes"] = 0
-        df["conn_state"] = ""
-        df["local_orig"] = False
-        df["local_resp"] = False
-        df["missed_bytes"] = 0
-        df["history"] = ""
-        df["orig_pkts"] = 0
-        df["resp_pkts"] = 0
-        df["community_id"] = ""
-        df["orig_mac_oui"] = ""
+        df_new["uid"] = df.index + 1
+        df_new["id.orig_p"] = 0
+        df_new["proto"] = ""
+        df_new["service"] = ""
+        df_new["duration"] = 0
+        df_new["orig_bytes"] = 0
+        df_new["resp_bytes"] = 0
+        df_new["conn_state"] = ""
+        df_new["local_orig"] = False
+        df_new["local_resp"] = False
+        df_new["missed_bytes"] = 0
+        df_new["history"] = ""
+        df_new["orig_pkts"] = 0
+        df_new["resp_pkts"] = 0
+        df_new["community_id"] = ""
+        df_new["orig_mac_oui"] = ""
+        # NEW FOR CLI
+        df_new["dns"] = ""
 
     elif dstype.lower() == "http":
         # FIGURE OUT WHAT TO DO WITH HOST
 
         # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
-        df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id"]]
+        # CODE FOR DIFFERENT HTTP FILE TYPES
+        if all(col in df.columns for col in ["_timestamp", "domain", "source_ip", "destination_ip"]):
 
-        # ADD MISSING ZEEK COLUMNS
-        df["proto"] = ""
-        df["service"] = ""
-        df["duration"] = 0
-        df["orig_ip_bytes"] = 0
-        df["resp_ip_bytes"] = 0
-        df["conn_state"] = ""
-        df["local_orig"] = False
-        df["local_resp"] = False
-        df["missed_bytes"] = 0
-        df["history"] = ""
-        df["orig_pkts"] = 0
-        df["resp_pkts"] = 0
-        df["community_id"] = ""
-        df["orig_mac_oui"] = ""
+            # BACKHERE COMMENTED
+            # df = df[["_timestamp", "domain", "source_ip", "destination_ip","source_file","src_row_id"]].\
+            #     rename(columns={"domain": "id.resp_h", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "dns"})
+
+            df.rename(columns={"domain": "id.resp_h", "_timestamp": "ts", "source_ip": "id.orig_h", "destination_ip": "dns"}, inplace=True)
+
+            # CREATE ZEEK HTTP MISSING COLUMNS
+            df["proto"] = ""
+            df["orig_bytes"] = 0
+            df["resp_bytes"] = 0
+            df["orig_ip_bytes"] = 0
+            df["resp_ip_bytes"] = 0
+            #df["id.resp_p"] = 80
+            # USE THE ORIGINAL PORT
+            df["id.resp_p"] = df["destination_port"]
+
+        # ZEEK
+        else:
+
+            df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p","source_file","src_row_id","host"]].\
+                rename(columns={"id.resp_h": "dns", "host": "id.resp_h"})
+
+        df_new = df.copy()
+
+        # # ADD MISSING ZEEK COLUMNS
+        # df_new["proto"] = ""
+        # df_new["service"] = ""
+        # df_new["duration"] = 0
+        # df_new["orig_ip_bytes"] = 0
+        # df_new["resp_ip_bytes"] = 0
+        # df_new["conn_state"] = ""
+        # df_new["local_orig"] = False
+        # df_new["local_resp"] = False
+        # df_new["missed_bytes"] = 0
+        # df_new["history"] = ""
+        # df_new["orig_pkts"] = 0
+        # df_new["resp_pkts"] = 0
+        # df_new["community_id"] = ""
+        # df_new["orig_mac_oui"] = ""
 
     elif dstype.lower() == "dns":
         # FIGURE OUT WHAT TO DO WITH TTLs & Query
@@ -642,23 +671,26 @@ def check_ds_columns(df, dstype = "delta"):
 
         # OVERWRITE DATASOURCE PULL ONLY NEEDED FIELDS
         df = df[["ts","uid","id.orig_h","id.orig_p","id.resp_h","id.resp_p", "proto","source_file","src_row_id"]]
+        df_new = df.copy()
 
         # ADD MISSING ZEEK COLUMNS
-        df["service"] = ""
-        df["duration"] = 0
-        df["orig_ip_bytes"] = 0
-        df["resp_ip_bytes"] = 0
-        df["conn_state"] = ""
-        df["local_orig"] = False
-        df["local_resp"] = False
-        df["missed_bytes"] = 0
-        df["history"] = ""
-        df["orig_pkts"] = 0
-        df["resp_pkts"] = 0
-        df["community_id"] = ""
-        df["orig_mac_oui"] = ""
+        df_new["service"] = ""
+        df_new["duration"] = 0
+        df_new["orig_ip_bytes"] = 0
+        df_new["resp_ip_bytes"] = 0
+        df_new["conn_state"] = ""
+        df_new["local_orig"] = False
+        df_new["local_resp"] = False
+        df_new["missed_bytes"] = 0
+        df_new["history"] = ""
+        df_new["orig_pkts"] = 0
+        df_new["resp_pkts"] = 0
+        df_new["community_id"] = ""
+        df_new["orig_mac_oui"] = ""
+        # NEW FOR CLI
+        df_new["dns"] = ""
     else:
         print("ERROR: Data Source Type {} does not exist!".format(str(dstype)))
         sys.exit(1)
 
-    return df
+    return df_new

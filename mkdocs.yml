@@ -92,6 +92,7 @@ nav:
   - Beacon Huntress:
       - Main: beacon_huntress/index.md
       - Algorithms: beacon_huntress/algorithms.md
+      - API: beacon_huntress/api.md
       - Dashboard: beacon_huntress/dashboard.md
       - Data Sources: beacon_huntress/datasource.md
       - Default Filtered Hosts: beacon_huntress/defaultfilteredhosts.md

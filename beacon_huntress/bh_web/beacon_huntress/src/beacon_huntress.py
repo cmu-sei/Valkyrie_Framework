@@ -87,16 +87,16 @@ def _config_changed(filter_path,config):
         if port_filter == None:
             port_filter = []
 
-        if src_filter == None: 
+        if src_filter == None:
             src_filter = []
 
-        if dest_filter == None: 
+        if dest_filter == None:
             dest_filter = []
 
-        if s_dns_filter == None: 
+        if s_dns_filter == None:
             s_dns_filter = []
 
-        if d_dns_filter == None: 
+        if d_dns_filter == None:
             d_dns_filter = []
 
         if match_filter == None:
@@ -105,7 +105,7 @@ def _config_changed(filter_path,config):
         json_data = {}
         json_data["Port_Filter"] = port_filter
         json_data["Source_IP_Filter"] = src_filter
-        json_data["Destination_IP_Filter"] = dest_filter    
+        json_data["Destination_IP_Filter"] = dest_filter
         json_data["Source_DNS_Filter"] = s_dns_filter
         json_data["Destination_DNS_Filter"] = d_dns_filter
         json_data["Match_Filter"] = match_filter
@@ -115,15 +115,14 @@ def _config_changed(filter_path,config):
         else:
             config_change = True
 
-    return config_change    
+    return config_change
 
 def _delete_folders(folder,logger = ""):
-    
     try:
         if isinstance(folder, list):
             for x in folder:
                 if os.path.exists(str(x)):
-                    shutil.rmtree(str(x))            
+                    shutil.rmtree(str(x))
         else:
             if os.path.exists(folder):
                 shutil.rmtree(folder)
@@ -132,14 +131,44 @@ def _delete_folders(folder,logger = ""):
 
 def _get_epoch_dte(dte):
 
-    if dte != "" or len(dte) > 0:
-        fix_dte = datetime.strptime(dte, "%Y-%m-%dT%H:%M")
-        dte_utc = fix_dte.replace(tzinfo=timezone.utc)
-        dte = int(dte_utc.timestamp())
-    else:
-        dte = ""
-    
+    if not dte:
+        return ""
+
+    try:
+        # CONVERT DTE & TIME (HH:MM:SS)
+        fix_dte = datetime.strptime(dte, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        try:
+            # CONVERT DTE & TIME (HH:MM)
+            fix_dte = datetime.strptime(dte, "%Y-%m-%d %H:%M")
+        except ValueError:
+            try:
+                # CONVERT JUST DTE
+                fix_dte = datetime.strptime(dte, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError(f"Invalid date format: '{dte}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM'.")
+
+    dte_utc = fix_dte.replace(tzinfo=timezone.utc)
+    dte = int(dte_utc.timestamp())
     return dte
+
+def _get_ds_types(type):
+
+    if type.lower() in ["c", "conn"]:
+        ds_name = "Zeek Connection Logs"
+        ds_type = "Zeek Connection Logs"
+    elif type.lower() in ["h", "http"]:
+        ds_name = "HTTP File"
+        ds_type = "HTTP File"
+    elif type.lower() in ["d", "delta"]:
+        ds_name = "HTTP File"
+        ds_type = "HTTP File"
+    else:
+        ds_name = ""
+        ds_type = ""
+
+    return ds_name, ds_type
+
 
 #####################################################################################
 ##  FUNCTIONS
@@ -154,8 +183,13 @@ def pipeline(conf):
     ##  LOAD CONFIGURATIONS
     #####################################################################################  
 
-    # LOAD GENERAL CONFIG
-    config = _load_config(conf)
+    if conf == "bh_run.yaml":
+        # WEB UI RUN CONFIG
+        # LOAD GENERAL CONFIG
+        config = _load_config(conf)
+    else:
+        # API/CLI SPECIFIC
+        config = conf
 
     # DASHBOARD CONFIG
     dash_config = _load_config(config["dashboard"]["conf"])
@@ -199,7 +233,7 @@ def pipeline(conf):
     # RUN BEACON GROUP UUID
     UID = uuid.uuid4()
 
-    beacon_results["beacon_group"] = UID
+    beacon_results["beacon_group"] = str(UID)
 
     print("Beacon Huntress starting the hunt!")
     logger.info("Beacon Huntress starting the hunt!")
@@ -291,7 +325,7 @@ def pipeline(conf):
         beacon_group = UID,
         group_id = group_id,
         logger = logger)
-    
+
     # BACKHERE
     logger.info(df_bronze)
 
@@ -303,7 +337,7 @@ def pipeline(conf):
         #####################################################################################
 
         # CREATE FILTERED & DELTA FILES
-        if config["general"]["filter"] == True: 
+        if config["general"]["filter"] == True:
 
             # CHECK FOR CONFIG FILTER CHANGE
             conf_changed = _config_changed(config["general"]["filter_loc"],config)
@@ -435,9 +469,6 @@ def pipeline(conf):
         ##  BEACONS
         #####################################################################################
 
-        # Default Score for MAD
-        likelihood = ".70"
-
         # AGGLOMERATIVE CLUSTERING
         if config["general"]["cluster_type"] == "agg":
             if config["dashboard"]["dashboard"] == True:
@@ -489,7 +520,7 @@ def pipeline(conf):
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
 
                     # Default Score for MAD
-                    likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
+                    #likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
 
                     ret_gold_file = beacon.dbscan_clustering(
                         delta_file = max_delta_file,
@@ -511,7 +542,7 @@ def pipeline(conf):
             else:
 
                 # Default Score for MAD
-                likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
+                #likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
 
                 ret_gold_file = beacon.dbscan_clustering(
                     delta_file = max_delta_file,
@@ -531,7 +562,7 @@ def pipeline(conf):
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
 
                     # Default Score for MAD
-                    likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+                    #likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
 
                     ret_gold_file = beacon.dbscan_by_variance(
                         delta_file = max_delta_file,
@@ -554,7 +585,7 @@ def pipeline(conf):
             else:
 
                 # Default Score for MAD
-                likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+                #likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
 
                 ret_gold_file = beacon.dbscan_by_variance(
                     delta_file = max_delta_file,
@@ -649,6 +680,9 @@ def pipeline(conf):
         ###########################################################
         # RUN MADMOM ALGO
         # MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
+        # Default Score for MAD
+        likelihood = .50
+
         logger.info("Running MadMom algorithm")
 
         df_mad = mm.run_mad(max_delta_file, likelihood)
@@ -656,18 +690,20 @@ def pipeline(conf):
         if df_mad.empty:
             logger.warning("No results for Median Absolute Deviation!")
         else:
-            logger.info("Loading MAD results")
-            dash.load_dashboard(
-                dataframe = df_mad,
-                dash_config = config["dashboard"]["conf"],
-                dash_type = "mad",
-                is_new = True,
-                group_id = group_id,
-                overwrite = config["general"]["overwrite"],
-                verbose = config["general"]["verbose"]
-            )
+            pass
+            # COMMENT HERE
+            # dash.load_dashboard(
+            #     dataframe = df_mad,
+            #     dash_config = config["dashboard"]["conf"],
+            #     dash_type = "mad",
+            #     is_new = True,
+            #     group_id = group_id,
+            #     overwrite = config["general"]["overwrite"],
+            #     verbose = config["general"]["verbose"]
+            # )
 
-        df_mad.to_csv("/delta/rita.csv")
+        #df_mad.to_csv("/delta/rita.csv")
+        logger.info("Completed MadMom algorithm")
 
         ###########################################################
         ##  MAD ALGO
@@ -690,6 +726,7 @@ def pipeline(conf):
             else:
                 max_gold_file = dash_config["db"]["file_loc"]
 
+            logger.info("Made to Dashboard for MADMOM")
             dash.load_dashboard(
                 file_loc = max_gold_file,
                 dash_config = config["dashboard"]["conf"],
@@ -728,18 +765,18 @@ def pipeline(conf):
     sv_f = os.path.join(lst_path[0], lst_path[1], "silver")
     gd_f = os.path.join(lst_path[0], lst_path[1], "gold")
 
-    # # DELETE FILES
-    # if config["general"]["ds_type"] == "Delta File":
-    #     _delete_folders(["/delta/{}".format(UID),
-    #                      os.path.join(lst_path[0], lst_path[1], "bronze"),
-    #                      os.path.join(lst_path[0], lst_path[1], "silver"),
-    #                      os.path.join(lst_path[0], lst_path[1], "gold")],
-    #                      logger)
-    # else:
-    #     _delete_folders([os.path.join(lst_path[0], lst_path[1], "bronze"),
-    #                  os.path.join(lst_path[0], lst_path[1], "silver"),
-    #                  os.path.join(lst_path[0], lst_path[1], "gold")
-    #                  ],logger)
+    # DELETE FILES
+    if config["general"]["ds_type"] == "Delta File":
+        _delete_folders(["/delta/{}".format(UID),
+                         os.path.join(lst_path[0], lst_path[1], "bronze"),
+                         os.path.join(lst_path[0], lst_path[1], "silver"),
+                         os.path.join(lst_path[0], lst_path[1], "gold")],
+                         logger)
+    else:
+        _delete_folders([os.path.join(lst_path[0], lst_path[1], "bronze"),
+                     os.path.join(lst_path[0], lst_path[1], "silver"),
+                     os.path.join(lst_path[0], lst_path[1], "gold")
+                     ],logger)
 
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
@@ -748,13 +785,75 @@ def pipeline(conf):
     # RETURN RESULTS DICTIONARY
     return beacon_results
 
+def build_conf(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,line_amounts,start_dte,end_dte,zip,verbose):
+
+    # LOAD BEACON HUNTRESS CONFIG
+    conf = _load_config(os.path.join("beacon_huntress", "src", "config", "config.conf"))
+    db_conf = _load_config(os.path.join("beacon_huntress", "src", "config", "dashboard.conf"))
+
+    ds_name, ds_type = _get_ds_types(log_type)
+
+    conf["general"]["raw_loc"] = log_dir
+    conf["general"]["ds_name"] = ds_name
+    conf["general"]["ds_type"] = ds_type
+    conf["general"]["start_dte"] = str(start_dte)
+    conf["general"]["end_dte"] = str(end_dte)
+    conf["general"]["verbose"] = verbose
+
+    if zip:
+        conf["zip"]["unzip"] = zip
+        conf["zip"]["zip_loc"] = log_dir
+
+    if algo.lower() in ["q", "quick"]:
+        conf["general"]["cluster_type"] = "dbscan_var"
+        conf["beacon"]["dbscan_var"]["avg_delta"] = delta
+        conf["beacon"]["dbscan_var"]["conn_cnt"] = call_back
+        conf["beacon"]["dbscan_var"]["span_avg"] = span_avg
+        conf["beacon"]["dbscan_var"]["variance_per"] = variance
+        conf["beacon"]["dbscan_var"]["minimum_likelihood"] = percent
+    elif algo.lower() in ["c", "cluster"]:
+        conf["general"]["cluster_type"] = "dbscan"
+        conf["beacon"]["dbscan"]["minimum_delta"] = delta
+        conf["beacon"]["dbscan"]["spans"] = spans
+        conf["beacon"]["dbscan"]["minimum_points_in_cluster"] = call_back
+        conf["beacon"]["dbscan"]["minimum_likelihood"] = percent
+    # FOR HIERARCHICAL WILL NEED TO MAKE SOME CONVERSIONS
+    # CONVERT DELTA TO MILLISECONDS
+    # CONVERT PERCENTAGE FROM NUMERIC TO DECIMAL
+    elif algo.lower() in ["h", "hierarchical"]:
+        conf["general"]["cluster_type"] = "agg"
+        conf["beacon"]["agg"]["max_variance"] = (variance /100)
+        conf["beacon"]["agg"]["min_records"] = call_back
+        conf["beacon"]["agg"]["cluster_factor"] = (percent /100)
+        conf["beacon"]["agg"]["line_amounts"] = line_amounts
+        conf["beacon"]["agg"]["min_delta_time"] = (delta * 60 * 1000)
+
+    return conf
+
+
+def parse_arg_date(dte):
+
+    if dte == "":
+        return ""
+
+    for fmt_dte in ('%Y-%m-%d %H:%M', '%Y-%m-%d'):
+        try:
+            return datetime.strptime(dte,fmt_dte)
+        except ValueError:
+            continue
+
+    raise argparse.ArgumentTypeError(
+        "Invalid date/time: '{}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank.".format(dte)
+    )
+
+
 #####################################################################################
 ##  MAIN
 #####################################################################################
 
 def main(conf):
 
-    config = _load_config(conf)
+    #config = _load_config(conf)
 
     ret_val = pipeline(conf = conf)
 
