@@ -140,7 +140,7 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
 
     ext = str(Path(src_file).suffix).replace(".","").lower()
 
-    if ext == "json" or ext == "gz":
+    if ext in ["json", "gz", "log"]:
         df = pd.read_json(src_file, lines=True)
     elif ext == "parquet":
         df = pd.read_parquet(src_file)
