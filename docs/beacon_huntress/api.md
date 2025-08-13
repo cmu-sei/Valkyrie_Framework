@@ -259,6 +259,31 @@ Get or Delete Beacon Results
     print(val)
     ```
 
+### Top Talkers
+
+Get Beacon Huntress Top Talkers
+
+- **Input Values**
+    - **beacon_group:** Beacon Group UUID
+- **Return Values**
+    - **ID:** Unique row identifier
+    - **Source IP:** Source IP address
+    - **Destination IP:** Destination IP address
+    - **Port:** Destination Port ID
+    - **Total Number of Connections:** Total number of connect for each unique Source IP, Destination IP and Port.
+- **Example Code**
+    ```python
+    import requests
+
+    url = "http://127.0.0.1:8000/api/results/top_talkers"
+
+    # Get Top Talkers
+    response = requests.get(url, params={"beacon_group": "9a42fb53-ceac-44b2-afae-d89d133679e2"})
+
+    val = response.json()
+    print(val)
+    ```
+
 ### Log File
 
 Get or Delete Log File
