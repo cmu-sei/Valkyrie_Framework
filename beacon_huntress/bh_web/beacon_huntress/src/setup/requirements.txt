@@ -24,11 +24,7 @@ channels_redis==4.2.1
 daphne==4.1.2
 whitenoise==6.8.2
 eland==8.7.0
-<<<<<<< HEAD
 elasticsearch==8.17.1
-=======
-elasticsearch==8.15.0
->>>>>>> bh_v2.3
 fastapi==0.115.13
 python-multipart==0.0.20
 pydantic==2.11.7
