@@ -18,7 +18,11 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import time
 import shutil
-from progress.bar import Bar
+
+from beacon_huntress.src.bin.ingest import build_bronze_layer
+from beacon_huntress.src.bin.data import get_data
+from beacon_huntress.src.bin.dash import load_dashboard
+from beacon_huntress.src.bin.datasource import load_delta_data, get_file_data, load_ds_data
 
 #####################################################################################
 ##  LOGGING
@@ -342,11 +346,8 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
     logger.info("{} deltas found and sorted in {} seconds".format(len(X), time.time() - start))
     logger.info("Looking for beacons using a maximum variance of {}% across at least {} deltas.".format(max_variance,min_records))
 
-    bar = Bar("\t* Searching for Beacons (Agglomerative Clustering)", max=len(line_amounts), suffix="%(index)d/%(max)d connections | %(elapsed_td)s")
-
     for max_lines in line_amounts:
         start = time.time()
-        bar.next()
         curr_deltas = []
         calculations = 0
         beacons = []
@@ -408,8 +409,6 @@ def agglomerative_clustering(delta_file, delta_column, max_variance, min_records
         )
     else:
         gold_file = None
-
-    bar.finish()
     
     endtime = datetime.now() - starttime
     logger.info("Found {} possible beacons".format(len(beacons)))
@@ -498,7 +497,6 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
     tot_cnt = int((0.10 * len(connection_ids)))
 
     logger.info("Searching for beacons")
-    bar = Bar("\t* Searching for Beacons (DBScan)", max=len(connection_ids), suffix="%(index)d/%(max)d connections | %(elapsed_td)s")
 
     if len(connection_ids) == 0:
         logger.warning("No connections found for DBScan")
@@ -507,7 +505,6 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
     for connection_id in connection_ids:
         connection_count += 1
         log_cnt += 1
-        bar.next()
 
         # GET ALL OF THE RECORDS FROM THE DELTA FILE WITH THIS CONNECTION_ID
         f = ds.query("connection_id == {}".format(connection_id))
@@ -516,9 +513,9 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
         if log_cnt == tot_cnt or connection_count == 1:
             log_cnt = 0
             logger.info("Evaluation #{} of {} ID: {}: {} original records...".format(connection_count, len(connection_ids), connection_id, len(f)))
-        
+
         # NEED AT LEAST N DELTA RECORDS TO MAKE IT INTERESTING
-        if len(f) <= minimum_points_in_cluster:  
+        if len(f) <= minimum_points_in_cluster:
             continue
 
         #X = f.iloc[:, [1, 7]]  # X = [connection_id, delta time in milliseconds]
@@ -531,7 +528,7 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
             span_count += 1
             #logger.info("Evaluating {} span {}...".format(connection_id, span))
             eps = ((span[1] - span[0]) / 2) * .10 # this is our eps calculation: take a span's difference, and halve it, then multiply by .10
-        
+
             t_time = time.time()
             # RUN DBSCAN CLUSTERING MODEL...
             dbscan = DBSCAN(eps=eps, min_samples=minimum_points_in_cluster).fit(X)
@@ -540,15 +537,15 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
 
             (unique, counts) = np.unique(dbscan.labels_, return_counts=True)
             frequencies = np.asarray((unique, counts)).T
-            
+
             dbscan_cluster_data = pd.DataFrame()
             dbscan_cluster_data['delta'] = f["delta"]
             dbscan_cluster_data['cluster'] = dbscan.labels_
             dbscan_cluster_data = dbscan_cluster_data.groupby(["cluster"])["cluster"].count().reset_index(name="count")
-            
+
             # CALCULATE LIKELIHOOD OF EACH CLUSTER
             likelihood = _percentage(dbscan_cluster_data['count'], dbscan_cluster_data['count'].sum())
-            
+
             # // TODO: NEED TO EXPAND UPON LIKELIHOOD CALCULATION
             # COULD WE ADD THIS NUMBER OF ITEMS IN THE CLUSTER VS THE LARGEST CLUSTER OVERALL?
             # VS THE LARGEST CLUSTER IN THIS TIME SPAN?
@@ -570,7 +567,7 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
                             beacons[beacon_num] = {}
                             beacons[beacon_num]["connection_id"] = connection_id
                             beacons[beacon_num]["likelihood"] = row["likelihood"] * 100
-                            beacon_num +=1                            
+                            beacon_num +=1
                             
                             #beacons.append(f["connection_id"].iloc[0])
 
@@ -601,8 +598,6 @@ def dbscan_clustering(delta_file, delta_column, minimum_delta, spans = [], minim
         )
     else:
         gold_file = None
-
-    bar.finish()
 
     endtime = datetime.now() - starttime
     logger.info("{} clusters processed".format(connection_count))
@@ -637,7 +632,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         Default = 15\n
     variance_per: INTEGER
         Total variance perctage for filtering. Greater than equal (>=).
-        Default = 4\n           
+        Default = 4\n
     gold_loc: STRING
         Results file location. Blank string ("") for no result file.\n
         Default = ""\n
@@ -738,9 +733,9 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
     log_cnt = 0
     tot_cnt = int((0.10 * len(connection_ids)))
 
-    logger.info("Searching for beacons")
+    eps_cnt = 0
 
-    bar = Bar("\t* Searching for Beacons (DBScan by Variance)", max=len(connection_ids), suffix="%(index)d/%(max)d connections | %(elapsed_td)s")
+    logger.info("Searching for beacons")
 
     if len(connection_ids) == 0:
         logger.warning("No connections found for {}% variance".format(variance_per))
@@ -749,17 +744,16 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
     for connection_id in connection_ids:
         connection_count += 1
         log_cnt += 1
-        bar.next()
 
         # GET ALL OF THE RECORDS FROM THE DELTA FILE WITH THIS CONNECTION_ID
         f = ds.query("connection_id == {}".format(connection_id))
         f = f.dropna()
-        
+
         # PRINT MESSAGE AFTER 10% PERCENT COMPLETE
         if log_cnt == tot_cnt or connection_count == 1:
             log_cnt = 0
             logger.info("Evaluation #{} of {} ID: {}: {} original records...".format(connection_count, len(connection_ids), connection_id, len(f)))
-        
+
         X = f[["connection_id","delta"]]
 
         # DBSCAN CLUSTER OVER AVG SPAN CONFIGURED
@@ -768,15 +762,18 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
 
         # EPS IS AVG_HIGH - AVG_LOW / 2 * 10%
         eps = ((avg_high - avg_low ) / 2) * .10 # this is our eps calculation: take a span's difference, and halve it, then multiply by .10
-        
+
         # MIN PTS IN CLUSTER IS LENGTH SET * LIKELIHOOD
-        min_pts = len(X) * (minimum_likelihood / 100)
+        # CONVERT TO INT FOR SCI-LEARN UPGRADE
+        min_pts = int(len(X) * (minimum_likelihood / 100))
 
         logger.debug("EPS = {}".format(eps))
         logger.debug("Min Pts = {}".format(min_pts))
-        
+
         # EPS = 0 DO NOT SCAN
         if eps == 0.0:
+            logger.warning("EPS is 0.0! Not scanning!")
+            eps_cnt += 1
             continue
 
         t_time = time.time()
@@ -787,7 +784,7 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
 
         (unique, counts) = np.unique(dbscan.labels_, return_counts=True)
         frequencies = np.asarray((unique, counts)).T
-        
+
         dbscan_cluster_data = pd.DataFrame()
         dbscan_cluster_data['delta'] = f["delta"]
         dbscan_cluster_data['cluster'] = dbscan.labels_
@@ -801,6 +798,11 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
         logger.debug("Likelihood = {}".format(likelihood))
         logger.debug("Cluster Data = {}".format(dbscan_cluster_data))
         logger.debug("Cluster PTS = {}".format(dbscan.labels_))
+
+        print("Connection = {}".format(connection_id))
+        print("Likelihood = {}".format(likelihood))
+        print("Cluster Data = {}".format(dbscan_cluster_data))
+        print("Cluster PTS = {}".format(dbscan.labels_))        
 
         if dbscan_cluster_data["likelihood"].any() > (minimum_likelihood / 100):
 
@@ -835,13 +837,15 @@ def dbscan_by_variance(delta_file, delta_column, avg_delta, conn_cnt = 5, span_a
     else:
         gold_file = None
 
-    bar.finish() 
-
     endtime = datetime.now() - starttime
     logger.info("{} clusters processed".format(connection_count))
     logger.info("Found {} possible beacons".format(len(beacons)))
+
+    if connection_count == eps_cnt:
+        logger.warning("All connection groups have 0.0 Epsilon! Try using a Detailed Cluster Search!")
+
     logger.info("Total runtime {}".format(endtime))
-    
+
     return gold_file
 
 def get_dns(ip):
@@ -977,8 +981,6 @@ def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent
     final_df = pd.DataFrame()
 
     logger.info("Searching for beacons")
-    bar = Bar("\t* Searching for Beacons (Packet Uniqueness)", max=4, suffix="%(index)d/%(max)d Steps | %(elapsed_td)s")    
-    bar.next()
 
     for x in w_df["source_file"].unique():
         
@@ -1003,8 +1005,6 @@ def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent
     ##  
     #####################################################################################
 
-    bar.next()
-
     # GATHER PACKET UNIQUENESS
     final_df["pkt_cnt"] = final_df.groupby(["connection_id", "orig_pkts","resp_pkts"])["connection_id"].transform("count")
     uni_counts = final_df.groupby("connection_id")["pkt_cnt"].value_counts(normalize=True) * 100
@@ -1012,7 +1012,6 @@ def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent
 
     # UNIQUE PACKET SIZE DATAFRAME
     uni_df = final_df.query("pkt_unique <= {}".format(min_unique_percent))
-    bar.next()
 
     # CLI OUTPUT DATAFRAME
     uni_df = uni_df[["connection_id", "pkt_unique"]]
@@ -1025,7 +1024,6 @@ def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent
         beacons.append(z)
 
     logger.debug("Beacon connection_id/s {}".format(beacons))
-    bar.next()
 
     #####################################################################################
     ##  
@@ -1047,8 +1045,6 @@ def packet(delta_file, delta_column, avg_delta, conn_cnt = 5, min_unique_percent
         )
     else:
         gold_file = None        
-
-    bar.finish()
 
     endtime = datetime.now() - starttime
     logger.info("Found {} possible beacons".format(len(beacons)))
@@ -1100,7 +1096,6 @@ def cluster_conns(delta_file, delta_column, conn_cnt = 5, conn_group = 5, thresh
     logger.info("Scanning {} connection groups".format(len(og_df["connection_id"].unique())))
 
     logger.info("Searching for beacons")
-    bar = Bar("\t* Scanning for clustered connection groups", max=len(og_df["connection_id"].unique()), suffix="%(index)d/%(max)d Groups | %(elapsed_td)s")
 
     # VARIABLES FOR COUNTERS & PROGRESS
     complete_cnt = 0
@@ -1169,8 +1164,6 @@ def cluster_conns(delta_file, delta_column, conn_cnt = 5, conn_group = 5, thresh
         else:
             pass
 
-        bar.next()
-
     logger.debug("Beacon connection_id/s {}".format(beacons))
 
     #####################################################################################
@@ -1193,8 +1186,6 @@ def cluster_conns(delta_file, delta_column, conn_cnt = 5, conn_group = 5, thresh
         )
     else:
         gold_file = None
-
-    bar.finish()
 
     endtime = datetime.now() - starttime
     logger.info("{} connections processed".format(connection_count))
@@ -1308,3 +1299,250 @@ def p_conns(delta_file, diff_time = 60, diff_type = "mi"):
         print("X" * 50, " PRESISTENT CONNECTIONS  (0)", "X" * 50)
         print("NONE")
         print("X" * 129)
+
+def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
+
+    is_new_bronze = False
+    valid_ds = ["Zeek Connection Logs", "Elastic", "Security Onion", "Delta File", "HTTP File", "DNS File", "Custom File"]
+
+    # RAW ZEEK LOGS
+    if config["general"]["ds_type"] == "Zeek Connection Logs":
+        if len(os.listdir(config["general"]["raw_loc"])) == 0:
+            print("\t* ERROR: {} files located at {}!  Please use another location!".format(len(os.listdir(config["general"]["raw_loc"])), config["general"]["raw_loc"]))
+            logger.error("{} files located at {}!  Please use another location!".format(len(os.listdir(config["general"]["raw_loc"])), config["general"]["raw_loc"]))
+            sys.exit(1)
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc=config["general"]["raw_loc"], 
+            bronze_loc=config["general"]["bronze_loc"],
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"], 
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # ELASTIC DATASOURCE
+    elif config["general"]["ds_type"] in ["Elastic", "Security Onion"]:
+
+        try:
+            es_starttime = datetime.now()
+
+            # VARIABLE INIT
+            is_new_bronze = True
+
+            logger.info("Elastic datasource selected")
+
+            logger.info("Gather file location")
+            df_files = get_data("ds_files_name", config["general"]["ds_name"])
+            df_files = df_files[["file_name"]]
+
+            df_bronze = get_file_data(df_files)
+
+            logger.info("Elastic data collected ({})".format(len(df_bronze)))
+
+            # FILTER BY DATES
+            if start_dte != "" and end_dte != "":
+                df_bronze = df_bronze.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
+            # ONLY START
+            elif start_dte != "" and end_dte == "":
+                df_bronze = df_bronze.query("ts >= {}".format(start_dte))
+            # ONLY END
+            elif start_dte == "" and end_dte != "":
+                df_bronze = df_bronze.query("ts <= {}".format(end_dte))
+            else:
+                pass
+
+            Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
+
+            epoch = int(time.time())
+            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))
+
+            endtime = datetime.now() - es_starttime
+            logger.info("Elastic runtime {}".format(endtime))
+        except BaseException as err:
+            logger.error("{} issue.".format(config["general"]["ds_type"]))
+            logger.error(err)
+
+            # Blank DataFrame
+            df_bronze = pd.DataFrame()
+
+    # DELTA DATASOURCE
+    elif config["general"]["ds_type"] == "Delta File":
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # CREATE RAW DELTA ZEEK FORMAT FILE
+        # BACKHERE
+        df_src_delta = load_delta_data(config["general"]["raw_loc"])
+
+        # CREATE FOLDER
+        if os.path.exists("/delta/{}".format(beacon_group)):
+            pass
+        else:
+            Path("/delta/{}".format(beacon_group)).mkdir(parents=True, exist_ok=True)
+
+        df_src_delta.to_parquet("/delta/{}/{}_delta.parquet".format(beacon_group,beacon_group))
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc="/delta/{}".format(beacon_group),
+            bronze_loc=config["general"]["bronze_loc"],
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"],
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # HTTP DATASOURCE
+    elif config["general"]["ds_type"] == "HTTP File":
+
+        logger.info("Processing HTTP Files")
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc=config["general"]["raw_loc"],
+            bronze_loc=config["general"]["bronze_loc"],
+            ds_type = "http",
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"], 
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # DNS DATASOURCE
+    elif config["general"]["ds_type"] == "DNS File":
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # CREATE RAW DELTA ZEEK FORMAT FILE
+        # BACKHERE
+        df_src_delta = load_ds_data(config["general"]["raw_loc"], dstype = "dns")
+
+        # CREATE FOLDER
+        if os.path.exists("/delta/{}".format(beacon_group)):
+            pass
+        else:
+            Path("/delta/{}".format(beacon_group)).mkdir(parents=True, exist_ok=True)
+
+        df_src_delta.to_parquet("/delta/{}/{}_delta.parquet".format(beacon_group,beacon_group))
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc="/delta/{}".format(beacon_group),
+            bronze_loc=config["general"]["bronze_loc"],
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"],
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # Custome DATASOURCE
+    elif config["general"]["ds_type"] == "Custom File":
+
+        logger.info("Processing Custom Files")
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc=config["general"]["raw_loc"],
+            bronze_loc=config["general"]["bronze_loc"],
+            ds_type = "custom",
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"],
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    else:
+        logger.error("Invaild Datasource! Please choose {}".format(", ".join(valid_ds)))
+        df_bronze = pd.DataFrame()
+
+    return df_bronze, is_new_bronze

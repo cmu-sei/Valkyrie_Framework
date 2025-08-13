@@ -6,7 +6,7 @@ import json
 
 # Import
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "bh_web"))
-from beacon_huntress.src.bin.api_mod import get_results, result_grid_group, log_detail_view, del_result, del_log_file, filter_beacon, del_fil_beacon
+from beacon_huntress.src.bin.api_mod import get_results, result_grid_group, log_detail_view, del_result, del_log_file, filter_host, del_fil_host, get_fil_host, get_top_talkers
 
 router = APIRouter(tags=["Results"])
 
@@ -81,6 +81,29 @@ def results(beacon_group: str = Query(None)):
     """
     return del_result(beacon_group)
 
+@router.get("/top_talkers")
+def results(beacon_group: str = Query(None)):
+    """
+    # Get Beacon Results
+
+    ## Input parameter
+    - **beacon_group_id**
+        - Beacon Group UUID
+
+    ## Return values
+    - **ID**
+        - Unique row identifier
+    - **Source IP**
+        - Source IP address
+    - **Destination IP**
+        - Destination IP address
+    - **Port**
+        - Destination Port ID
+    - **Total Number of Connections**
+        - The total number of connections for each unique Source IP, Destination IP and Port.
+    """
+    return get_top_talkers(beacon_group)
+
 @router.get("/log_file")
 def results(log_file: str = Query(None)):
     """
@@ -115,10 +138,10 @@ def results(log_file: str = Query(None)):
 
     return del_log_file(log_file)
 
-@router.post("/filter_beacon")
+@router.post("/filter_host")
 def results(ip: str = Query(None)):
     """
-    # Filter beacon ip
+    # Filter Host (beacon ip)
 
     ## Input parameter
     - **ip**
@@ -129,14 +152,14 @@ def results(ip: str = Query(None)):
         - IP is filtered (True/False)
     - **Message**
         - Message details
-    """    
+    """
 
-    return filter_beacon(ip)
+    return filter_host(ip)
 
-@router.delete("/filter_beacon")
+@router.delete("/filter_host")
 def results(ip: str = Query(None)):
     """
-    # Removed filter beacon ip
+    # Removed filter host (beacon ip)
 
     ## Input parameter
     - **ip**
@@ -149,4 +172,22 @@ def results(ip: str = Query(None)):
         - Message details
     """
 
-    return del_fil_beacon(ip)
+    return del_fil_host(ip)
+
+@router.get("/filter_host")
+def results():
+    """
+    # Get all filter beacon ip
+
+    ## Input parameter
+    - **ip**
+        - Destination IP address
+
+    ## Return values
+    - **Filtered**
+        - IP is removed from filtered list (True/False)
+    - **Message**
+        - Message details
+    """
+
+    return get_fil_host()

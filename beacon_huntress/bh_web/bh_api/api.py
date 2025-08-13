@@ -36,12 +36,15 @@ Receive Beacon Huntress searches results for
 - **Beacon Results**
     - Display the Beacon Huntress results
     - Delete Beacon Huntress results
+- **Top Talkers**
+    - Get Top Talkers results
 - **Log File**
     - Display the run results log file
     - Delete the run results log file
-- **Filter Beacon**
+- **Filter Hosts**
     - Filter benign traffic from Beacon Huntress results
     - Remove filtered benign traffic
+    - Get filtered hosts
 """
 
 app = FastAPI(description=bh_desc)

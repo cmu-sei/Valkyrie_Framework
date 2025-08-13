@@ -9,7 +9,7 @@ function buttonSelect() {
     if (selectElement.value !== "") {
         submitButton.disabled = false;
     } else {
-        submitButton.disabled = true; 
+        submitButton.disabled = true;
     }
 }
 
@@ -25,7 +25,7 @@ function addFieldsRun() {
 
     // CLEAR PREVIOUS FIELDS
     additionalFieldsContainer.innerHTML = '';
-    
+
     // LOAD ADDITIONAL FORM FIELDS
     if (selectedType == "Elastic" || selectedType == "Security Onion") {  // For Elastic & Sec Onion
         additionalFieldsContainer.innerHTML = `
@@ -38,9 +38,11 @@ function addFieldsRun() {
                 <label for="end_dte">End Datetime</label><br>
                 <input id="end_dte" name="end_dte" class="form-control" type="datetime-local" />
                 <div id="textHelp" class="form-text">End datetime (optional).</div>
-            </div>         
+            </div>
         `;
-    } else if (selectedType == "Zeek Connection Logs" && selectedDSName == "Zeek Connection Logs") {  
+    } else if ((selectedType == "Zeek Connection Logs" && selectedDSName == "Zeek Connection Logs") || (selectedType == "Delta File" && selectedDSName == "Delta File") ||
+        (selectedType == "HTTP File" && selectedDSName == "HTTP File") || (selectedType == "DNS File" && selectedDSName == "DNS File") ||
+        (selectedType == "Custom File" && selectedDSName == "Custom File")) {
         additionalFieldsContainer.innerHTML = `
             <div class="form-group">
                 <label for="raw_log_loc">Raw Log Location</label><br>
@@ -55,10 +57,12 @@ function addFieldsRun() {
                 <label for="end_dte">End Datetime</label><br>
                 <input id="end_dte" name="end_dte" class="form-control" type="datetime-local" />
                 <div id="textHelp" class="form-text">End datetime (optional).</div>
-            </div>            
+            </div>
         `;
     }
-    else if (selectedType == "Zeek Connection Logs" && selectedDSName != "Zeek Connection Logs") {  
+    else if ((selectedType == "Zeek Connection Logs" && selectedDSName != "Zeek Connection Logs") || (selectedType == "Delta File" && selectedDSName != "Delta File")
+        (selectedType == "HTTP File" && selectedDSName != "HTTP File") || (selectedType == "DNS File" && selectedDSName != "DNS File") ||
+        (selectedType == "Custom File" && selectedDSName != "Custom File")) {
         additionalFieldsContainer.innerHTML = `
             <div class="mb-3">
                 <label for="start_dte">Start Datetime</label><br>
@@ -69,9 +73,9 @@ function addFieldsRun() {
                 <label for="end_dte">End Datetime</label><br>
                 <input id="end_dte" name="end_dte" class="form-control" type="datetime-local" />
                 <div id="textHelp" class="form-text">End datetime (optional).</div>
-            </div>            
+            </div>
         `;
-    }    
+    }
 
     //ADD THE DATA_TYPE TO THE REQUEST
     document.getElementById('data_type_field').value = selectedType;
@@ -90,7 +94,7 @@ function addFieldsDS() {
 
     // CLEAR PREVIOUS FIELDS
     additionalFieldsContainer.innerHTML = '';
-    
+
     // LOAD ADDITIONAL FORM FIELDS
     if (selectedType == "Elastic") {  // For Elastic
         additionalFieldsContainer.innerHTML = `
@@ -108,7 +112,7 @@ function addFieldsDS() {
             <label for="es_port" class="form-label">Port</label>
             <input type="text" class="form-control" id="es_port" name="es_port" required>
             <div id="textHelp" class="form-text">Elastic Port Number.</div>
-        </div>    
+        </div>
         <div class="mb-3">
             <label for="es_port" class="form-label">API Key</label>
             <div class="input-group">
@@ -130,10 +134,9 @@ function addFieldsDS() {
                 </button>
             </div>
             <div id="textHelp" class="form-text">Elastic Index Name (Multi-Select).</div>
-        </div>        
-
+        </div>
         `;
-    } else if (selectedType == "Security Onion") { 
+    } else if (selectedType == "Security Onion") {
         additionalFieldsContainer.innerHTML = `
         <div class="mb-3">
             <label for="ds_name" class="form-label">Data Source Name</label>
@@ -149,7 +152,7 @@ function addFieldsDS() {
             <label for="es_port" class="form-label">Port</label>
             <input type="text" class="form-control" id="es_port" name="es_port" required>
             <div id="textHelp" class="form-text">Security Onion Elastic Port Number.</div>
-            </div>                
+            </div>
         <div class="mb-3">
             <label for="es_port" class="form-label">API Key</label>
             <div class="input-group">
@@ -163,13 +166,14 @@ function addFieldsDS() {
         `;
 
     }
-    else if (selectedType == "Zeek Connection Logs") {  
+    else if ((selectedType == "Zeek Connection Logs") || (selectedType == "Delta File") || (selectedType == "HTTP File") ||
+    (selectedType == "DNS File") || (selectedType == "Custom File")) {
         additionalFieldsContainer.innerHTML = `
         <div class="mb-3">
             <label for="ds_name" class="form-label">Data Source Name</label>
             <input type="text" id="ds_name" name="ds_name" class="form-control" required>
             <div id="textHelp" class="form-text">Give a unique name to your data source.</div>
-        </div>        
+        </div>
         <div class="mb-3">
             <label for="raw_log_loc">Raw Log Location</label><br>
             <input type="text" id="raw_log_loc" name="raw_log_loc" class="form-control" required>

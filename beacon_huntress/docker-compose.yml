@@ -59,6 +59,9 @@ services:
       - ./bh_web/datasets/tutorial:/tutorial
       - ./bh_web/datasets/elastic:/elastic
       - ./bh_web/datasets/zeek:/zeek
+      - ./bh_web/datasets/delta:/delta
+      - ./bh_web/datasets/http:/http
+      - ./bh_web/datasets/dns:/dns
     ports:
       - "8000:8000"
     environment:
@@ -91,6 +94,9 @@ services:
       - ./bh_web/datasets/tutorial:/tutorial
       - ./bh_web/datasets/elastic:/elastic
       - ./bh_web/datasets/zeek:/zeek
+      - ./bh_web/datasets/delta:/delta
+      - ./bh_web/datasets/http:/http
+      - ./bh_web/datasets/dns:/dns
     depends_on:
       - web
       - redis

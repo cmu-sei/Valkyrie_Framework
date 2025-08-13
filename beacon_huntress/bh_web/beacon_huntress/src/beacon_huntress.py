@@ -19,7 +19,6 @@ import hashlib
 import shutil
 import yaml
 from pathlib import Path
-from progress.bar import Bar
 import uuid
 import pandas as pd
 from django.utils import timezone
@@ -34,7 +33,7 @@ from beacon_huntress.src.bin import ingest
 from beacon_huntress.src.bin import beacon
 from beacon_huntress.src.bin import dash
 from beacon_huntress.src.bin import data
-from beacon_huntress.src.bin import datasource
+from beacon_huntress.src.bin import Madmom as mm
 
 # BASE DIRECTORY (BH_WEB)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -88,16 +87,16 @@ def _config_changed(filter_path,config):
         if port_filter == None:
             port_filter = []
 
-        if src_filter == None: 
+        if src_filter == None:
             src_filter = []
 
-        if dest_filter == None: 
+        if dest_filter == None:
             dest_filter = []
 
-        if s_dns_filter == None: 
+        if s_dns_filter == None:
             s_dns_filter = []
 
-        if d_dns_filter == None: 
+        if d_dns_filter == None:
             d_dns_filter = []
 
         if match_filter == None:
@@ -119,7 +118,6 @@ def _config_changed(filter_path,config):
     return config_change
 
 def _delete_folders(folder,logger = ""):
-
     try:
         if isinstance(folder, list):
             for x in folder:
@@ -133,13 +131,25 @@ def _delete_folders(folder,logger = ""):
 
 def _get_epoch_dte(dte):
 
-    if dte != "" or len(dte) > 0:
-        fix_dte = datetime.strptime(dte, "%Y-%m-%dT%H:%M")
-        dte_utc = fix_dte.replace(tzinfo=timezone.utc)
-        dte = int(dte_utc.timestamp())
-    else:
-        dte = ""
+    if not dte:
+        return ""
 
+    try:
+        # CONVERT DTE & TIME (HH:MM:SS)
+        fix_dte = datetime.strptime(dte, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        try:
+            # CONVERT DTE & TIME (HH:MM)
+            fix_dte = datetime.strptime(dte, "%Y-%m-%d %H:%M")
+        except ValueError:
+            try:
+                # CONVERT JUST DTE
+                fix_dte = datetime.strptime(dte, "%Y-%m-%d")
+            except ValueError:
+                raise ValueError(f"Invalid date format: '{dte}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM'.")
+
+    dte_utc = fix_dte.replace(tzinfo=timezone.utc)
+    dte = int(dte_utc.timestamp())
     return dte
 
 def _get_ds_types(type):
@@ -153,11 +163,18 @@ def _get_ds_types(type):
     elif type.lower() in ["d", "delta"]:
         ds_name = "HTTP File"
         ds_type = "HTTP File"
+    elif type.lower() == "dns":
+        ds_name = "DNS File"
+        ds_type = "DNS File"
+    elif type.lower() in ["ct", "custom"]:
+        ds_name = "Custom File"
+        ds_type = "Custom File"
     else:
         ds_name = ""
         ds_type = ""
 
     return ds_name, ds_type
+
 
 #####################################################################################
 ##  FUNCTIONS
@@ -201,14 +218,18 @@ def pipeline(conf):
     log_file = os.path.join(log_dir,"{}".format(log_file_name))
 
     logger = logging.getLogger("logger")
-
     logger.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s:\t%(message)s',datefmt="%m-%d %H:%M:%S")
 
     # FILE LOG HANDLER
     log_fh = logging.FileHandler(log_file)
-    log_fh.setLevel(logging.INFO)
+
+    if config["general"]["verbose"]:
+        log_fh.setLevel(logging.INFO)
+    else:
+        log_fh.setLevel(logging.DEBUG)
+
     log_fh.setFormatter(formatter)
 
     # ADD LOG HANDLERS
@@ -222,7 +243,6 @@ def pipeline(conf):
     # RUN BEACON GROUP UUID
     UID = uuid.uuid4()
 
-    # CHANGE TO STR FOR API
     beacon_results["beacon_group"] = str(UID)
 
     print("Beacon Huntress starting the hunt!")
@@ -276,7 +296,7 @@ def pipeline(conf):
     #####################################################################################
 
     # DELETE BRONZE, SILVER, GOLD & FILTERS LAYERS
-    logger.info("Deleting previous folder/s")
+    logger.warning("Deleting previous folder/s")
     _delete_folders([config["general"]["bronze_loc"],
                      config["general"]["silver_loc"],
                      config["general"]["gold_loc"],
@@ -296,8 +316,25 @@ def pipeline(conf):
         )
 
     #####################################################################################
+    ##  Config
+    #####################################################################################
+
+    logger.warning(config)
+
+    #####################################################################################
     ##  CONVERT START & END DATE TO UTC THEN EPOCH
     #####################################################################################
+
+    # CHECK FOR START & END DATES IF THEY DO NOT EXIST USE ""
+    chk_str_dte = config.get("general", {}).get("start_dte")
+    chk_end_dte = config.get("general", {}).get("end_dte")
+
+    if chk_str_dte is None:
+        config["general"]["start_dte"] = ""
+
+    if chk_end_dte is None:
+        config["general"]["end_dte"] = ""
+
 
     start_dte = _get_epoch_dte(config["general"]["start_dte"])
     end_dte = _get_epoch_dte(config["general"]["end_dte"])
@@ -308,88 +345,16 @@ def pipeline(conf):
     ##  BRONZE LAYER
     #####################################################################################
 
-    # RAW ZEEK LOGS
-    if config["general"]["ds_type"] == "Zeek Connection Logs":
-        if len(os.listdir(config["general"]["raw_loc"])) == 0:
-            print("\t* ERROR: {} files located at {}!  Please use another location!".format(len(os.listdir(config["general"]["raw_loc"])), config["general"]["raw_loc"]))
-            logger.error("{} files located at {}!  Please use another location!".format(len(os.listdir(config["general"]["raw_loc"])), config["general"]["raw_loc"]))
-            sys.exit(1)
+    df_bronze, is_new_bronze = beacon.build_bronze_ds(
+        config = config,
+        start_dte = start_dte,
+        end_dte = end_dte,
+        beacon_group = UID,
+        group_id = group_id,
+        logger = logger)
 
-        # BUILD BRONZE LAYER
-        is_new_bronze = ingest.build_bronze_layer(
-            src_loc=config["general"]["raw_loc"],
-            bronze_loc=config["general"]["bronze_loc"],
-            start_dte = start_dte,
-            end_dte = end_dte,
-            dns_file=config["bronze"]["dns_file"],
-            overwrite = config["general"]["overwrite"],
-            verbose = config["general"]["verbose"]
-            )
-
-        if config["dashboard"]["dashboard"] == True:
-
-            dash.load_dashboard(
-                file_loc = [config["general"]["bronze_loc"]],
-                dash_config = config["dashboard"]["conf"],
-                dash_type = "raw_source",
-                is_new = is_new_bronze,
-                group_id = group_id,
-                overwrite = config["general"]["overwrite"],
-                verbose = config["general"]["verbose"]
-            )
-
-        # CHECK BRONZE
-        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
-
-    # ELASTIC DATASOURCE
-    elif config["general"]["ds_type"] in ["Elastic", "Security Onion"]:
-
-        try:
-            es_starttime = datetime.now()
-
-            # VARIABLE INIT
-            is_new_bronze = True
-
-            logger.info("Elastic datasource selected")
-
-            logger.info("Gather file location")
-            df_files = data.get_data("ds_files_name", config["general"]["ds_name"])
-            df_files = df_files[["file_name"]]
-
-            df_bronze = datasource.get_file_data(df_files)
-
-            logger.info("Elastic data collected ({})".format(len(df_bronze)))
-
-            # FILTER BY DATES
-            if start_dte != "" and end_dte != "":
-                df_bronze = df_bronze.query("ts >= {} and ts <= {}".format(start_dte, end_dte))
-            # ONLY START
-            elif start_dte != "" and end_dte == "":
-                df_bronze = df_bronze.query("ts >= {}".format(start_dte))
-            # ONLY END
-            elif start_dte == "" and end_dte != "":
-                df_bronze = df_bronze.query("ts <= {}".format(end_dte))
-            else:
-                pass  
-
-            # #df_bronze["source_file"] = "/elastic/elastic.parquet"
-            #df_bronze["source_file"] = os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch))
-            #df_bronze["src_row_id"] = df_bronze.index
-
-            Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
-
-            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))     
-
-            endtime = datetime.now() - es_starttime
-            logger.info("Elastic runtime {}".format(endtime))
-        except BaseException as err:
-            logger.error("{} issue.".format(config["general"]["ds_type"]))
-            logger.error(err)
-            
-            beacon_results["cnt"] = 0
-            beacon_results["log_file"] = log_file_name
-
-            return beacon_results
+    # BACKHERE
+    logger.info(df_bronze)
 
     # IF DATA FALLS IN THE DATE RANGE CONTINUE
     if len(df_bronze) > 0:
@@ -399,10 +364,11 @@ def pipeline(conf):
         #####################################################################################
 
         # CREATE FILTERED & DELTA FILES
-        if config["general"]["filter"] == True: 
+        if config["general"]["filter"] == True:
 
             # CHECK FOR CONFIG FILTER CHANGE
-            conf_changed = _config_changed(config["general"]["filter_loc"],config)
+            #conf_changed = _config_changed(config["general"]["filter_loc"],config)
+            conf_changed = True
 
             # IF CONFIG FILTER CHANGED REFILTER BRONZE LAYER
             if conf_changed == True and config["general"]["overwrite"] == False:
@@ -469,7 +435,6 @@ def pipeline(conf):
                 logger.warning("Bronze Files and Filters are the same.  Running with old delta file ({}).".format(config["beacon"]["delta_file"]))
                 new_delta = False
 
-        #BACKHERE
         #ADDED BY HUFF ON 05/03/2023
         # CREATE FILTERED & DELTA FILES
         elif config["general"]["filter"] == False:
@@ -496,12 +461,12 @@ def pipeline(conf):
                 #overwrite =  config["general"]["overwrite"]
                 overwrite = False
                 )
-                
+
                 new_delta = True
             else:
                 print("\t* WARNING: Bronze Files and Filters are the same.  Running with old delta file ({}).".format(config["beacon"]["agg"]["delta_file"]))
                 logger.warning("Bronze Files and Filters are the same.  Running with old delta file ({}).".format(config["beacon"]["agg"]["delta_file"]))
-                new_delta = False   
+                new_delta = False
 
         #####################################################################################
         ##  DELTA
@@ -525,7 +490,6 @@ def pipeline(conf):
                 is_new = is_new_bronze,
                 group_id = group_id,
                 overwrite = config["general"]["overwrite"],
-                # overwrite = False,
                 verbose = config["general"]["verbose"]
             )
 
@@ -537,6 +501,10 @@ def pipeline(conf):
         if config["general"]["cluster_type"] == "agg":
             if config["dashboard"]["dashboard"] == True:
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+
+                    # Default Score for MAD
+                    likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
+
                     ret_gold_file = beacon.agglomerative_clustering(
                         delta_file = max_delta_file,
                         delta_column = config["beacon"]["delta_column"],
@@ -557,6 +525,10 @@ def pipeline(conf):
                     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
                     return
             else:
+
+                # Default Score for MAD
+                likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
+
                 ret_gold_file = beacon.agglomerative_clustering(
                     delta_file = max_delta_file,
                     delta_column = config["beacon"]["delta_column"],
@@ -572,8 +544,12 @@ def pipeline(conf):
 
         # DBSCAN
         if config["general"]["cluster_type"] == "dbscan":
-            if config["dashboard"]["dashboard"] == True: 
+            if config["dashboard"]["dashboard"] == True:
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+
+                    # Default Score for MAD
+                    #likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
+
                     ret_gold_file = beacon.dbscan_clustering(
                         delta_file = max_delta_file,
                         delta_column = config["beacon"]["delta_column"],
@@ -592,6 +568,10 @@ def pipeline(conf):
                     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
                     return
             else:
+
+                # Default Score for MAD
+                #likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
+
                 ret_gold_file = beacon.dbscan_clustering(
                     delta_file = max_delta_file,
                     delta_column = config["beacon"]["delta_column"],
@@ -608,6 +588,10 @@ def pipeline(conf):
         if config["general"]["cluster_type"] == "dbscan_var":
             if config["dashboard"]["dashboard"] == True:
                 if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+
+                    # Default Score for MAD
+                    #likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+
                     ret_gold_file = beacon.dbscan_by_variance(
                         delta_file = max_delta_file,
                         delta_column = config["beacon"]["delta_column"],
@@ -627,6 +611,10 @@ def pipeline(conf):
                     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
                     return
             else:
+
+                # Default Score for MAD
+                #likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+
                 ret_gold_file = beacon.dbscan_by_variance(
                     delta_file = max_delta_file,
                     delta_column = config["beacon"]["delta_column"],
@@ -711,12 +699,45 @@ def pipeline(conf):
             is_p_conn = True
             beacon.p_conns(
                 delta_file = max_delta_file,
-                diff_time = config["beacon"]["by_p_conn"]["diff_time"], 
+                diff_time = config["beacon"]["by_p_conn"]["diff_time"],
                 diff_type = config["beacon"]["by_p_conn"]["diff_type"]
                 )
 
+        ###########################################################
+        ##  MAD ALGO
+        ###########################################################
+        # RUN MADMOM ALGO
+        # MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
+        # Default Score for MAD
+        likelihood = .50
 
-        # LOAD DB DATA FOR DASHBOARD 
+        logger.info("Running MadMom algorithm")
+
+        df_mad = mm.run_mad(max_delta_file, likelihood)
+
+        if df_mad.empty:
+            logger.warning("No results for Median Absolute Deviation!")
+        else:
+            pass
+            # COMMENT HERE
+            # dash.load_dashboard(
+            #     dataframe = df_mad,
+            #     dash_config = config["dashboard"]["conf"],
+            #     dash_type = "mad",
+            #     is_new = True,
+            #     group_id = group_id,
+            #     overwrite = config["general"]["overwrite"],
+            #     verbose = config["general"]["verbose"]
+            # )
+
+        #df_mad.to_csv("/delta/rita.csv")
+        logger.info("Completed MadMom algorithm")
+
+        ###########################################################
+        ##  MAD ALGO
+        ###########################################################
+
+        # LOAD DB DATA FOR DASHBOARD
         # ADDED IS_P_CONN FOR NOW AS PERSISTENT CONNECTIONS HAVE NO DASHBOARD
         if config["dashboard"]["dashboard"] == True and is_p_conn == False:
 
@@ -733,6 +754,7 @@ def pipeline(conf):
             else:
                 max_gold_file = dash_config["db"]["file_loc"]
 
+            logger.info("Made to Dashboard for MADMOM")
             dash.load_dashboard(
                 file_loc = max_gold_file,
                 dash_config = config["dashboard"]["conf"],
@@ -762,16 +784,32 @@ def pipeline(conf):
     ##  DELETE BH CREATE FILES
     #####################################################################################
 
+    if config["general"]["ds_type"] == "Delta File":
+        "/delta/{}".format(UID)
+
     logger.info("Deleting bronze, silver and gold files")
 
     bz_f = os.path.join(lst_path[0], lst_path[1], "bronze")
     sv_f = os.path.join(lst_path[0], lst_path[1], "silver")
     gd_f = os.path.join(lst_path[0], lst_path[1], "gold")
 
-    _delete_folders([os.path.join(lst_path[0], lst_path[1], "bronze"),
+    # DELETE FILES
+    if config["general"]["ds_type"] == "Delta File":
+        _delete_folders(["/delta/{}".format(UID),
+                         os.path.join(lst_path[0], lst_path[1], "bronze"),
+                         os.path.join(lst_path[0], lst_path[1], "silver"),
+                         os.path.join(lst_path[0], lst_path[1], "gold")],
+                         logger)
+    else:
+        _delete_folders([os.path.join(lst_path[0], lst_path[1], "bronze"),
                      os.path.join(lst_path[0], lst_path[1], "silver"),
                      os.path.join(lst_path[0], lst_path[1], "gold")
                      ],logger)
+
+    # DELETE UI FILE IF EXISTS
+    if conf == "bh_run.yaml":
+        if os.path.exists("bh_run.yaml"):
+            os.remove("bh_run.yaml")
 
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
@@ -824,6 +862,23 @@ def build_conf(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,vari
         conf["beacon"]["agg"]["min_delta_time"] = (delta * 60 * 1000)
 
     return conf
+
+
+def parse_arg_date(dte):
+
+    if dte == "":
+        return ""
+
+    for fmt_dte in ('%Y-%m-%d %H:%M', '%Y-%m-%d'):
+        try:
+            return datetime.strptime(dte,fmt_dte)
+        except ValueError:
+            continue
+
+    raise argparse.ArgumentTypeError(
+        "Invalid date/time: '{}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank.".format(dte)
+    )
+
 
 #####################################################################################
 ##  MAIN

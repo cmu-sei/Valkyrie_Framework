@@ -31,7 +31,7 @@ class DBScanVar(models.Model):
     span_avg = models.IntegerField(default=0)
     variance_per = models.IntegerField(default=0)
     minimum_likelihood = models.IntegerField(default=0)
-    update_date = models.DateTimeField(auto_now_add=True, blank=False)    
+    update_date = models.DateTimeField(auto_now_add=True, blank=False)
 
 class ByPacket(models.Model):
 
@@ -39,15 +39,15 @@ class ByPacket(models.Model):
     avg_delta = models.IntegerField(default=0)
     conn_cnt = models.IntegerField(default=0)
     min_unique_percent = models.IntegerField(default=0)
-    update_date = models.DateTimeField(auto_now_add=True, blank=False)    
+    update_date = models.DateTimeField(auto_now_add=True, blank=False)
 
 class ByConnGroup(models.Model):
-    
+
     row_id = models.AutoField(primary_key=True)
     conn_cnt = models.IntegerField(default=0)
     conn_group = models.IntegerField(default=0)
     threshold = models.IntegerField(default=0)
-    update_date = models.DateTimeField(auto_now_add=True, blank=False)    
+    update_date = models.DateTimeField(auto_now_add=True, blank=False)
 
 class ByPConn(models.Model):
 

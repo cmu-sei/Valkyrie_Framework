@@ -130,6 +130,7 @@ def result_grid_group(request):
 
     # ADD LINKS IF DATA IS PRESENT
     if df.empty:
+        df["Top Talkers"] = ""
         df["Dashboard"] = ""
         df["Config"] = ""
         df["Delete"] = ""
@@ -137,7 +138,11 @@ def result_grid_group(request):
         # DELETE NULL VALUES OR MISSING VALUES
         df.dropna(inplace=True)
 
-        # LINKS FOR DASH, CONFIG & DELETE BUTTON
+        # LINKS FOR TOP TALKERS, DASH, CONFIG & DELETE BUTTON
+        df["Top Talkers"] = df.apply(
+            lambda row: '<a href="/TopTalkers?uid={}"><i class="fa-solid fa-bullhorn"></i></a>'.format(row["uid"]),
+            axis =1
+        )
         df["Dashboard"] =  df["uid"].apply(lambda x: '<a href="http://127.0.0.1:3000/d/UK-8Ve_7z/beacon?orgId=1&var-uid={}&from=now-2y&to=now&refresh=5s" target="_blank"><i class="fas fa-chart-line"></i></a>'.format(x))
         df["Config"] = df["uid"].apply(lambda x: '<a href="/RunConfig?uid={}"><i class="fa-solid fa-gears"></i></a>'.format(x))
         df["Delete"] = df.apply(
@@ -158,7 +163,7 @@ def result_grid_group(request):
         )
 
     # FINAL DATAFRAME
-    df = df[["uid", "dt", "beacons", "Dashboard", "log_file", "Config", "Delete"]].rename(columns={"uid": "Group ID", "dt": "Date", "beacons": "Beacon Count", "log_file": "Log File"})
+    df = df[["uid", "dt", "beacons", "Top Talkers", "Dashboard", "log_file", "Config", "Delete"]].rename(columns={"uid": "Group ID", "dt": "Date", "beacons": "Beacon Count", "log_file": "Log File"})
 
     context = _get_context(df)
 
@@ -170,17 +175,21 @@ def result_detail_view(request):
 
     df = get_data("detail",uid)
 
+    print("X"*100)
+    print(df.info())
+    print("X"*100)
+
     df["Filter"] = df["dest_ip"].apply(lambda x: '<a href="/FilterBeacon?dest_ip={}&uid={}"><i class="fa-solid fa-filter"></i></a> '.format(x,uid))
 
     # SET LOOKUP FOR UNKNOWN DNS
     df.loc[df["dns"] == "UNKNOWN", "dns"] = df["dest_ip"].apply(lambda x: '<a href="/LookupDNS?dest_ip={}&uid={}" onclick="document.body.style.cursor=\'wait\'"><i class="fa-solid fa-magnifying-glass"></i></a> '.format(x,uid)) + " UNKNOWN"
 
     # REORDER BY SCORE & REINDEX
-    df.sort_values(by=["score", "conn_cnt"], ascending=False, inplace=True)
+    df.sort_values(by=["score", "mad_score", "conn_cnt"], ascending=False, inplace=True)
     df = df.reset_index(drop=True)
     df["ID"] = (df.index) + 1
 
-    df = df[["ID", "source_ip", "dest_ip", "port", "score", "dns", "conn_cnt", "min_dt", "max_dt", "Filter"]].rename(columns={"source_ip": "Source IP", "port": "Port", "dest_ip": "Destination IP", "score": "Score", "dns": "DNS", "conn_cnt": "Connection Count", "min_dt": "First Occurrence", "max_dt": "Last Occurrence"})
+    df = df[["ID", "source_ip", "dest_ip", "port", "score", "mad_score", "dns", "conn_cnt", "min_dt", "max_dt", "Filter"]].rename(columns={"source_ip": "Source IP", "port": "Port", "dest_ip": "Destination IP", "score": "Cluster Score", "mad_score": "MAD Score", "dns": "DNS", "conn_cnt": "Connection Count", "min_dt": "First Occurrence", "max_dt": "Last Occurrence"})
 
     context = _get_context(df)
 

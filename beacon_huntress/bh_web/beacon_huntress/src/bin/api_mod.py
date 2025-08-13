@@ -87,7 +87,7 @@ def del_log_file(log_file):
 
     return ret_json
 
-def filter_beacon(ip):
+def filter_host(ip):
 
     try:
         add_data("beacon",ip)
@@ -97,7 +97,7 @@ def filter_beacon(ip):
 
     return ret_json
 
-def del_fil_beacon(ip):
+def del_fil_host(ip):
 
     try:
         del_data("beacon",ip)
@@ -107,3 +107,45 @@ def del_fil_beacon(ip):
 
     return ret_json
 
+def get_fil_host():
+
+    try:
+        df = get_data("filtered_beacons")
+        df = df[["ip", "dns", "short_desc", "dt"]].rename(columns={"ip": "IP", "dns": "DNS", "short_desc": "Description", "dt": "Filtered_Date"})
+        ret_json = df.to_dict(orient="records")
+    except BaseException as err:
+        ret_json = {"Message": err}
+
+    return ret_json
+
+def get_results(uid):
+
+    df = get_data("top_talkers",uid)
+
+    # REORDER BY SCORE & REINDEX
+    df.sort_values(by=["score", "conn_cnt"], ascending=False, inplace=True)
+    df = df.reset_index(drop=True)
+    df["ID"] = (df.index) + 1
+
+    df = df[["ID", "source_ip", "dest_ip", "port", "score", "dns", "conn_cnt", "min_dt", "max_dt"]].rename(columns={"source_ip": "Source IP", "port": "Port", "dest_ip": "Destination IP", "score": "Score", "dns": "DNS", "conn_cnt": "Connection Count", "min_dt": "First Occurrence", "max_dt": "Last Occurrence"})
+
+    return df.to_dict(orient="records")
+
+def get_top_talkers(uid):
+
+    df = get_data("top_talkers",uid)
+
+    print("Step 2")
+    # REORDER BY SCORE & REINDEX
+    df.sort_values(by=["cnt"], ascending=False, inplace=True)
+    df.drop(columns=["uid"],inplace=True)
+    df = df.reset_index(drop=True)
+    df["ID"] = (df.index) + 1
+
+    df = df[["ID", "source_ip", "destination_ip", "port", "cnt"]].\
+        rename(columns={"source_ip": "Source IP",
+                        "port": "Port",
+                        "destination_ip": "Destination IP",
+                        "cnt": "Total Number of Connections"})
+
+    return df.to_dict(orient="records")

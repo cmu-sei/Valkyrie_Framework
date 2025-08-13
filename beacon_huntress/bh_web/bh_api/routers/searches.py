@@ -65,25 +65,32 @@ def quick_cluster_search(quick_cluster_search_params: QuickClusterSearchParams):
         - Beacon Huntress run results log file\n
     """
 
-    # Run Beacon Huntress
-    conf = bh.build_conf(
-        algo = "quick",
-        log_type = quick_cluster_search_params.log_type,
-        log_dir = quick_cluster_search_params.log_dir,
-        delta = quick_cluster_search_params.delta,
-        call_back = quick_cluster_search_params.call_back,
-        percent = quick_cluster_search_params.percent,
-        spans = None,
-        span_avg = quick_cluster_search_params.span_avg,
-        line_amounts= None,
-        variance = quick_cluster_search_params.variance,
-        start_dte = quick_cluster_search_params.start_dte,
-        end_dte = quick_cluster_search_params.end_dte,
-        zip = quick_cluster_search_params.zip,
-        verbose = quick_cluster_search_params.verbose
-        )
-    ret_val = bh.main(conf)
-    return JSONResponse(content=ret_val)
+    try:
+        # Run Beacon Huntress
+        conf = bh.build_conf(
+            algo = "quick",
+            log_type = quick_cluster_search_params.log_type,
+            log_dir = quick_cluster_search_params.log_dir,
+            delta = quick_cluster_search_params.delta,
+            call_back = quick_cluster_search_params.call_back,
+            percent = quick_cluster_search_params.percent,
+            spans = None,
+            span_avg = quick_cluster_search_params.span_avg,
+            line_amounts= None,
+            variance = quick_cluster_search_params.variance,
+            start_dte = quick_cluster_search_params.start_dte,
+            end_dte = quick_cluster_search_params.end_dte,
+            zip = quick_cluster_search_params.zip,
+            verbose = quick_cluster_search_params.verbose
+            )
+
+        ret_val = bh.main(conf)
+        return JSONResponse(ret_val)
+    except Exception as err:
+        return JSONResponse(
+            status_code=500,
+            content={"ERROR": str(err)}
+            )
 
 class DetailedClusterSearchParams(BaseModel):
     log_type: str = Field(default = "conn", description="Log Type parameter")

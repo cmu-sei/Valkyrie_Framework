@@ -13,7 +13,7 @@ import logging
 import pandas as pd
 import yaml
 from datetime import datetime
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import json
 import platform
 from pathlib import Path
@@ -46,7 +46,7 @@ def _get_parent_dir(path, levels=1):
 CONF = os.path.join(_get_parent_dir(os.path.abspath(__file__),2),"config","dashboard.conf")
 
 #####################################################################################
-##  
+##
 #####################################################################################
 
 def get_conn_str(conf = CONF):
@@ -75,10 +75,10 @@ def get_conn_str(conf = CONF):
         logger.error(err)
 
     #####################################################################################
-    ##  
+    ##
     #####################################################################################
 
-    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]))
+    my_conn = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(conf_data["conn"]["user"], conf_data["conn"]["pwd"], conf_data["conn"]["host"], conf_data["conn"]["port"], conf_data["conn"]["db"]), isolation_level="AUTOCOMMIT")
 
     return my_conn
 
@@ -95,7 +95,7 @@ def data_to_json(df):
     ========
     JSON data: JSON
     """
-    # CONVERT TO 
+    # CONVERT TO
     #df_json = df.to_json(orient="records", lines=True)
     df_json = df.to_json(orient="records")
     df_json = json.loads(df_json)
@@ -166,6 +166,11 @@ def get_data(type,value = None):
             df = pd.read_sql("select * from vw_datasources where active = True order by create_date", my_conn)
         else:
             df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)
+    elif type == "top_talkers":
+        if value == None:
+            df = pd.read_sql("select * from vw_top_talker order by uid, cnt desc", my_conn)
+        else:
+            df = pd.read_sql("select * from vw_top_talker where uid = '{}' order by cnt desc".format(value), my_conn)
     else:
         if value == None:
             df = pd.read_sql("select * from vw_beacon", my_conn)
@@ -207,16 +212,19 @@ def add_data(type,value=None):
 
         if type == "beacon":
             query = "insert into beacon_filter (ip) values('{}')".format(value)
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
         elif type == "dns":
             query = "insert into dns (ip,dns) values('{}','{}')".format(value[0],value[1])
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
         elif type == "ds":
             query = "insert into datasource (ds_name,ds_type_id,data) values('{}','{}','{}')".format(value[0],value[1],value[2])
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
         elif type == "ds_files":
             query = "insert into ds_files (group_id,ds_id,file_name) values ('{}',{},'{}')".format(value[0],value[1],value[2])
-            my_conn.connect().execute(query)
+            #my_conn.connect().execute(query)
+
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
 
         return None
     except BaseException as err:
@@ -231,11 +239,11 @@ def del_data(type,value=None):
     type: STRING
         Data to delete
         Options:
-            detail: 
+            detail:
             beacon: Will delete beacon filters
             data_source: Will delete data source and any data source files
 
-    value: STRING 
+    value: STRING
         Options:
             all: will delete all data from deltas, raw sources, beacon run config, beacon logs, beacon details, beacon run group
             uid: beacon group id
@@ -246,14 +254,17 @@ def del_data(type,value=None):
     """
     my_conn = get_conn_str(CONF)
 
-    table_lst = ["delta", "raw_source", "beacon_run_conf", "beacon_log", "beacon", "beacon_group"]
+    table_lst = ["delta", "raw_source", "beacon_run_conf", "beacon_log", "beacon", "mad_score", "beacon_group"]
 
     if type == "detail" and value == "all":
         my_conn.connect()
 
         for x in table_lst:
             query = "delete from {}".format(x)
-            my_conn.execute(query)
+            #my_conn.execute(query)
+
+            with my_conn.connect() as conn:
+                conn.execute(text(query))
 
     elif type == "detail":
         my_conn.connect()
@@ -261,14 +272,23 @@ def del_data(type,value=None):
         for x in table_lst:
             if x == "beacon_group" or x == "beacon_run_conf":
                 query = "delete from {} where uid = '{}'".format(x,value)
-                my_conn.execute(query)
+                #my_conn.execute(query)
+
+                with my_conn.connect() as conn:
+                    conn.execute(text(query))
             else:
                 query = "delete from {} where group_id in (select distinct group_id from beacon_group where uid = '{}')".format(x,value)
-                my_conn.execute(query)
+                #my_conn.execute(query)
+
+                with my_conn.connect() as conn:
+                    conn.execute(text(query))
 
     elif type == "beacon":
         query = "delete from beacon_filter where ip = '{}'".format(value)
-        my_conn.connect().execute(query)
+        #my_conn.connect().execute(query)
+
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
 
     elif type == "data_source":
         if int(value) != 1:
@@ -278,15 +298,24 @@ def del_data(type,value=None):
             # IF NO LOCAL FILES DELETE THE DATSOURCE
             if df.empty:
                 query = "delete from datasource where rowid = {}".format(value)
-                my_conn.connect().execute(query)
+                #my_conn.connect().execute(query)
+
+                with my_conn.connect() as conn:
+                    conn.execute(text(query))
             else:
                 # DELETE DATASOURCE FILES FROM DB
                 query = "delete from ds_files where ds_id = {}".format(value)
-                my_conn.connect().execute(query)
+                #my_conn.connect().execute(query)
+
+                with my_conn.connect() as conn:
+                    conn.execute(text(query))
 
                 # DELETE DATASOURCE
                 query = "delete from datasource where rowid = {}".format(value)
-                my_conn.connect().execute(query)
+                #my_conn.connect().execute(query)
+
+                with my_conn.connect() as conn:
+                    conn.execute(text(query))
 
                 # DELETE THE FILES FROM THE FILESYSTEM
                 for x in df["file_name"].values:
@@ -300,16 +329,16 @@ def del_logfile(request,dir):
 
     Parameters:
     ===========
-    request: 
+    request:
         Django GET request
-    dir: 
+    dir:
         The log file to delete
 
     Returns:
     ========
-    Nothing    
+    Nothing
     """
-    
+
     log = request.GET.get("log")
 
     full_path = os.path.join(dir, "log", log)
@@ -385,9 +414,11 @@ def add_beacon_group(uid):
         my_conn = get_conn_str(CONF)
 
         query = "insert into beacon_group (uid) values('{}')".format(uid)
-        my_conn.connect()
+        #my_conn.connect()
+        #my_conn.execute(query)
 
-        my_conn.execute(query)
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
 
         query = "select group_id from beacon_group where uid = '{}'".format(uid)
 
@@ -395,7 +426,7 @@ def add_beacon_group(uid):
 
         return int(df.group_id.to_string(index=False))
     except BaseException as err:
-        logger.error(err)    
+        logger.error(err)
 
 def add_group_conf(uid, config):
     """
@@ -416,9 +447,13 @@ def add_group_conf(uid, config):
         my_conn = get_conn_str(CONF)
 
         query = "insert into beacon_run_conf (uid,config) values('{}','{}')".format(uid, str(config).replace("'","''"))
-        my_conn.connect().execute(query)
+        #my_conn.connect().execute(query)
+
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
+
     except BaseException as err:
-        logger.error(err)        
+        logger.error(err)
 
 def get_group_id(uid):
     """
@@ -462,7 +497,11 @@ def add_group_log(group_id,log_file):
         my_conn = get_conn_str(CONF)
 
         query = "insert into beacon_log (group_id,log_file) values('{}','{}')".format(group_id,log_file)
-        my_conn.connect().execute(query)
+        #my_conn.connect().execute(query)
+
+        with my_conn.connect() as conn:
+            conn.execute(text(query))
+
     except BaseException as err:
         logger.error(err)        
 
@@ -507,10 +546,10 @@ def add_dns(http_log_dir):
     load_df.rename(columns={"id.resp_h": "ip", "host": "dns"},inplace=True)
     load_df.dropna(inplace=True)
     load_df.drop_duplicates(inplace=True)
-    
+
     #####################################################################################
-    ##  
-    #####################################################################################    
+    ##
+    #####################################################################################
 
     my_conn = get_conn_str(CONF)
 
@@ -528,8 +567,10 @@ def add_dns(http_log_dir):
             and t.ip != t.dns; \
             \
             drop table tmp_dns;"
-    
-    my_conn.connect().execute(query)  
+
+    #my_conn.connect().execute(query)
+    with my_conn.connect() as conn:
+        conn.execute(text(query))
 
 def add_ds(post_data):
     """
@@ -562,7 +603,7 @@ def add_ds(post_data):
         query = "insert into datasource \
                 (ds_name,ds_type_id,data) \
                 select distinct '{}',{},'{}'".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
-        
+
         bg_pro = False
     elif post_data["data_type"] == "Elastic":
         # GET INDEX AS A LIST FOR MULTIPLE VALUES
@@ -571,11 +612,14 @@ def add_ds(post_data):
         query = "insert into datasource \
                 (ds_name,ds_type_id,data,active) \
                 select distinct '{}',{},'{}',False".format(post_data["ds_name"], int(post_data["ds_type_name"]), str(data).replace("'","''"))
-        
+
         bg_pro = True
 
     my_conn = get_conn_str(CONF)
-    my_conn.connect().execute(query)
+    #my_conn.connect().execute(query)
+
+    with my_conn.connect() as conn:
+        conn.execute(text(query))
 
     return bg_pro
 
@@ -608,9 +652,13 @@ def upd_ds(post_data):
         set ds_name = '{}',\
         data = '{}'\
         where rowid = {}".format(ds_name,str(data).replace("'","''"),post_data.GET.get("rowid"))
-        
+
     my_conn = get_conn_str(CONF)
-    my_conn.connect().execute(query)    
+    # my_conn.connect().execute(query)
+
+    with my_conn.connect() as conn:
+                conn.execute(text(query))
+
 
 def del_dsfile(filename):
     """
@@ -651,4 +699,7 @@ def ds_activate(ds_name):
     query = "update datasource set active = True where ds_name = '{}'".format(ds_name)
 
     my_conn = get_conn_str(CONF)
-    my_conn.connect().execute(query)
+    #my_conn.connect().execute(query)
+
+    with my_conn.connect() as conn:
+        conn.execute(text(query))
