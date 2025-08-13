@@ -130,6 +130,7 @@ def result_grid_group(request):
 
     # ADD LINKS IF DATA IS PRESENT
     if df.empty:
+        df["Top Talkers"] = ""
         df["Dashboard"] = ""
         df["Config"] = ""
         df["Delete"] = ""
@@ -137,7 +138,11 @@ def result_grid_group(request):
         # DELETE NULL VALUES OR MISSING VALUES
         df.dropna(inplace=True)
 
-        # LINKS FOR DASH, CONFIG & DELETE BUTTON
+        # LINKS FOR TOP TALKERS, DASH, CONFIG & DELETE BUTTON
+        df["Top Talkers"] = df.apply(
+            lambda row: '<a href="/TopTalkers?uid={}"><i class="fa-solid fa-bullhorn"></i></a>'.format(row["uid"]),
+            axis =1
+        )
         df["Dashboard"] =  df["uid"].apply(lambda x: '<a href="http://127.0.0.1:3000/d/UK-8Ve_7z/beacon?orgId=1&var-uid={}&from=now-2y&to=now&refresh=5s" target="_blank"><i class="fas fa-chart-line"></i></a>'.format(x))
         df["Config"] = df["uid"].apply(lambda x: '<a href="/RunConfig?uid={}"><i class="fa-solid fa-gears"></i></a>'.format(x))
         df["Delete"] = df.apply(
@@ -145,7 +150,7 @@ def result_grid_group(request):
             axis =1
         )
         df["log_file"] = df["log_file"].apply(lambda x: '<a href="/LogDetails.html?filename={}"><i class="fas fa-file"></i></a>'.format(x))
-        
+
         # ADD NEW COLUMN FOR NEW VALUES
         df["new"] = False
         if pd.to_datetime(df.iloc[0]["dt"],utc=True) > pd.Timestamp.utcnow() - pd.Timedelta(minutes=30):
@@ -158,7 +163,7 @@ def result_grid_group(request):
         )
 
     # FINAL DATAFRAME
-    df = df[["uid", "dt", "beacons", "Dashboard", "log_file", "Config", "Delete"]].rename(columns={"uid": "Group ID", "dt": "Date", "beacons": "Beacon Count", "log_file": "Log File"})
+    df = df[["uid", "dt", "beacons", "Top Talkers", "Dashboard", "log_file", "Config", "Delete"]].rename(columns={"uid": "Group ID", "dt": "Date", "beacons": "Beacon Count", "log_file": "Log File"})
 
     context = _get_context(df)
 
@@ -205,7 +210,7 @@ def del_log(request):
 
     # RELOAD LOG VIEW
     return HttpResponseRedirect("/Logs.html")
-    
+
 def del_result(request):
     uid = request.GET.get("uid")
 
@@ -214,7 +219,7 @@ def del_result(request):
 
     # DELETE LOGS
     del_logfile(request,BASE_DIR)
-    
+
     # RELOAD RESULTS VIEW
     return HttpResponseRedirect("/Results.html")
 

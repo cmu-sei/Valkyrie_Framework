@@ -256,8 +256,17 @@ from `beacon`.`datasource` ds
 inner join `beacon`.`ds_files` df on
 ds.rowid = df.ds_id;
 
+CREATE OR REPLACE DEFINER = 'root'@'localhost'
+SQL SECURITY DEFINER VIEW `beacon`.`vw_top_talker`
+as
+select distinct bg.uid,d.sip as source_ip,d.dip as destination_ip, d.port, count(distinct d.dt) as cnt
+from `beacon`.`beacon_group` bg
+inner join `beacon`.`delta` d on
+bg.group_id = d.group_id
+group by bg.uid,d.sip,d.dip,d.port;
+
 /*********************************************************************
-**  PRIVILEGES 
+**  PRIVILEGES
 *********************************************************************/
 
 DROP USER IF EXISTS 'grafana'@'%';

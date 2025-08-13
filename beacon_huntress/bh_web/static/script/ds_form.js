@@ -9,7 +9,7 @@ function buttonSelect() {
     if (selectElement.value !== "") {
         submitButton.disabled = false;
     } else {
-        submitButton.disabled = true; 
+        submitButton.disabled = true;
     }
 }
 
@@ -41,7 +41,8 @@ function addFieldsRun() {
             </div>
         `;
     } else if ((selectedType == "Zeek Connection Logs" && selectedDSName == "Zeek Connection Logs") || (selectedType == "Delta File" && selectedDSName == "Delta File") ||
-        (selectedType == "HTTP File" && selectedDSName == "HTTP File") || (selectedType == "DNS File" && selectedDSName == "DNS File")) {
+        (selectedType == "HTTP File" && selectedDSName == "HTTP File") || (selectedType == "DNS File" && selectedDSName == "DNS File") ||
+        (selectedType == "Custom File" && selectedDSName == "Custom File")) {
         additionalFieldsContainer.innerHTML = `
             <div class="form-group">
                 <label for="raw_log_loc">Raw Log Location</label><br>
@@ -60,7 +61,8 @@ function addFieldsRun() {
         `;
     }
     else if ((selectedType == "Zeek Connection Logs" && selectedDSName != "Zeek Connection Logs") || (selectedType == "Delta File" && selectedDSName != "Delta File")
-        (selectedType == "HTTP File" && selectedDSName != "HTTP File") || (selectedType == "DNS File" && selectedDSName != "DNS File")) {
+        (selectedType == "HTTP File" && selectedDSName != "HTTP File") || (selectedType == "DNS File" && selectedDSName != "DNS File") ||
+        (selectedType == "Custom File" && selectedDSName != "Custom File")) {
         additionalFieldsContainer.innerHTML = `
             <div class="mb-3">
                 <label for="start_dte">Start Datetime</label><br>
@@ -165,7 +167,7 @@ function addFieldsDS() {
 
     }
     else if ((selectedType == "Zeek Connection Logs") || (selectedType == "Delta File") || (selectedType == "HTTP File") ||
-    (selectedType == "DNS File")) {
+    (selectedType == "DNS File") || (selectedType == "Custom File")) {
         additionalFieldsContainer.innerHTML = `
         <div class="mb-3">
             <label for="ds_name" class="form-label">Data Source Name</label>

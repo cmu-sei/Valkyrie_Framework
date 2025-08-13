@@ -536,20 +536,6 @@ def load_ds_data(df, fname, dstype = "delta", ftype = "csv"):
     """
 
     try:
-        # if ftype.lower() == "csv":
-        #     df = pd.read_csv(fname)
-
-        #     df["source_file"] = fname
-        #     df["src_row_id"] = df.index
-
-        #     col_check = True
-        # elif ftype.lower() == "parquet":
-        #     df = pd.read_parquet(fname)
-
-        #     df["source_file"] = fname
-        #     df["src_row_id"] = df.index
-
-        #     col_check = True
         if df.empty:
             logger.warning("Empty file {}!".format(fname))
             df = pd.DataFrame(columns=["ts","uid","id.orig_h","id.orig_p","id.resp_h",
@@ -649,22 +635,6 @@ def check_ds_columns(df, dstype = "delta"):
 
         df_new = df.copy()
 
-        # # ADD MISSING ZEEK COLUMNS
-        # df_new["proto"] = ""
-        # df_new["service"] = ""
-        # df_new["duration"] = 0
-        # df_new["orig_ip_bytes"] = 0
-        # df_new["resp_ip_bytes"] = 0
-        # df_new["conn_state"] = ""
-        # df_new["local_orig"] = False
-        # df_new["local_resp"] = False
-        # df_new["missed_bytes"] = 0
-        # df_new["history"] = ""
-        # df_new["orig_pkts"] = 0
-        # df_new["resp_pkts"] = 0
-        # df_new["community_id"] = ""
-        # df_new["orig_mac_oui"] = ""
-
     elif dstype.lower() == "dns":
         # FIGURE OUT WHAT TO DO WITH TTLs & Query
         # TWO RECORDS PER
@@ -689,6 +659,8 @@ def check_ds_columns(df, dstype = "delta"):
         df_new["orig_mac_oui"] = ""
         # NEW FOR CLI
         df_new["dns"] = ""
+    elif dstype.lower() == "custom":
+        df_new = df.copy()
     else:
         print("ERROR: Data Source Type {} does not exist!".format(str(dstype)))
         sys.exit(1)

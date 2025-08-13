@@ -7,10 +7,13 @@
 <script type="text/javascript" src="/static/script/ds_form.js"></script>
 <script type="text/javascript" src="/static/script/bootstrap.bundle.min.js"></script>
 
-{% endblock %} 
+{% endblock %}
 {% block content %} {% load crispy_forms_tags %}
 <h4>Execute a New Quick Cluster Search</h4>
 <br>
+
+{% load crispy_forms_tags %}
+
 <form action="" method="post">
 
   <label for="formFile" class="form-label">Data Source*</label>
@@ -24,7 +27,6 @@
 
   <!--Hidden value for Data Type-->
   <input type="hidden" name="data_type" id="data_type_field" value="">
-
 
   {% csrf_token %} {{form | crispy }}
 

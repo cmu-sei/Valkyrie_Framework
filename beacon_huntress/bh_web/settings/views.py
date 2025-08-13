@@ -52,7 +52,7 @@ def _eds_json(df):
             label = key
             desc = ""
 
-        ret_dict.append({"id": key, "label": label, "value": value, "type": "text", "desc": desc})          
+        ret_dict.append({"id": key, "label": label, "value": value, "type": "text", "desc": desc})
 
     return ret_dict
 
@@ -143,9 +143,9 @@ def get_datasources(request, mask = True):
     # GET DATASOURCES
     df = get_data("data_sources")
 
-    # SET DELETE LINK FOR ALL BUT THE DEFAULT
-    df["Delete"] = np.where(df["ds_name"] == "Zeek Connection Logs", "",df["rowid"].apply(lambda x: '<a href="/DelDS?rowid={}"><i class="fa-regular fa-trash-can"></i></a>'.format(x)))
-    df["Edit"] = np.where(((df["ds_name"] == "Zeek Connection Logs") | (df["ds_type"] == "Elastic")), "",df["rowid"].apply(lambda x: '<a href="/EditDS?rowid={}"><i class="fa-solid fa-pen-to-square"></i></a>'.format(x)))
+    # SET DELETE LINK FOR ALL BUT THE DEFAULTS
+    df["Delete"] = np.where(df["ds_name"].isin(["Zeek Connection Logs", "Delta File", "DNS File", "HTTP File"]), "",df["rowid"].apply(lambda x: '<a href="/DelDS?rowid={}"><i class="fa-regular fa-trash-can"></i></a>'.format(x)))
+    df["Edit"] = np.where(df["ds_name"].isin(["Zeek Connection Logs", "Delta File", "DNS File", "HTTP File", "Elastic"]), "",df["rowid"].apply(lambda x: '<a href="/EditDS?rowid={}"><i class="fa-solid fa-pen-to-square"></i></a>'.format(x)))
 
     # MASK API KEY FROM DATA SOURCES PAGES
     if mask == True:
@@ -159,12 +159,12 @@ def get_datasources(request, mask = True):
 
     context = _get_context(df)
 
-    return render(request, os.path.join(BASE_DIR, "settings", "pages", "DataSources.html"), context)  
+    return render(request, os.path.join(BASE_DIR, "settings", "pages", "DataSources.html"), context)
 
 def new_ds(request):
 
     if request.method == "POST":
-        
+
         print(request.POST)
 
         try:
@@ -258,4 +258,23 @@ def get_elasticindex(request):
             messages.error(request, "ERROR: {}".format(err))
             return JsonResponse(df,safe=False)
 
-    
+def top_talkers(request):
+
+    uid = request.GET.get("uid")
+
+    df = get_data("top_talkers",uid)
+
+    # REORDER BY SCORE & REINDEX
+    df.sort_values(by=["cnt"], ascending=False, inplace=True)
+    df = df.reset_index(drop=True)
+    df["ID"] = (df.index) + 1
+
+    df = df[["ID", "uid", "source_ip", "destination_ip", "port", "cnt"]].\
+        rename(columns={"uid": "Beacon Group",
+                        "source_ip": "Source IP",
+                        "port": "Port",
+                        "destination_ip": "Destination IP",
+                        "cnt": "Total Number of Connections"})
+
+    context = _get_context(df)
+    return render(request, os.path.join(BASE_DIR, "bh_web", "pages", "TopTalkers.html"), context)

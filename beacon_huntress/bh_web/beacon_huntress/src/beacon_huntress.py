@@ -163,6 +163,12 @@ def _get_ds_types(type):
     elif type.lower() in ["d", "delta"]:
         ds_name = "HTTP File"
         ds_type = "HTTP File"
+    elif type.lower() == "dns":
+        ds_name = "DNS File"
+        ds_type = "DNS File"
+    elif type.lower() in ["ct", "custom"]:
+        ds_name = "Custom File"
+        ds_type = "Custom File"
     else:
         ds_name = ""
         ds_type = ""
@@ -212,14 +218,18 @@ def pipeline(conf):
     log_file = os.path.join(log_dir,"{}".format(log_file_name))
 
     logger = logging.getLogger("logger")
-
     logger.setLevel(logging.DEBUG)
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s:\t%(message)s',datefmt="%m-%d %H:%M:%S")
 
     # FILE LOG HANDLER
     log_fh = logging.FileHandler(log_file)
-    log_fh.setLevel(logging.INFO)
+
+    if config["general"]["verbose"]:
+        log_fh.setLevel(logging.INFO)
+    else:
+        log_fh.setLevel(logging.DEBUG)
+
     log_fh.setFormatter(formatter)
 
     # ADD LOG HANDLERS
@@ -286,7 +296,7 @@ def pipeline(conf):
     #####################################################################################
 
     # DELETE BRONZE, SILVER, GOLD & FILTERS LAYERS
-    logger.info("Deleting previous folder/s")
+    logger.warning("Deleting previous folder/s")
     _delete_folders([config["general"]["bronze_loc"],
                      config["general"]["silver_loc"],
                      config["general"]["gold_loc"],
@@ -306,8 +316,25 @@ def pipeline(conf):
         )
 
     #####################################################################################
+    ##  Config
+    #####################################################################################
+
+    logger.warning(config)
+
+    #####################################################################################
     ##  CONVERT START & END DATE TO UTC THEN EPOCH
     #####################################################################################
+
+    # CHECK FOR START & END DATES IF THEY DO NOT EXIST USE ""
+    chk_str_dte = config.get("general", {}).get("start_dte")
+    chk_end_dte = config.get("general", {}).get("end_dte")
+
+    if chk_str_dte is None:
+        config["general"]["start_dte"] = ""
+
+    if chk_end_dte is None:
+        config["general"]["end_dte"] = ""
+
 
     start_dte = _get_epoch_dte(config["general"]["start_dte"])
     end_dte = _get_epoch_dte(config["general"]["end_dte"])
@@ -340,7 +367,8 @@ def pipeline(conf):
         if config["general"]["filter"] == True:
 
             # CHECK FOR CONFIG FILTER CHANGE
-            conf_changed = _config_changed(config["general"]["filter_loc"],config)
+            #conf_changed = _config_changed(config["general"]["filter_loc"],config)
+            conf_changed = True
 
             # IF CONFIG FILTER CHANGED REFILTER BRONZE LAYER
             if conf_changed == True and config["general"]["overwrite"] == False:
@@ -778,6 +806,11 @@ def pipeline(conf):
                      os.path.join(lst_path[0], lst_path[1], "gold")
                      ],logger)
 
+    # DELETE UI FILE IF EXISTS
+    if conf == "bh_run.yaml":
+        if os.path.exists("bh_run.yaml"):
+            os.remove("bh_run.yaml")
+
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
     print("Beacon Huntress completed {}".format(endtime))
@@ -852,8 +885,6 @@ def parse_arg_date(dte):
 #####################################################################################
 
 def main(conf):
-
-    #config = _load_config(conf)
 
     ret_val = pipeline(conf = conf)
 

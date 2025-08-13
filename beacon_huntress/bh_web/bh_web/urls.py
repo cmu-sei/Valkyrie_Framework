@@ -19,7 +19,7 @@ from django.urls import path
 from pathlib import Path
 from . import views
 from bh_execute.views import AggView, DBScanView, DBScanVarView, ByPacketView, ByConnGroupView, ByPConnView
-from settings.views import setting_view, filter_view, get_datasources, new_ds, del_ds, edit_ds, get_elasticindex
+from settings.views import setting_view, filter_view, get_datasources, new_ds, del_ds, edit_ds, get_elasticindex, top_talkers
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,6 +54,6 @@ urlpatterns = [
     path('NewDataSource.html', new_ds),
     path('DelDS', del_ds),
     path('EditDS', edit_ds),
-    path('GetIndex', get_elasticindex)
-
+    path('GetIndex', get_elasticindex),
+    path('TopTalkers', top_talkers)
 ]

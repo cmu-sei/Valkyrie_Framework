@@ -64,6 +64,7 @@ def normalize_ts(df, column = "ts"):
         df[column] = df[column].astype('int64') // 10**9  # epoch seconds
 
     return df
+
 def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end_dte = "", overwrite = False, verbose = False):
     """
     Build initial files
@@ -129,13 +130,14 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
 
     ext = str(Path(src_file).suffix).replace(".","").lower()
 
-    if ext == "json" or ext == "gz":
+    if ext in ["json", "gz", "log"]:
         df = pd.read_json(src_file, lines=True)
     elif ext == "parquet":
         df = pd.read_parquet(src_file)
     elif ext == "csv":
         df = pd.read_csv(src_file)
     else:
+        logger.error("Extension option {} does not exist for a Raw File type!".format(ext))
         print("ERROR: Extension option {} does not exist for a Raw File type!".format(ext))
 
     # CHECK FOR DATES
@@ -1273,7 +1275,7 @@ def build_bronze_layer(src_loc, bronze_loc, start_dte = "", end_dte = "", dns_fi
                 except BaseException as err:
                     logger.error("Failure on file {}".format(f))
                     logger.error(err)
-    
+
     endtime = datetime.now() - starttime
     logger.info("Bronze file process completed {}".format(endtime))
 

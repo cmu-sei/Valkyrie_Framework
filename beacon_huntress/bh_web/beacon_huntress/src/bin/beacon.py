@@ -1295,6 +1295,7 @@ def p_conns(delta_file, diff_time = 60, diff_type = "mi"):
 def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
 
     is_new_bronze = False
+    valid_ds = ["Zeek Connection Logs", "Elastic", "Security Onion", "Delta File", "HTTP File", "DNS File", "Custom File"]
 
     # RAW ZEEK LOGS
     if config["general"]["ds_type"] == "Zeek Connection Logs":
@@ -1358,12 +1359,12 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             elif start_dte == "" and end_dte != "":
                 df_bronze = df_bronze.query("ts <= {}".format(end_dte))
             else:
-                pass  
+                pass
 
             Path(config["general"]["bronze_loc"]).mkdir(parents=True, exist_ok=True)
 
             epoch = int(time.time())
-            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))     
+            df_bronze.to_parquet(os.path.join(config["general"]["bronze_loc"], "elastic_{}.parquet".format(epoch)))
 
             endtime = datetime.now() - es_starttime
             logger.info("Elastic runtime {}".format(endtime))
@@ -1383,7 +1384,6 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
         # CREATE RAW DELTA ZEEK FORMAT FILE
         # BACKHERE
         df_src_delta = load_delta_data(config["general"]["raw_loc"])
-        #df_src_delta = load_ds_data(config["general"]["raw_loc"], dstype = "delta")
 
         # CREATE FOLDER
         if os.path.exists("/delta/{}".format(beacon_group)):
@@ -1427,22 +1427,9 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
         # VARIABLE INIT
         is_new_bronze = True
 
-        # CREATE RAW DELTA ZEEK FORMAT FILE
-        # BACKHERE
-        #df_src_delta = load_delta_data(config["general"]["raw_loc"])
-        # df_src_delta = load_ds_data(config["general"]["raw_loc"], dstype = "http")
-
-        # # CREATE FOLDER
-        # if os.path.exists("/delta/{}".format(beacon_group)):
-        #     pass
-        # else:
-        #     Path("/delta/{}".format(beacon_group)).mkdir(parents=True, exist_ok=True)
-
-        # df_src_delta.to_parquet("/http/{}/{}_delta.parquet".format(beacon_group,beacon_group))
-
         # BUILD BRONZE LAYER
         is_new_bronze = build_bronze_layer(
-            src_loc=config["general"]["raw_loc"], 
+            src_loc=config["general"]["raw_loc"],
             bronze_loc=config["general"]["bronze_loc"],
             ds_type = "http",
             start_dte = start_dte,
@@ -1467,7 +1454,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
         # CHECK BRONZE
         df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
 
-    # HTTP DATASOURCE
+    # DNS DATASOURCE
     elif config["general"]["ds_type"] == "DNS File":
 
         # VARIABLE INIT
@@ -1492,7 +1479,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
             start_dte = start_dte,
             end_dte = end_dte,
             dns_file=config["bronze"]["dns_file"],
-            overwrite = config["general"]["overwrite"], 
+            overwrite = config["general"]["overwrite"],
             verbose = config["general"]["verbose"]
             )
 
@@ -1510,5 +1497,44 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id,logger = ""):
 
         # CHECK BRONZE
         df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    # Custome DATASOURCE
+    elif config["general"]["ds_type"] == "Custom File":
+
+        logger.info("Processing Custom Files")
+
+        # VARIABLE INIT
+        is_new_bronze = True
+
+        # BUILD BRONZE LAYER
+        is_new_bronze = build_bronze_layer(
+            src_loc=config["general"]["raw_loc"],
+            bronze_loc=config["general"]["bronze_loc"],
+            ds_type = "custom",
+            start_dte = start_dte,
+            end_dte = end_dte,
+            dns_file=config["bronze"]["dns_file"],
+            overwrite = config["general"]["overwrite"],
+            verbose = config["general"]["verbose"]
+            )
+
+        if config["dashboard"]["dashboard"] == True:
+
+            load_dashboard(
+                file_loc = [config["general"]["bronze_loc"]],
+                dash_config = config["dashboard"]["conf"],
+                dash_type = "raw_source",
+                is_new = is_new_bronze,
+                group_id = group_id,
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
+
+        # CHECK BRONZE
+        df_bronze = pd.read_parquet(config["general"]["bronze_loc"])
+
+    else:
+        logger.error("Invaild Datasource! Please choose {}".format(", ".join(valid_ds)))
+        df_bronze = pd.DataFrame()
 
     return df_bronze, is_new_bronze

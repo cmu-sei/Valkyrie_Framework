@@ -163,6 +163,11 @@ def get_data(type,value = None):
             df = pd.read_sql("select * from vw_datasources where active = True order by create_date", my_conn)
         else:
             df = pd.read_sql("select * from vw_datasources where rowid = {} and active = True order by create_date".format(value), my_conn)
+    elif type == "top_talkers":
+        if value == None:
+            df = pd.read_sql("select * from vw_top_talker order by uid, cnt desc", my_conn)
+        else:
+            df = pd.read_sql("select * from vw_top_talker where uid = '{}' order by cnt desc".format(value), my_conn)
     else:
         if value == None:
             df = pd.read_sql("select * from vw_beacon", my_conn)
