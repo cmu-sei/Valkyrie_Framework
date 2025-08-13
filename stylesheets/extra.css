@@ -1,0 +1,10 @@
+/* :root > * { --md-primary-fg-color: purple; }
+img[alt="Crucible Logo"] {width:4.5%; float:left; margin-right:7px; }
+ */
+
+ .ipmaven-inline { width: 26px; float:left; margin:7px 7px 0 0;}
+ .bh-inline {
+     width: 26px;
+     float: left;
+     margin: 3px 7px 0 0;
+ }

@@ -1,0 +1,3105 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Valkyrie Framework is an open source suite of tools that enable hunt teams to locate and identify hidden cybersecurity threats lurking in network traffic.">
+      
+      
+        <meta name="author" content="VF Team">
+      
+      
+      
+        <link rel="prev" href="../jupyter/">
+      
+      
+        <link rel="next" href="../tutorial/">
+      
+      
+      <link rel="icon" href="../../assets/img/vf.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
+    
+    
+      
+        <title>Modules - Valkyrie Framework Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-8TFTQ2LFKB"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-8TFTQ2LFKB",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-8TFTQ2LFKB",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#beacon-huntress-modules" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Valkyrie Framework Documentation" class="md-header__button md-logo" aria-label="Valkyrie Framework Documentation" data-md-component="logo">
+      
+  <img src="../../assets/img/vf.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Valkyrie Framework Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Modules
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cmu-sei/Valkyrie_Framework" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cmu-sei/Valkyrie_Framework
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Beacon Huntress
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ip_maven/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  IP Maven
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Valkyrie Framework Documentation" class="md-nav__button md-logo" aria-label="Valkyrie Framework Documentation" data-md-component="logo">
+      
+  <img src="../../assets/img/vf.png" alt="logo">
+
+    </a>
+    Valkyrie Framework Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cmu-sei/Valkyrie_Framework" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cmu-sei/Valkyrie_Framework
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Beacon Huntress
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Beacon Huntress
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../algorithms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Algorithms
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datasource/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Sources
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../defaultfilteredhosts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Default Filtered Hosts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jupyter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Juptyer Notebooks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Modules
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#beaconpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      beacon.py
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="beacon.py">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#import-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import Module
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#note" class="md-nav__link">
+    <span class="md-ellipsis">
+      Note
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reload-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reload Module
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agglomerative_clusteringkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      agglomerative_clustering(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="agglomerative_clustering(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli_resultskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      cli_results(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cli_results(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cluster_connskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      cluster_conns(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cluster_conns(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dbscan_clusteringkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      dbscan_clustering(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dbscan_clustering(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dbscan_by_variancekwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      dbscan_by_variance(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="dbscan_by_variance(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get_dnskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_dns(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get_dns(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#packetkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      packet(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="packet(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ingestpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      ingest.py
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add_dnskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      add_dns(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="add_dns(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build_bronze_layerkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      build_bronze_layer(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_bronze_layer(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build_delta_fileskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      build_delta_files(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_delta_files(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build_filter_fileskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      build_filter_files(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_filter_files(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build_null_fileskwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      build_null_files(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_null_files(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build_rawkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      build_raw(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_raw(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convert_parquet_to_csvkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      convert_parquet_to_csv(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="convert_parquet_to_csv(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#download_s3_folderkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      download_s3_folder(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="download_s3_folder(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-run_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#filter_dataframekwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      filter_dataframe(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="filter_dataframe(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#returns_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Returns
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get_latest_filekwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_latest_file(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="get_latest_file(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-run_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unzipkwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      unzip(**kwargs)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="unzip(**kwargs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-syntax_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request Syntax
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Parameters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../ip_maven/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    IP Maven
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            IP Maven
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ip_maven/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Quick Start
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ip_maven/additionalresources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Additional Resources
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ip_maven/faqs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Frequently Asked Questions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="beacon-huntress-modules">Beacon Huntress Modules<a class="headerlink" href="#beacon-huntress-modules" title="Permanent link">&para;</a></h1>
+<p>There are two main modules that can be used for the beacon detection data pipeline: beacon.py and ingest.py.<br>
+Beacon.py is used for beacon detection. Ingest.py is used for creating the data pipeline. <b><i>Modules should only be used in a Juypter Notebook environment</b></i>.</p>
+<h2 id="beaconpy"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 9V3.5L18.5 9M6 2c-1.11 0-2 .89-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg></span> <strong>beacon.py</strong><a class="headerlink" href="#beaconpy" title="Permanent link">&para;</a></h2>
+<p>The Beacon module is used to run various beacon detection algorithms against an ingest-created delta file. Currently all delta files used within this module must be in Parquet format.<br></p>
+<details class="tip" open="open">
+<summary>Note</summary>
+<p>Ensure that you have the <code>__pycache__</code> directory in the same location as the beacon.py file.<br></p>
+</details>
+<h3 id="import-module"><strong>Import Module</strong><a class="headerlink" href="#import-module" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+</code></pre></div>
+<p>These are the available methods:</p>
+<ul>
+<li><a href="#agglomerativeclustering">agglomerative_clustering()</a></li>
+<li><a href="#cliresults">cli_results()</a></li>
+<li><a href="#clusterconn">cluster_conns()</a></li>
+<li><a href="#dbscanclustering">dbscan_clustering()</a></li>
+<li><a href="#dbscanbyvariance">dbscan_by_variance()</a></li>
+<li><a href="#getdns">get_dns()</a></li>
+</ul>
+<blockquote>
+<h3 id="note"><strong>Note</strong><br><a class="headerlink" href="#note" title="Permanent link">&para;</a></h3>
+<p>Any changes made to the beacon.py module within <strong>JuypterLab</strong> will require a reload of the beacon.py module.<br>
+Use the code below to reload the beacon.py module.</p>
+</blockquote>
+<h3 id="reload-module"><strong>Reload Module</strong><a class="headerlink" href="#reload-module" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="n">imported_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;beacon&quot;</span><span class="p">)</span>
+<span class="n">importlib</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">imported_module</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+</code></pre></div>
+<h2 id="agglomerative_clusteringkwargs"><a name="agglomerativeclustering"></a><strong>agglomerative_clustering(**kwargs)</strong><a class="headerlink" href="#agglomerative_clusteringkwargs" title="Permanent link">&para;</a></h2>
+<p>Run an agglomerative clustering algorithm against a delta file to identify cluster points to be used to find a beacon.<br></p>
+<h3 id="request-syntax"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">agglomerative_clustering</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">max_variance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">min_records</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">cluster_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">line_amounts</span> <span class="o">=</span> <span class="p">[</span> <span class="nb">int</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">min_delta_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters"><strong>Parameters</strong><a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>delta_file</strong> <i>(string)</i> -- <strong>[REQUIRED]</strong><br>
+  Source delta file.<br></p>
+</li>
+<li>
+<p><strong>delta_column</strong> <i>(string)</i><br>
+  Source delta column that you want to search. Options (below) are ms = milliseconds and mins = minutes<br>
+  <strong>Options</strong>
+  _ delta_ms
+  _ delta_mins</p>
+</li>
+<li>
+<p><strong>max_variance</strong> <i>(float)</i> -- <strong>[REQUIRED]</strong><br>
+  Variance threshold for any potential beacons.<br></p>
+</li>
+<li>
+<p><strong>min_records</strong> <i>(int)</i> -- <strong>[REQUIRED]</strong><br>
+  Minimum number of delta records to search.<br></p>
+</li>
+<li>
+<p><strong>cluster_factor</strong> <i>(float)</i> -- <strong>[REQUIRED]</strong><br>
+  The likelihood percentage for a cluster.<br></p>
+</li>
+<li>
+<p><strong>line_amounts</strong> <i>(list)</i> -- <strong>[REQUIRED]</strong><br>
+  Line amounts to process at a time, in list format.<br></p>
+</li>
+<li>
+<p><strong>min_delta_time</strong> <i>(string)</i> -- <strong>[REQUIRED]</strong><br>
+  Minimum delta time to search by, in milliseconds.<br></p>
+</li>
+<li>
+<p><strong>gold_loc</strong> <i>(string)</i> <br>
+  Results file location. Blank string ("") for no result file<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>cli_return</strong> <i>(boolean)</i> <br>
+  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i> <br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i> <br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns"><strong>Returns</strong><a class="headerlink" href="#returns" title="Permanent link">&para;</a></h3>
+<p>Gold file (string)</p>
+<h3 id="example-run"><strong>Example Run</strong><a class="headerlink" href="#example-run" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">gold_file</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">agglomerative_clustering</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta/delta_file.parquet&quot;</span><span class="p">,</span>
+    <span class="n">max_variance</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">min_records</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">cluster_factor</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">line_amounts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="n">min_delta_time</span> <span class="o">=</span> <span class="mi">300000</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/gold/beacon/agg_cluster&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">gold_file</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="cli_resultskwargs"><a name="cliresults"></a><strong>cli_results(**kwargs)</strong><a class="headerlink" href="#cli_resultskwargs" title="Permanent link">&para;</a></h2>
+<p>Return Command Line Interface (CLI) results from a gold file. Results will be printed to the screen.</p>
+<h3 id="request-syntax_1"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">cli_results</span><span class="p">(</span>
+    <span class="n">gold_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;string</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_1"><strong>Parameters</strong><a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>gold_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Gold file location.<br></p>
+</li>
+<li>
+<p><strong>file_type</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Gold file type (CSV or Parquet).<br>
+  <strong>Default</strong> = "parquet"<br></p>
+</li>
+</ul>
+<h3 id="returns_1"><strong>Returns</strong><a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_1"><strong>Example Run</strong><a class="headerlink" href="#example-run_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">beacon</span><span class="o">.</span><span class="n">cli_results</span><span class="p">(</span>
+    <span class="n">gold_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/gold/data/12345678.parquet&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="cluster_connskwargs"><a name="clusterconn"></a><strong>cluster_conns(**kwargs)</strong><a class="headerlink" href="#cluster_connskwargs" title="Permanent link">&para;</a></h2>
+<p>Return Command Line Interface (CLI) results from a gold file. Results will be printed to the screen.</p>
+<h3 id="request-syntax_2"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">cluster_conns</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">conn_cnt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">conn_group</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_2"><strong>Parameters</strong><a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>delta_file</strong> <i>(string)</i> -- <strong>[REQUIRED]</strong><br>
+  Source delta file.<br></p>
+</li>
+<li>
+<p><strong>delta_column</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source delta column that you want to search.<br></p>
+</li>
+<li>
+<p><strong>conn_cnt</strong> <i>(int)</i><br>
+  Total connection count for a group. Greater than or equal (&gt;=).<br>
+  <strong>Default</strong> = 10<br></p>
+</li>
+<li>
+<p><strong>conn_group</strong> <i>(int)</i><br>
+  Total number of connection groups. Greater than or equal (&gt;=).<br>
+  <strong>Default</strong> = 5<br></p>
+</li>
+<li>
+<p><strong>threshold</strong> <i>(int)</i><br>
+  The time threshold in minutes when determining connection groups.<br>
+  <strong>Default</strong> = 60<br></p>
+</li>
+<li>
+<p><strong>gold_loc</strong> <i>(string)</i><br>
+  Results file location. Blank string ("") for no result file<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>cli_return</strong> <i>(boolean)</i> <br>
+  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i><br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_2"><strong>Returns</strong><a class="headerlink" href="#returns_2" title="Permanent link">&para;</a></h3>
+<p>Gold file (string)</p>
+<h3 id="example-run_2"><strong>Example Run</strong><a class="headerlink" href="#example-run_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">gold_file</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">cluster_conns</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta/delta_file.parquet&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;delta_mins&quot;</span><span class="p">,</span>
+    <span class="n">conn_cnt</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">conn_group</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/gold/beacon/dbscan&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">gold_file</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="dbscan_clusteringkwargs"><a name="dbscanclustering"></a><strong>dbscan_clustering(**kwargs)</strong><a class="headerlink" href="#dbscan_clusteringkwargs" title="Permanent link">&para;</a></h2>
+<p>Run a DBSCAN cluster algorithm against a delta file to identify cluster points to be used to find a beacon.</p>
+<h3 id="request-syntax_3"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">dbscan_clustering</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">minimum_delta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">spans</span> <span class="o">=</span> <span class="p">[[</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span> <span class="p">],</span> <span class="p">[</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="p">],</span>
+    <span class="n">minimum_points_in_cluster</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">minimum_likelihood</span> <span class="o">=</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_3"><strong>Parameters</strong><a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>delta_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source delta file.<br></p>
+</li>
+<li>
+<p><strong>delta_column</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source delta column that you want to search.<br></p>
+</li>
+<li>
+<p><strong>minimum_delta</strong> <i>(int)</i> --<strong>[REQUIRED]</strong><br>
+  Minimum number of delta records to search using your delta column.<br></p>
+</li>
+<li>
+<p><strong>spans</strong> <i>(list)</i> <br>
+  Spans of time that you wish to search, in list format.<br>
+  <i>Example: Will search within two time spans, 0-5 min and 5-10 min.<br>
+  <t>[[0, 5], [5, 10]]</i><br>
+  <strong>Default</strong> = []<br></p>
+</li>
+<li>
+<p><strong>minimum_points_in_cluster</strong> <i>(int)</i><br>
+  Destination file type (CSV or Parquet).<br>
+  <strong>Default</strong> = 4<br></p>
+</li>
+<li>
+<p><strong>minimum_likelihood</strong> <i>(float)</i> <br>
+  Likelihood value (threshold) used to identify a potential beacon.<br>
+  <strong>Default</strong> = .70<br></p>
+</li>
+<li>
+<p><strong>gold_loc</strong> <i>(string)</i><br>
+  Results file location. Blank string ("") for no result file<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>cli_return</strong> <i>(boolean)</i> <br>
+  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i><br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_3"><strong>Returns</strong><a class="headerlink" href="#returns_3" title="Permanent link">&para;</a></h3>
+<p>Gold file (string)</p>
+<h3 id="example-run_3"><strong>Example Run</strong><a class="headerlink" href="#example-run_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">gold_file</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">dbscan_clustering</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta/delta_file.parquet&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;delta_mins&quot;</span><span class="p">,</span>
+    <span class="n">minimum_delta</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">spans</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="mi">35</span><span class="p">],</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">]],</span>
+    <span class="n">minimum_points_in_cluster</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">minimum_likelihood</span> <span class="o">=</span> <span class="mf">0.70</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/gold/beacon/dbscan&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">gold_file</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="dbscan_by_variancekwargs"><a name="dbscanbyvariance"></a><strong>dbscan_by_variance(**kwargs)</strong><a class="headerlink" href="#dbscan_by_variancekwargs" title="Permanent link">&para;</a></h2>
+<p>Run a DBSCAN cluster by filtering out records by delta variance percentage and average delta time. Source delta file must be in Parquet format.</p>
+<h3 id="request-syntax_4"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">dbscan_by_variance</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">avg_delta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">conn_cnt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">span_avg</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">variance_per</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">minimum_likelihood</span> <span class="o">=</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_4"><strong>Parameters</strong><a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>delta_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source delta file.<br></p>
+</li>
+<li>
+<p><strong>delta_column</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source delta column that you want to search.<br></p>
+</li>
+<li>
+<p><strong>avg_delta</strong> <i>(int)</i> --<strong>[REQUIRED]</strong><br>
+  Average delta time to include in the search using your delta column. Less than or equal (&lt;=).<br></p>
+</li>
+<li>
+<p><strong>conn_cnt</strong> <i>(int)</i><br>
+  Total connection count for filtering. Greater than or equal (&gt;=).<br>
+  <strong>Default</strong> = 4<br></p>
+</li>
+<li>
+<p><strong>span_avg</strong> <i>(int)</i> <br>
+  The percentage to increase and decrease from the connections total delta span.<br>
+  <i>Example: 15 will increase/decrease the minimum and maximum of the delta span by 15%.<br>
+  <t>delta min = 5<br>
+  <t>delta max = 10<br>
+  <t>span min = 4.25 (5 - (5 _ 15%))<br>
+  <t>span max = 11.5 (10 + (10 _ 15%))</i><br>
+  <strong>Default</strong> = 15<br></p>
+</li>
+<li>
+<p><strong>variance_per</strong> <i>(int)</i><br>
+  Total variance percentage for filtering. Greater than or equal (&gt;=).<br>
+  <strong>Default</strong> = 4<br></p>
+</li>
+<li>
+<p><strong>gold_loc</strong> <i>(string)</i><br>
+  Results file location. Blank string ("") for no result file<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>cli_return</strong> <i>(boolean)</i> <br>
+  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i> <br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_4"><strong>Returns</strong><a class="headerlink" href="#returns_4" title="Permanent link">&para;</a></h3>
+<p>Gold file (string)</p>
+<h3 id="example-run_4"><strong>Example Run</strong><a class="headerlink" href="#example-run_4" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">gold_file</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">dbscan_by_variance</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta/delta_file.parquet&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;delta_mins&quot;</span><span class="p">,</span>
+    <span class="n">avg_delta</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">conn_cnt</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">span_avg</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">variance_per</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">minimum_likelihood</span> <span class="o">=</span> <span class="mf">0.70</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/gold/beacon/dbscan_var&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">gold_file</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="get_dnskwargs"><a name="getdns"></a><strong>get_dns(**kwargs)</strong><a class="headerlink" href="#get_dnskwargs" title="Permanent link">&para;</a></h2>
+<p>Look up a DNS record for an IP.</p>
+<h3 id="request-syntax_5"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_5" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">get_dns</span><span class="p">(</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_5"><strong>Parameters</strong><a class="headerlink" href="#parameters_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>ip</strong> <i>(list)</i> --<strong>[REQUIRED]</strong><br>
+  IP for which you want to look up a DNS entry.<br>
+  <strong>Default</strong> = None<br></li>
+</ul>
+<h3 id="returns_5"><strong>Returns</strong><a class="headerlink" href="#returns_5" title="Permanent link">&para;</a></h3>
+<p>DNS Value (string)</p>
+<h3 id="example-run_5"><strong>Example Run</strong><a class="headerlink" href="#example-run_5" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">dns</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">get_dns</span><span class="p">(</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="s2">&quot;127.0.0.1&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">dns</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="packetkwargs"><a name="packet"></a><strong>packet(**kwargs)</strong><a class="headerlink" href="#packetkwargs" title="Permanent link">&para;</a></h2>
+<p>Run a Beacon search by packet size uniqueness.</p>
+<h3 id="request-syntax_6"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_6" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">packet</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">avg_delta</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">conn_cnt</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">min_unique_percent</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_6"><strong>Parameters</strong><a class="headerlink" href="#parameters_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>delta_file</strong> <i>(string)</i> -- <strong>[REQUIRED]</strong><br>
+  Source delta file.<br></p>
+</li>
+<li>
+<p><strong>delta_column</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source delta column that you want to search.<br></p>
+</li>
+<li>
+<p><strong>avg_delta</strong> <i>(int)</i> --<strong>[REQUIRED]</strong><br>
+  Average delta time to include in the search using your delta column. Less than or equal (&lt;=).<br></p>
+</li>
+<li>
+<p><strong>conn_cnt</strong> <i>(int)</i><br>
+  Total connection count for a group. Greater than or equal (&gt;=).<br>
+  <strong>Default</strong> = 5<br></p>
+</li>
+<li>
+<p><strong>min_unique_percent</strong> <i>(int)</i><br>
+  Lowest packet uniqueness as a percentage. For instance, if you have 10 connections with 9 of them being the same packet size, your unique package size is 10%.<br>
+  <strong>Default</strong> = 5<br></p>
+</li>
+<li>
+<p><strong>threshold</strong> <i>(int)</i><br>
+  The time threshold in minutes for determining connection groups.<br>
+  <strong>Default</strong> = 60<br></p>
+</li>
+<li>
+<p><strong>gold_loc</strong> <i>(string)</i><br>
+  Results file location. Blank string ("") for no result file<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>cli_return</strong> <i>(boolean)</i> <br>
+  Return Command Line Interface (CLI) results. Will display as a print statement and not a return variable.<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i><br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_6"><strong>Returns</strong><a class="headerlink" href="#returns_6" title="Permanent link">&para;</a></h3>
+<p>Gold file (string)</p>
+<h3 id="example-run_6"><strong>Example Run</strong><a class="headerlink" href="#example-run_6" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">beacon</span>
+
+<span class="n">gold_file</span> <span class="o">=</span> <span class="n">beacon</span><span class="o">.</span><span class="n">packet</span><span class="p">(</span>
+    <span class="n">delta_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta/delta_file.parquet&quot;</span><span class="p">,</span>
+    <span class="n">delta_column</span> <span class="o">=</span> <span class="s2">&quot;delta_mins&quot;</span><span class="p">,</span>
+    <span class="n">avg_delta</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">conn_cnt</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">min_unique_percent</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">gold_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/gold/beacon/dbscan&quot;</span><span class="p">,</span>
+    <span class="n">cli_return</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">gold_file</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="ingestpy"><strong>ingest.py</strong><a class="headerlink" href="#ingestpy" title="Permanent link">&para;</a></h2>
+<p>Below are the steps for loading the ingest.py module. Ensure that you have the <code>__pycache__</code> directory in the same location as the ingest.py file.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+</code></pre></div>
+<p>Any changes done to the ingest.py module within JuypterLab will require a reload of the ingest.py module. Use the code below to reload the ingest.py module.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="n">imported_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;ingest&quot;</span><span class="p">)</span>
+<span class="n">importlib</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">imported_module</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+</code></pre></div>
+<p>These are the available methods:</p>
+<ul>
+<li><a href="#adddns">add_dns()</a></li>
+<li><a href="#buildbronzelayer">build_bronze_layer()</a></li>
+<li><a href="#builddeltafiles">build_delta_files()</a></li>
+<li><a href="#buildfilterfiles">build_filter_files()</a></li>
+<li><a href="#buildnullfiles">build_null_files()</a></li>
+<li><a href="#buildraw">build_raw()</a></li>
+<li><a href="#convertparquettocsv">convert_parquet_to_csv()</a></li>
+<li><a href="#downloads3folder">download_s3_folder()</a></li>
+<li><a href="#filterdataframe">filter_dataframe()</a></li>
+<li><a href="#getlatestfile">get_latest_file()</a></li>
+<li><a href="#unzip">unzip()</a></li>
+</ul>
+<h2 id="add_dnskwargs"><a name="adddns"></a><strong>add_dns(**kwargs)</strong><a class="headerlink" href="#add_dnskwargs" title="Permanent link">&para;</a></h2>
+<p>Add source and destination DNS entries to file(s) based upon a whitelist Parquet file or Pandas DataFrame. Both the source and destination files need to be in Parquet format.</p>
+<h3 id="request-syntax_7"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_7" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">add_dns</span><span class="p">(</span>
+    <span class="n">src_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dns_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="n">dns_df</span> <span class="o">=</span> <span class="n">Pandas_DataFrame</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_7"><strong>Parameters</strong><a class="headerlink" href="#parameters_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>src_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source folder or file location.<br></p>
+</li>
+<li>
+<p><strong>dest_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination folder or file location.<br></p>
+</li>
+<li>
+<p><strong>file_type</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination file type (CSV or Parquet).<br>
+  <i>Parquet format recommended!</i></p>
+</li>
+<li>
+<p><strong>dns_file</strong> <i>(string)</i> <br>
+  Source DNS lookup file. A blank string is the default. The lookup file must be in Parquet format.<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>dns_df</strong> <i>(Pandas DataFrame)</i> <br>
+  Source DNS Pandas DataFrame. A blank string is the default.<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_7"><strong>Returns</strong><a class="headerlink" href="#returns_7" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_7"><strong>Example Run</strong><a class="headerlink" href="#example-run_7" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="c1"># Folder Location</span>
+<span class="n">ingest</span><span class="o">.</span><span class="n">add_dns</span><span class="p">(</span>
+    <span class="n">src_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/source_files&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/dest_files&quot;</span><span class="p">,</span>
+    <span class="n">dns_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/whitelist/whitelist_ip.parquet&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Single File</span>
+<span class="n">ingest</span><span class="o">.</span><span class="n">add_dns</span><span class="p">(</span>
+    <span class="n">src_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/source_files/source_file.parquet&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/dest_files&quot;</span><span class="p">,</span>
+    <span class="n">dns_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/whitelist/whitelist_ip.parquet&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="build_bronze_layerkwargs"><a name="buildbronzelayer"></a><strong>build_bronze_layer(**kwargs)</strong><a class="headerlink" href="#build_bronze_layerkwargs" title="Permanent link">&para;</a></h2>
+<p>Create a bronze data layer for a source folder location. Bronze data will contain TCP data only and will include both source and destination DNS.</p>
+<h3 id="request-syntax_8"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_8" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">build_bronze_layer</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">bronze_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dns_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_8"><strong>Parameters</strong><a class="headerlink" href="#parameters_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>src_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Raw source folder location.<br></p>
+</li>
+<li>
+<p><strong>bronze_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Bronze layer folder location. The destination location for all bronze files.<br></p>
+</li>
+<li>
+<p><strong>dns_file</strong> <i>(string)</i> <br>
+  Source DNS lookup file. The lookup file must be in Parquet format.<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> (boolean) <br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_8"><strong>Returns</strong><a class="headerlink" href="#returns_8" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_8"><strong>Example Run</strong><a class="headerlink" href="#example-run_8" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">build_bronze_layer</span><span class="p">(</span>
+    <span class="n">src_loc</span><span class="o">=</span><span class="s2">&quot;/tmp/source/&quot;</span><span class="p">,</span>
+    <span class="n">bronze_loc</span><span class="o">=</span><span class="s2">&quot;/tmp/bronze/zeek/raw/parquet/2022/04/22&quot;</span><span class="p">,</span>
+    <span class="n">dns_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/whitelist/whitelist_ip.parquet&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h2 id="build_delta_fileskwargs"><a name="builddeltafiles"></a><strong>build_delta_files(**kwargs)</strong><a class="headerlink" href="#build_delta_fileskwargs" title="Permanent link">&para;</a></h2>
+<p>Create a delta file from a Parquet folder location or file. Current units of measurement are milliseconds and minutes. Source and destination files must be in Parquet format. <br></p>
+<blockquote>
+<p><strong>Note</strong><br>
+Destination files are named <i>delta_epochtime.parquet</i>.</p>
+</blockquote>
+<h3 id="request-syntax_9"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_9" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">build_delta_files</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_file_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">delta_file_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_9"><strong>Parameters</strong><a class="headerlink" href="#parameters_9" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>src_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source folder or file location.<br></p>
+</li>
+<li>
+<p><strong>delta_file_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination folder or file location for delta files.<br></p>
+</li>
+<li>
+<p><strong>delta_file_type</strong> <i>(string)</i><br>
+  Destination file type (CSV or Parquet).<br>
+  <i>Parquet format is recommended!</i><br>
+  <strong>Default</strong> = parquet<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i> <br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_9"><strong>Returns</strong><a class="headerlink" href="#returns_9" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_9"><strong>Example Run</strong><a class="headerlink" href="#example-run_9" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">build_delta_files</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/filtered/&quot;</span><span class="p">,</span>
+    <span class="n">delta_file_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h2 id="build_filter_fileskwargs"><a name="buildfilterfiles"></a><strong>build_filter_files(**kwargs)</strong><a class="headerlink" href="#build_filter_fileskwargs" title="Permanent link">&para;</a></h2>
+<p>Create filtered files by searching for Ports, Source/Destination IPs or DNS entries. A default metadata.json will be created for historical filter identification purposes.</p>
+<h3 id="request-syntax_10"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_10" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">build_filter_files</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dest_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">port_filter</span> <span class="o">=</span> <span class="p">[</span> <span class="nb">int</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">port_exclude</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">src_file</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">src_exclude</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">dest_filter</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">dest_exclude</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">s_dns_filter</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">s_dns_exclude</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">d_dns_filter</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">d_dns_exclude</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">match_filter</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">match_exclude</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_10"><strong>Parameters</strong><a class="headerlink" href="#parameters_10" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>src_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source folder location.<br></p>
+</li>
+<li>
+<p><strong>dest_file</strong> <i>(string)</i><br>
+  Destination file location for filters.<br>
+  Use a unique folder name at the end to identify your filter - a data folder will be appended automatically.<br>
+  <strong>Default</strong> = ""<br></p>
+</li>
+<li>
+<p><strong>port_filter</strong> <i>(list)</i><br>
+  Ports that you want to filter by, in a list format. <strong>Inclusive results only</strong>.<br>
+  <strong>Default</strong> = None<br></p>
+</li>
+<li>
+<p><strong>port_exclude</strong> <i>(boolean)</i><br>
+  Exclusive or inclusive search on port_filter values. <strong>True or False (case-sensitive)</strong>.<br>
+  Exclusive = True (not in)<br>
+  Inclusive = False (in)<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>src_filter</strong> <i>(list)</i><br>
+  Source IP that you want to filter by, in a list format.<br>
+  <strong>Default search</strong> will look for items equal to match.<br>
+  Use of a wildcard (*) will perform a wildcard search.<br>
+  <strong>Default</strong> = None<br></p>
+</li>
+<li>
+<p><strong>src_exclude</strong> <i>(boolean)</i><br>
+  Exclusive or inclusive search on src_filter values. <strong>True or False (case-sensitive)</strong>.<br>
+  Exclusive = True (not in)<br>
+  Inclusive = False (in)<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>dest_filter</strong> <i>(list)</i><br>
+  Destination DNS that you want to filter by, in a list format.<br>
+  <strong>Default search</strong> will look for items equal to match.<br>
+  Use of a wildcard (*) will perform a wildcard search.<br>
+  <strong>Default</strong> = None<br></p>
+</li>
+<li>
+<p><strong>dest_exclude</strong> <i>(boolean)</i><br>
+  Exclusive or inclusive search on dest_filter values. <strong>True or False (case-sensitive)</strong>.<br>
+  Exclusive = True (not in)<br>
+  Inclusive = False (in)<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>s_dns_filter</strong> <i>(list)</i><br>
+  Source DNS that you want to filter by, in a list format.<br>
+  <strong>Default search</strong> will look for items equal to match.<br>
+  Use of a wildcard (*) will perform a wildcard search.<br>
+  <strong>Default</strong> = None<br></p>
+</li>
+<li>
+<p><strong>s_dns_exclude</strong> <i>(boolean)</i><br>
+  Exclusive or inclusive search on s_dns_filter values. <strong>True or False (case-sensitive)</strong>.<br>
+  Exclusive = True (not in)<br>
+  Inclusive = False (in)<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>d_dns_filter</strong> <i>(list)</i><br>
+  Destination DNS that you want to filter by, in a list format.<br>
+  <strong>Default search</strong> will look for items equal to match.<br>
+  Use of a wildcard (*) will perform a wildcard search.<br>
+  <strong>Default</strong> = None<br></p>
+</li>
+<li>
+<p><strong>d_dns_exclude</strong> <i>(boolean)</i><br>
+  Exclusive or inclusive search on d_dns_filter values. <strong>True or False (case-sensitive)</strong>.<br>
+  Exclusive = True (not in)<br>
+  Inclusive = False (in)<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>match_filter</strong> <i>(list)</i><br>
+  Source and Destination DNS that you want to filter by, in a list format.<br>
+  <strong>Default search</strong> will look for items equal to match.<br>
+  Use of a wildcard (*) will perform a wildcard search.<br>
+  <strong>In order to match, objects must be in both source and destination</strong>.<br>
+  <strong>Default</strong> = None<br></p>
+</li>
+<li>
+<p><strong>match_exclude</strong> <i>(boolean)</i><br>
+  Exclusive or inclusive search on match_filter values. <strong>True or False (case-sensitive)</strong>.<br>
+  Exclusive = True (not in)<br>
+  Inclusive = False (in)<br>
+  <strong>Default</strong> = True<br></p>
+</li>
+<li>
+<p><strong>file_type</strong> <i>(string)</i> <br>
+  Destination file types. Parquet or CSV.<br>
+  <i>Parquet format is recommended!</i><br>
+  <strong>Default</strong> = parquet<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i> <br>
+  Overwrite existing location. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_10"><strong>Returns</strong><a class="headerlink" href="#returns_10" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_10"><strong>Example Run</strong><a class="headerlink" href="#example-run_10" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="c1"># NO INCLUDE FILE</span>
+<span class="c1"># ONLY PORTS 80 &amp; 443 WILL BE INCLUDED.</span>
+<span class="c1"># EXAMPLE IPS WILL BE REMOVED.</span>
+<span class="n">ingest</span><span class="o">.</span><span class="n">build_filter_files</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/source&quot;</span><span class="p">,</span>
+    <span class="n">dest_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/dest/filtered/test_filter&quot;</span>
+    <span class="n">port_filter</span> <span class="o">=</span> <span class="p">[</span><span class="mi">80</span><span class="p">,</span> <span class="mi">443</span><span class="p">],</span>
+    <span class="n">src_filter</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;9.9.9.9&quot;</span><span class="p">],</span>
+    <span class="n">dest_filter</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;9.9.9.9&quot;</span><span class="p">])</span>
+</code></pre></div>
+<h2 id="build_null_fileskwargs"><a name="buildnullfiles"></a><strong>build_null_files(**kwargs)</strong><a class="headerlink" href="#build_null_fileskwargs" title="Permanent link">&para;</a></h2>
+<p>Create filter files with NULL DNS entries.</p>
+<h3 id="request-syntax_11"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_11" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">build_null_files</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_11"><strong>Parameters</strong><a class="headerlink" href="#parameters_11" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>src_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source folder or file location.<br></p>
+</li>
+<li>
+<p><strong>dest_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination folder location.<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i> <br>
+  Overwrite existing location. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>file_type</strong> <i>(string)</i> <br>
+  Destination file types. Parquet or CSV.<br>
+  <i>Parquet format is recommended!</i><br>
+  <strong>Default</strong> = parquet<br></p>
+</li>
+</ul>
+<h3 id="returns_11"><strong>Returns</strong><a class="headerlink" href="#returns_11" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_11"><strong>Example Run</strong><a class="headerlink" href="#example-run_11" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">build_null_files</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/source&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/filtered/no_match&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="build_rawkwargs"><a name="buildraw"></a><strong>build_raw(**kwargs)</strong><a class="headerlink" href="#build_rawkwargs" title="Permanent link">&para;</a></h2>
+<p>Build initial Parquet file from raw JSON Zeek file. To be used only for single files. Use <a href="#buildbronzelayer">build_bronze_layer()</a> for folder-level processing.</p>
+<h3 id="request-syntax_12"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_12" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">build_raw</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_12"><strong>Parameters</strong><a class="headerlink" href="#parameters_12" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>src_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source file.<br></p>
+</li>
+<li>
+<p><strong>dest_parquet_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination Parquet file.<br></p>
+</li>
+<li>
+<p><strong>overwrite</strong> <i>(boolean)</i> <br>
+  Overwrite existing files. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_12"><strong>Returns</strong><a class="headerlink" href="#returns_12" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_12"><strong>Example Run</strong><a class="headerlink" href="#example-run_12" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">build_raw</span><span class="p">(</span>
+    <span class="n">src_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/source/test.json&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/raw/test.parquet&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h2 id="convert_parquet_to_csvkwargs"><a name="convertparquettocsv"></a><strong>convert_parquet_to_csv(**kwargs)</strong><a class="headerlink" href="#convert_parquet_to_csvkwargs" title="Permanent link">&para;</a></h2>
+<p>Create a CSV file from a Parquet file.</p>
+<h3 id="request-syntax_13"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_13" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">convert_parquet_to_csv</span><span class="p">(</span>
+    <span class="n">par_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">csv_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_13"><strong>Parameters</strong><a class="headerlink" href="#parameters_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>par_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source Parquet file.<br></p>
+</li>
+<li>
+<p><strong>csv_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination CSV file.<br></p>
+</li>
+</ul>
+<h3 id="returns_13"><strong>Returns</strong><a class="headerlink" href="#returns_13" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_13"><strong>Example Run</strong><a class="headerlink" href="#example-run_13" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">convert_parquet_to_csv</span><span class="p">(</span>
+    <span class="n">par_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/source/test.parquet&quot;</span><span class="p">,</span>
+    <span class="n">csv_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/dest/test.csv&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h2 id="download_s3_folderkwargs"><a name="downloads3folder"></a><strong>download_s3_folder(**kwargs)</strong><a class="headerlink" href="#download_s3_folderkwargs" title="Permanent link">&para;</a></h2>
+<p>Download an AWS S3 folder to a local folder. <i><strong>Must have an AWS CLI Profile configured</strong></i>.<br></p>
+<h3 id="example-run_14"><strong>Example Run</strong><a class="headerlink" href="#example-run_14" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">download_s3_folder</span><span class="p">(</span>
+    <span class="n">s3_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">csv_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">profile</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_14"><strong>Parameters</strong><a class="headerlink" href="#parameters_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>s3_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  S3 folder location.<br></p>
+</li>
+<li>
+<p><strong>local_dest</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Local destination folder.<br></p>
+</li>
+<li>
+<p><strong>profile</strong> <i>(string)</i><br>
+  AWS CLI Profile name.<br>
+  <strong>Default</strong> = default<br></p>
+</li>
+</ul>
+<h3 id="returns_14"><strong>Returns</strong><a class="headerlink" href="#returns_14" title="Permanent link">&para;</a></h3>
+<p>None</p>
+<h3 id="example-run_15"><strong>Example Run</strong><a class="headerlink" href="#example-run_15" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">download_s3_folder</span><span class="p">(</span>
+    <span class="n">s3_loc</span> <span class="o">=</span> <span class="s2">&quot;s3://bucket/foldername&quot;</span><span class="p">,</span>
+    <span class="n">csv_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/bucketname/foldername&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="filter_dataframekwargs"><a name="filterdataframe"></a><strong>filter_dataframe(**kwargs)</strong><a class="headerlink" href="#filter_dataframekwargs" title="Permanent link">&para;</a></h2>
+<p>Filter a Zeek Pandas Dataframe for matching values. Returns a Pandas Dataframe.<br></p>
+<h3 id="request-syntax_14"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_14" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">filter_dataframe</span><span class="p">(</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">Pandas_DataFrame</span><span class="p">,</span>
+    <span class="n">filter_vals</span> <span class="o">=</span> <span class="p">[</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="p">],</span>
+    <span class="n">filter_column</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">filter_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">ret_org</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span><span class="o">|</span><span class="kc">False</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_15"><strong>Parameters</strong><a class="headerlink" href="#parameters_15" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>df</strong> <i>(pandas dataframe)</i> --<strong>[REQUIRED]</strong><br>
+  Pandas Dataframe.<br></p>
+</li>
+<li>
+<p><strong>filter_vals</strong> <i>(list)</i> --<strong>[REQUIRED]</strong><br>
+  Values that you want to filter by, in a list format.<br></p>
+<p><strong>String values search types:</strong><br>
+  <strong>Default search</strong> will look for items equal to match.<br>
+  Use of a wildcard (*) will perform a wildcard search.<br></p>
+</li>
+<li>
+<p><strong>filter_column</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Pandas DataFrame column that you want to search by. <strong>Case sensitive</strong>.<br></p>
+<p><strong>Valid Options</strong><br>
+      * community_id <br>
+      * conn_state <br>
+      * duration <br>
+      * history <br>
+      * id.orig_h <br>
+      * id.orig_p <br>
+      * id.resp_h <br>
+      * id.resp_p <br>
+      * local_orig <br>
+      * local_resp <br>
+      * missed_bytes <br>
+      * orig_bytes <br>
+      * orig_ip_bytes <br>
+      * orig_pkts <br>
+      * proto <br>
+      * resp_bytes <br>
+      * resp_ip_bytes <br>
+      * resp_pkts <br>
+      * service <br>
+      * ts <br>
+      * uid <br></p>
+</li>
+</ul>
+<p><br></p>
+<ul>
+<li>
+<p><strong>filter_type</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  The type of filter that you are using.<br>
+  <strong>Valid Options</strong><br>
+  _ int (integer)<br>
+  _ string (string)<br> * match (matching Source and Destination DNS values)<br></p>
+</li>
+<li>
+<p><strong>ret_org</strong> <i>(boolean)</i><br>
+  Return original dataframe if no results gathered. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+<li>
+<p><strong>verbose</strong> <i>(boolean)</i><br>
+  Verbose logging. <strong>True or False (case-sensitive)</strong>.<br>
+  <strong>Default</strong> = False<br></p>
+</li>
+</ul>
+<h3 id="returns_15"><strong>Returns</strong><a class="headerlink" href="#returns_15" title="Permanent link">&para;</a></h3>
+<p>Pandas Dataframe</p>
+<h3 id="example-run_16"><strong>Example Run</strong><a class="headerlink" href="#example-run_16" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">src_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;/tmp/dest/test.parquet&quot;</span><span class="p">)</span>
+
+<span class="n">new_df</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">filter_dataframe</span><span class="p">(</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">src_df</span><span class="p">,</span>
+    <span class="n">filter_vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">],</span>
+    <span class="n">filter_column</span> <span class="o">=</span> <span class="s2">&quot;id.orig_h&quot;</span><span class="p">,</span>
+    <span class="n">filter_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">new_df</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="get_latest_filekwargs"><a name="getlatestfile"></a><strong>get_latest_file(**kwargs)</strong><a class="headerlink" href="#get_latest_filekwargs" title="Permanent link">&para;</a></h2>
+<p>Get the most recent file from a folder location. Method is used to grab the latest delta or gold file. Returns a full path.<br></p>
+<h3 id="request-syntax_15"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_15" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">get_latest_file</span><span class="p">(</span>
+    <span class="n">folder_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_16"><strong>Parameters</strong><a class="headerlink" href="#parameters_16" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>folder_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source folder location.<br></p>
+</li>
+<li>
+<p><strong>file_type</strong> <i>(string)</i> <br>
+  Destination file type that you want to search for. Parquet or CSV.<br>
+  <i>Parquet format is recommended!</i><br>
+  <strong>Default</strong> = parquet<br></p>
+</li>
+</ul>
+<h3 id="example-run_17"><strong>Example Run</strong><a class="headerlink" href="#example-run_17" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="c1"># PULL LATEST DELTA FILE</span>
+<span class="n">max_file</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">filter_dataframe</span><span class="p">(</span>
+    <span class="n">folder_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/delta/&quot;</span>
+    <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">max_file</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="unzipkwargs"><a name="unzip"></a><strong>unzip(**kwargs)</strong><a class="headerlink" href="#unzipkwargs" title="Permanent link">&para;</a></h2>
+<p>Unzip a raw source file. Only tar files are available for unzipping.<br></p>
+<h3 id="request-syntax_16"><strong>Request Syntax</strong><a class="headerlink" href="#request-syntax_16" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">request</span> <span class="o">=</span> <span class="n">ingest</span><span class="o">.</span><span class="n">unzip</span><span class="p">(</span>
+    <span class="n">zip_file</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="parameters_17"><strong>Parameters</strong><a class="headerlink" href="#parameters_17" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><strong>zip_file</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Source zip file.<br></p>
+</li>
+<li>
+<p><strong>dest_loc</strong> <i>(string)</i> --<strong>[REQUIRED]</strong><br>
+  Destination folder where the zip file will be extracted.<br>
+  <i>Parquet format is recommended!</i><br>
+  <strong>Default</strong> = parquet<br></p>
+</li>
+<li>
+<p><strong>dest_loc</strong> <i>(string)</i> <br>
+  Zip file type.<br>
+  <i>Currently the only valid option is tar</i><br>
+  <strong>Valid Options</strong><br> * tar<br>
+  <strong>Default</strong> = tar<br></p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">ingest</span>
+
+<span class="n">ingest</span><span class="o">.</span><span class="n">unzip</span><span class="p">(</span>
+    <span class="n">zip_file</span> <span class="o">=</span> <span class="s2">&quot;/tmp/aw_data_file.tar&quot;</span><span class="p">,</span>
+    <span class="n">dest_loc</span> <span class="o">=</span> <span class="s2">&quot;/tmp/raw/data&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023 Carnegie Mellon University. All rights reserved.
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/cmu-sei/valkyrie_framework/issues/new?template=question.md" target="_blank" rel="noopener" title="Ask a Question" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-7 12h-2v-2h2zm1.8-5c-.3.4-.7.6-1.1.8-.3.2-.4.3-.5.5-.2.2-.2.4-.2.7h-2c0-.5.1-.8.3-1.1.2-.2.6-.5 1.1-.8.3-.1.5-.3.6-.5s.2-.5.2-.7c0-.3-.1-.5-.3-.7s-.5-.3-.8-.3-.5.1-.7.2q-.3.15-.3.6h-2c.1-.7.4-1.3.9-1.7s1.2-.5 2.1-.5 1.7.2 2.2.6.8 1 .8 1.7q.15.6-.3 1.2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/cmu-sei/valkyrie_framework/issues/new?template=bug_report.md" target="_blank" rel="noopener" title="Report a Problem" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M192 96c0-53 43-96 96-96s96 43 96 96v3.6c0 15.7-12.7 28.4-28.4 28.4H220.5c-15.7 0-28.4-12.7-28.4-28.4V96zm345.6 12.8c10.6 14.1 7.7 34.2-6.4 44.8l-97.8 73.3c5.3 8.9 9.3 18.7 11.8 29.1H544c17.7 0 32 14.3 32 32s-14.3 32-32 32h-96v32c0 2.6-.1 5.3-.2 7.9l83.4 62.5c14.1 10.6 17 30.7 6.4 44.8s-30.7 17-44.8 6.4l-63.1-47.3c-23.2 44.2-66.5 76.2-117.7 83.9V280c0-13.3-10.7-24-24-24s-24 10.7-24 24v230.2c-51.2-7.7-94.5-39.7-117.7-83.9l-63.1 47.3c-14.1 10.6-34.2 7.7-44.8-6.4s-7.7-34.2 6.4-44.8l83.4-62.5c-.1-2.6-.2-5.2-.2-7.9v-32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h98.8c2.5-10.4 6.5-20.2 11.8-29.1l-97.8-73.3c-14.1-10.6-17-30.7-6.4-44.8s30.7-17 44.8-6.4L192 184c12.3-5.1 25.8-8 40-8h112c14.2 0 27.7 2.8 40 8l108.8-81.6c14.1-10.6 34.2-7.7 44.8 6.4"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/cmu-sei/valkyrie_framework/issues/new?template=feature_request.md" target="_blank" rel="noopener" title="Request a Feature" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 6a6 6 0 0 1 6 6c0 2.22-1.21 4.16-3 5.2V19a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.8c-1.79-1.04-3-2.98-3-5.2a6 6 0 0 1 6-6m2 15v1a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-1zm6-10h3v2h-3zM1 11h3v2H1zM13 1v3h-2V1zM4.92 3.5l2.13 2.14-1.42 1.41L3.5 4.93zm12.03 2.13 2.12-2.13 1.43 1.43-2.13 2.12z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/cmu-sei/GHOvalkyrie_frameworkSTS/discussions" target="_blank" rel="noopener" title="SSVC Community Discussions" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M76.2 258.7c6.1-15.2 4-32.6-5.6-45.9C56.1 192.7 48 169.1 48 144c0-66.8 60.5-128 144-128s144 61.2 144 128-60.5 128-144 128c-15.9 0-31.1-2.3-45.3-6.5-10.3-3.1-21.4-2.5-31.4 1.5l-50.4 20.2 11.4-28.5zM0 144c0 35.8 11.6 69.1 31.7 96.8L1.9 315.2c-1.3 3.2-1.9 6.6-1.9 10C0 340 12 352 26.8 352c3.4 0 6.8-.7 10-1.9l96.3-38.5c18.6 5.5 38.4 8.4 58.9 8.4 106 0 192-78.8 192-176S298-32 192-32 0 46.8 0 144m384 368c20.6 0 40.3-3 58.9-8.4l96.3 38.5c3.2 1.3 6.6 1.9 10 1.9 14.8 0 26.8-12 26.8-26.8 0-3.4-.7-6.8-1.9-10l-29.7-74.4c20-27.8 31.7-61.1 31.7-96.8 0-82.4-61.7-151.5-145-170.7-1.6 16.3-5.1 31.9-10.1 46.9 63.9 14.8 107.2 67.3 107.2 123.9 0 25.1-8.1 48.7-22.6 68.8-9.6 13.3-11.7 30.6-5.6 45.9l11.4 28.5-50.4-20.2c-10-4-21.1-4.5-31.4-1.5-14.2 4.2-29.4 6.5-45.3 6.5-72.2 0-127.1-45.7-140.7-101.2-15.6 3.2-31.7 5-48.1 5.2 16.4 81.9 94.7 144 188.8 144z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/cmu-sei/GHOvalkyrie_frameworkSTS" target="_blank" rel="noopener" title="cmu-sei/valkyrie_framework on Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:info@sei.cmu.edu?subject=Valkyrie%20Framework%20Feedback" target="_blank" rel="noopener" title="Email Valkyrie Framework Team" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M61.4 64C27.5 64 0 91.5 0 125.4c0 .9 0 1.7.1 2.6H0v256c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64V128h-.1c0-.9.1-1.7.1-2.6 0-33.9-27.5-61.4-61.4-61.4zM464 192.3V384c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192.3l154.8 117.4c31.4 23.9 74.9 23.9 106.4 0zM48 125.4c0-7.4 6-13.4 13.4-13.4h389.2c7.4 0 13.4 6 13.4 13.4 0 4.2-2 8.2-5.3 10.7L280.2 271.5c-14.3 10.8-34.1 10.8-48.4 0L53.3 136.1c-3.3-2.5-5.3-6.5-5.3-10.7"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://www.sei.cmu.edu/" target="_blank" rel="noopener" title="Software Engineering Institute" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M277.8 8.6c-12.3-11.4-31.3-11.4-43.5 0l-224 208c-9.6 9-12.8 22.9-8 35.1S18.8 272 32 272h16v176c0 35.3 28.7 64 64 64h288c35.3 0 64-28.7 64-64V272h16c13.2 0 25-8.1 29.8-20.3s1.6-26.2-8-35.1zM240 320h32c26.5 0 48 21.5 48 48v96H192v-96c0-26.5 21.5-48 48-48"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.indexes", "toc.integrate"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.50899def.min.js"></script>
+      
+    
+  </body>
+</html>
