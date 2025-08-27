@@ -189,32 +189,223 @@ def _get_ds_types(type):
 
     return ds_name, ds_type
 
+def _str_arg_bool(val):
+
+    if isinstance(val, bool):
+        return val
+
+    if val.lower() in ["yes", "y", "true", "t", "1"]:
+        return True
+    elif val.lower() in ["no", "n", "false", "f", "0"]:
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected!")
+
+#####################################################################################
+##  CLASS
+#####################################################################################
+
+class BeaconHuntress:
+    """
+    Methods
+    -------
+    run() -> dict
+        - Run Beacon Huntress
+    """
+    def __init__self(self):
+        self
+
+    def run(self,
+            algo: str,
+            log_type: str,
+            log_dir: str,
+            delta: int,
+            call_back: int,
+            percent: int,
+            spans: list = [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]],
+            span_avg: int = 15,
+            variance: int = 15,
+            mad_score: int = 50,
+            start_dte = '',
+            end_dte = '',
+            write_file: bool = False,
+            write_file_type: str = 'csv',
+            zip: bool = False,
+            verbose: bool = False,
+            show_results: bool = False):
+        """
+        Run Beacon Huntress
+
+        Parameters
+        -----------
+        **algo**: str
+            Beacon Algorithm
+            - Quick Cluster Search = q or quick
+            - Cluster Search = c or cluster
+            - Agglomerative Clustering = a or agg
+        **log_type**: str
+            Log File Type
+            - Zeek Connection = conn or c
+            - Http = http or h
+            - Delta File = delta or d
+        **log_dir**: str
+            Raw Log Directory
+            - Example: '/tutorial'
+        **delta**: int
+            Average Delta time in minutes
+            - Example: 25
+        **call_back**: int
+            Number of Beacon Callbacks
+            - Example: 10
+        **percent**: int
+            Likelihood Percentage Filter *ONLY CLUSTERING ALGOS*
+            - Example: 85
+        **spans**: list
+            Spans you wish to search in list format. Minimum number of delta records to search using your delta column. *ONLY CLUSTER SEARCH (c/cluster)* 
+            - Example: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
+            - Default: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
+        **span_avg**: int
+            The percentage to increase and decrease from the connections total delta span *ONLY QUICK CLUSTER SEARCH ONLY (q/quick). 
+            - Example: 15
+                - 15 will decrease 15% from the minimum and maximum delta span.
+            - Default: 15
+        **variance**: int
+            The amount of allowed variance or jitter in percentage *ONLY QUICK CLUSTER SEARCH (q/quick)*
+            - Default: 15"
+        **start_dte**:
+            Start Date for filters. Date or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank('') for no filter.
+            - Default: ''
+        **end_dte**:
+            End Date for filters. Date or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank('') for no filter.
+            - Default: ''
+        **write_file**: bool
+            Write results to files (True/False)
+            - Default: False
+        **write_file_type**: str
+            Write results files as either CSV or Parquet
+            - Default: CSV
+        **zip**: bool
+            Log/s are zip files (True/False)
+            - Default: False"
+        **verbose**: bool
+            Enable Verbose logging (True/False)
+            - Default: False
+        **show_results**: bool
+            Show results (True/False)
+            - Default: True
+
+        Returns
+        -------
+        dict
+            Beacon Huntress results as a dictionary
+        """
+        val = pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results)
+
+        return val
+
 #####################################################################################
 ##  FUNCTIONS
 #####################################################################################
 
-def pipeline(conf):
+
+def parse_arg_date(dte):
+
+    if dte == "":
+        return ""
+
+    for fmt_dte in ('%Y-%m-%d %H:%M', '%Y-%m-%d'):
+        try:
+            return datetime.strptime(dte,fmt_dte)
+        except ValueError:
+            continue
+
+    raise argparse.ArgumentTypeError(
+        "Invalid date/time: '{}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank.".format(dte)
+    )
+
+def write_results(df,group_id,write_file,file_name,write_file_type):
+
+    # WRITE FILE
+    if write_file:
+        if write_file_type.lower() == "parquet":
+            df.to_parquet("cli_results/{}/{}.parquet".format(group_id,file_name))
+        else:
+            df.to_csv("cli_results/{}/{}.csv".format(group_id,file_name))
+
+def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results):
 
     # Return Dictionary
     beacon_results = {}
 
     #####################################################################################
-    ##  LOAD CONFIGURATIONS
-    #####################################################################################  
+    ##  SET DEFAULTS
+    #####################################################################################
 
-    # LOAD GENERAL CONFIG
-    # COMMENTED FOR CLI
-    #config = _load_config(conf)
+    config = {}
 
-    # CLI SPECIFIC
-    config = conf
+    for x in ["general", "filter", "dashboard", "beacon", "bronze", "zip"]:
+        config[x] = {}
 
-    # DASHBOARD CONFIG
-    # COMMENTED FOR CLI
-    #dash_config = _load_config(config["dashboard"]["conf"])
+        if x == "filter":
+            config[x]["port"] = {}
 
-    # CLI SPECIFIC
-    dash_config = _load_config(os.path.join("config","dashboard.conf"))
+    config["general"]["filter"] = True
+    config["general"]["file_type"] = "parquet"
+    config["general"]["overwrite"] = False
+    config["filter"]["port"]["exclude"] = False
+    config["filter"]["port"]["filter"] = [80, 443]
+    config["dashboard"]["dashboard"] = False
+    config["bronze"]["dns_file"] = ""
+    config["beacon"]["delta_file"] = "latest"
+    config["beacon"]["delta_column"] = "delta_mins"
+
+    for x in ["source_ip", "dest_ip", "source_dns","dest_dns","dns_match"]:
+        config["filter"][x] = {}
+        config["filter"][x]["exclude"] = True
+        config["filter"][x]["filter"] = []
+
+    # DISABLE DASHBOARD
+    dash_config = {}
+    dash_config["dashboard"] = {}
+    dash_config["db"] = {}
+
+    dash_config["dashboard"]["last_gold_file"] = False
+    dash_config["dashboard"]["clear_beacon_filter"] = False
+    dash_config["db"]["build_at_startup"] = True
+    dash_config["db"]["file_loc"] = "latest"
+    dash_config["db"]["drop"] = False
+
+    #####################################################################################
+    ##  LOAD RUN SETTINGS
+    #####################################################################################
+
+    ds_name, ds_type = _get_ds_types(log_type)
+
+    config["general"]["raw_loc"] = log_dir
+    config["general"]["ds_name"] = ds_name
+    config["general"]["ds_type"] = ds_type
+    config["general"]["mad_score"] = mad_score
+    config["general"]["start_dte"] = str(start_dte)
+    config["general"]["end_dte"] = str(end_dte)
+    config["general"]["verbose"] = verbose
+    config["zip"]["unzip"] = zip
+    config["zip"]["zip_loc"] = log_dir
+
+    if algo.lower() in ["q", "quick"]:
+        config["beacon"]["dbscan_var"] = {}
+        config["general"]["cluster_type"] = "dbscan_var"
+        config["beacon"]["dbscan_var"]["avg_delta"] = delta
+        config["beacon"]["dbscan_var"]["conn_cnt"] = call_back
+        config["beacon"]["dbscan_var"]["span_avg"] = span_avg
+        config["beacon"]["dbscan_var"]["variance_per"] = variance
+        config["beacon"]["dbscan_var"]["minimum_likelihood"] = percent
+    elif algo.lower() in ["c", "cluster"]:
+        config["general"]["cluster_type"] = "dbscan"
+        config["beacon"]["dbscan"] = {}
+        config["beacon"]["dbscan"]["minimum_delta"] = delta
+        config["beacon"]["dbscan"]["spans"] = spans
+        config["beacon"]["dbscan"]["minimum_points_in_cluster"] = call_back
+        config["beacon"]["dbscan"]["minimum_likelihood"] = percent
 
     #####################################################################################
     ##  LOGGING
@@ -227,60 +418,51 @@ def pipeline(conf):
     # LOCATION FOR THE SERVICE
     log_dir = os.path.join(BASE_DIR,"log")
     Path(log_dir).mkdir(parents=True, exist_ok=True)
-
     epoch = int(time.time())
+
     # LOCATION FOR THE SERVICE
     log_file_name = "log_{}".format(epoch)
     log_file = os.path.join(log_dir,"{}".format(log_file_name))
 
+    # LOGGER LEVELS
     logger = logging.getLogger("logger")
 
-    logger.setLevel(logging.DEBUG)
+    if config["general"]["verbose"]:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s:\t%(message)s',datefmt="%m-%d %H:%M:%S")
 
-    # FILE LOG HANDLER
-    log_fh = logging.FileHandler(log_file)
-    log_fh.setLevel(logging.INFO)
-    log_fh.setFormatter(formatter)
+    if write_file:
+        # FILE LOG HANDLER
+        log_fh = logging.FileHandler(log_file)
+        log_fh.setFormatter(formatter)
 
-    # ADD LOG HANDLERS
-    logger.addHandler(log_fh)
-    logger.propagate = False
+        # ADD LOG HANDLER
+        logger.addHandler(log_fh)
+        logger.propagate = False
 
     #####################################################################################
     ##  LOAD CONSTANTS & LOCAL VARIABLES
-    #####################################################################################  
+    #####################################################################################
+
+    logger.debug("Step 1: Create Beacon Group")
 
     # RUN BEACON GROUP UUID
     UID = uuid.uuid4()
 
     beacon_results["beacon_group"] = UID
 
-    print("Beacon Huntress starting the hunt!")
     logger.info("Beacon Huntress starting the hunt!")
     starttime = datetime.now()
-
-    # COMMENTED FOR CLI
-    # IF OVERWRITE IS SELECTED REMOVE ALL RESULTS
-    # if config["general"]["overwrite"] == True:
-    #     data.del_data("detail","all")
 
     # DELTA & CONFIG HASH
     new_delta = False
     config_hash = hashlib.sha1(json.dumps(config, sort_keys=True).encode()).hexdigest()
 
-    # GET A RESULT GROUP & ADD THE RUN CONFIG
-    # COMMENTED FOR CLI
-    #group_id = data.add_beacon_group(UID)
-    #data.add_group_conf(UID,config)
-
     #CLI SPECIFIC
     group_id = UID
-
-    # COMMENTED FOR CLI
-    # ADD LOG FILE
-    # data.add_group_log(group_id,os.path.basename(log_file))
 
     #####################################################################################
     ##  DNS VALUES
@@ -302,8 +484,7 @@ def pipeline(conf):
     #####################################################################################
 
     build_path = Path(config["general"]["raw_loc"])
-    # CLI COMMENT
-    #lst_path = list(build_path.parts[0:2])
+
     # CLI SPECIFIC
     lst_path = [os.path.join(Path.cwd().parent,"data"), str(group_id)]
 
@@ -394,13 +575,6 @@ def pipeline(conf):
                     src_exclude = config["filter"]["source_ip"]["exclude"],
                     dest_filter = config["filter"]["dest_ip"]["filter"],
                     dest_exclude = config["filter"]["dest_ip"]["exclude"],
-                    # DNS FEATURE CURRENTLY NOT AVAILABLE FOR BEACON HUNTRESS
-                    # s_dns_filter = config["filter"]["source_dns"]["filter"],
-                    # s_dns_exclude = config["filter"]["source_dns"]["exclude"],
-                    # d_dns_filter = config["filter"]["dest_dns"]["filter"],
-                    # d_dns_exclude = config["filter"]["dest_dns"]["exclude"],
-                    # match_filter = config["filter"]["dns_match"]["filter"],
-                    # match_exclude = config["filter"]["dns_match"]["exclude"],
                     file_type = config["general"]["file_type"],
                     overwrite = True,
                     verbose = config["general"]["verbose"]
@@ -415,13 +589,6 @@ def pipeline(conf):
                     src_exclude = config["filter"]["source_ip"]["exclude"],
                     dest_filter = config["filter"]["dest_ip"]["filter"],
                     dest_exclude = config["filter"]["dest_ip"]["exclude"],
-                    # DNS FEATURE CURRENTLY NOT AVAILABLE FOR BEACON HUNTRESS
-                    # s_dns_filter = config["filter"]["source_dns"]["filter"],
-                    # s_dns_exclude = config["filter"]["source_dns"]["exclude"],
-                    # d_dns_filter = config["filter"]["dest_dns"]["filter"],
-                    # d_dns_exclude = config["filter"]["dest_dns"]["exclude"],
-                    # match_filter = config["filter"]["dns_match"]["filter"],
-                    # match_exclude = config["filter"]["dns_match"]["exclude"],
                     file_type = config["general"]["file_type"],
                     overwrite = config["general"]["overwrite"], 
                     verbose = config["general"]["verbose"]
@@ -435,7 +602,7 @@ def pipeline(conf):
                 src_loc = os.path.join(config["general"]["filter_loc"],"data"),
                 delta_file_loc = config["general"]["silver_loc"],
                 delta_file_type = config["general"]["file_type"],
-                ds_type =  conf["general"]["ds_type"],
+                ds_type =  config["general"]["ds_type"],
                 overwrite =  config["general"]["overwrite"]
                 )
 
@@ -456,7 +623,7 @@ def pipeline(conf):
             src_loc = config["general"]["bronze_loc"],
             delta_file_loc = config["general"]["silver_loc"],
             delta_file_type = config["general"]["file_type"],
-            ds_type =  conf["general"]["ds_type"],
+            ds_type =  config["general"]["ds_type"],
             overwrite =  config["general"]["overwrite"]
             )
 
@@ -470,8 +637,7 @@ def pipeline(conf):
                 src_loc = config["general"]["bronze_loc"],
                 delta_file_loc = config["general"]["silver_loc"],
                 delta_file_type = config["general"]["file_type"],
-                #overwrite =  config["general"]["overwrite"]
-                ds_type =  conf["general"]["ds_type"],
+                ds_type =  config["general"]["ds_type"],
                 overwrite = False
                 )
 
@@ -494,237 +660,129 @@ def pipeline(conf):
             logger.error("No delta file!")
             sys.exit(1)
 
-        # COMMENTED FOR CLI
-        # LOAD DASHBOARD DATA (DELTA)
-        # if config["dashboard"]["dashboard"] == True:
-            # dash.load_dashboard(
-            #     file_loc = [max_delta_file],
-            #     dash_config = config["dashboard"]["conf"],
-            #     dash_type = "delta",
-            #     is_new = is_new_bronze,
-            #     group_id = group_id,
-            #     overwrite = config["general"]["overwrite"],
-            #     verbose = config["general"]["verbose"]
-            # )
-
         #####################################################################################
         ##  BEACONS
         #####################################################################################
 
-        # Default Score for MAD
-        likelihood = ".50"
+        # PLACE HOLDER FOR FINAL CONNECTION COUNT
         final_conn_count = 1
 
         # AGGLOMERATIVE CLUSTERING
         if config["general"]["cluster_type"] == "agg":
-            # COMMENTED FOR CLI
+
+            # NO DASHBOARD FOR CLI
             if config["dashboard"]["dashboard"] == True:
-                pass
-            #     if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+                logger.warning("Dashboard is not available for CLI version!")
+                config["dashboard"]["dashboard"] == False
 
-            #         # Default Score for MAD
-            #         likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
+            # ALGO FILTERS
+            likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
+            final_conn_count = config["beacon"]["agg"]["min_records"]
 
-            #         ret_gold_file = beacon.agglomerative_clustering(
-            #             delta_file = max_delta_file,
-            #             delta_column = config["beacon"]["delta_column"],
-            #             max_variance = config["beacon"]["agg"]["max_variance"],
-            #             min_records = config["beacon"]["agg"]["min_records"],
-            #             cluster_factor = config["beacon"]["agg"]["cluster_factor"],
-            #             line_amounts = config["beacon"]["agg"]["line_amounts"],
-            #             min_delta_time = config["beacon"]["agg"]["min_delta_time"],
-            #             gold_loc = config["general"]["gold_loc"],
-            #             overwrite = config["general"]["overwrite"],
-            #             verbose = config["general"]["verbose"]
-            #         )
-
-                    # if config["dashboard"]["dashboard"] == True:
-                    #     dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
-                # else:
-                #     logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     return
-            else:
-
-                # Default Score for MAD
-                likelihood = (config["beacon"]["agg"]["cluster_factor"] / 100)
-                final_conn_count = config["beacon"]["agg"]["min_records"]
-
-                ret_gold_file = beacon.agglomerative_clustering(
-                    delta_file = max_delta_file,
-                    delta_column = config["beacon"]["delta_column"],
-                    max_variance = config["beacon"]["agg"]["max_variance"],
-                    min_records = config["beacon"]["agg"]["min_records"],
-                    cluster_factor = config["beacon"]["agg"]["cluster_factor"],
-                    line_amounts = config["beacon"]["agg"]["line_amounts"],
-                    min_delta_time = config["beacon"]["agg"]["min_delta_time"],
-                    gold_loc = config["general"]["gold_loc"],
-                    overwrite = config["general"]["overwrite"],
-                    verbose = config["general"]["verbose"]
-                )
+            ret_gold_file = beacon.agglomerative_clustering(
+                delta_file = max_delta_file,
+                delta_column = config["beacon"]["delta_column"],
+                max_variance = config["beacon"]["agg"]["max_variance"],
+                min_records = config["beacon"]["agg"]["min_records"],
+                cluster_factor = config["beacon"]["agg"]["cluster_factor"],
+                line_amounts = config["beacon"]["agg"]["line_amounts"],
+                min_delta_time = config["beacon"]["agg"]["min_delta_time"],
+                gold_loc = config["general"]["gold_loc"],
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
 
         # DBSCAN
         if config["general"]["cluster_type"] == "dbscan":
+
+            # NO DASHBOARD FOR CLI
             if config["dashboard"]["dashboard"] == True:
-                pass
-                # COMMENTED FOR CLI
-                # if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+                logger.warning("Dashboard is not available for CLI version!")
+                config["dashboard"]["dashboard"] == False
 
-                #     # Default Score for MAD
-                #     likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
+            # ALGO FILTERS
+            likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
+            final_conn_count = config["beacon"]["dbscan"]["minimum_points_in_cluster"]
 
-                #     ret_gold_file = beacon.dbscan_clustering(
-                #         delta_file = max_delta_file,
-                #         delta_column = config["beacon"]["delta_column"],
-                #         minimum_delta = config["beacon"]["dbscan"]["minimum_delta"],
-                #         spans = config["beacon"]["dbscan"]["spans"],
-                #         minimum_points_in_cluster = config["beacon"]["dbscan"]["minimum_points_in_cluster"],
-                #         minimum_likelihood = config["beacon"]["dbscan"]["minimum_likelihood"],
-                #         gold_loc = config["general"]["gold_loc"],
-                #         overwrite = config["general"]["overwrite"],
-                #         verbose = config["general"]["verbose"]
-                #     )
-
-                #     dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
-                # else:
-                #     logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     return
-            else:
-
-                # Default Score for MAD
-                likelihood = (config["beacon"]["dbscan"]["minimum_likelihood"] / 100)
-                final_conn_count = config["beacon"]["dbscan"]["minimum_points_in_cluster"]
-
-                ret_gold_file = beacon.dbscan_clustering(
-                    delta_file = max_delta_file,
-                    delta_column = config["beacon"]["delta_column"],
-                    minimum_delta = config["beacon"]["dbscan"]["minimum_delta"],
-                    spans = config["beacon"]["dbscan"]["spans"],
-                    minimum_points_in_cluster = config["beacon"]["dbscan"]["minimum_points_in_cluster"],
-                    minimum_likelihood = config["beacon"]["dbscan"]["minimum_likelihood"],
-                    gold_loc = config["general"]["gold_loc"],
-                    overwrite = config["general"]["overwrite"],
-                    verbose = config["general"]["verbose"]
-                )
+            ret_gold_file = beacon.dbscan_clustering(
+                delta_file = max_delta_file,
+                delta_column = config["beacon"]["delta_column"],
+                minimum_delta = config["beacon"]["dbscan"]["minimum_delta"],
+                spans = config["beacon"]["dbscan"]["spans"],
+                minimum_points_in_cluster = config["beacon"]["dbscan"]["minimum_points_in_cluster"],
+                minimum_likelihood = config["beacon"]["dbscan"]["minimum_likelihood"],
+                gold_loc = config["general"]["gold_loc"],
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
 
         # DBSCAN BY VARIANCE
         if config["general"]["cluster_type"] == "dbscan_var":
+
+            # NO DASHBOARD FOR CLI
             if config["dashboard"]["dashboard"] == True:
-                pass
-                # COMMENTED FOR CLI
-                # if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
+                logger.warning("Dashboard is not available for CLI version!")
+                config["dashboard"]["dashboard"] == False
 
-                #     # Default Score for MAD
-                #     likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+            # ALGO FILTERS
+            likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
+            final_conn_count = config["beacon"]["dbscan_var"]["conn_cnt"]
 
-                #     ret_gold_file = beacon.dbscan_by_variance(
-                #         delta_file = max_delta_file,
-                #         delta_column = config["beacon"]["delta_column"],
-                #         avg_delta = config["beacon"]["dbscan_var"]["avg_delta"],
-                #         conn_cnt = config["beacon"]["dbscan_var"]["conn_cnt"],
-                #         span_avg = config["beacon"]["dbscan_var"]["span_avg"],
-                #         variance_per = config["beacon"]["dbscan_var"]["variance_per"],
-                #         minimum_likelihood = config["beacon"]["dbscan_var"]["minimum_likelihood"],
-                #         gold_loc = config["general"]["gold_loc"],
-                #         overwrite = config["general"]["overwrite"],
-                #         verbose = config["general"]["verbose"]
-                #     )
-
-                #     dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
-                # else:
-                #     logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     return
-            else:
-
-                # Default Score for MAD
-                likelihood = (config["beacon"]["dbscan_var"]["minimum_likelihood"] / 100)
-                final_conn_count = config["beacon"]["dbscan_var"]["conn_cnt"]
-
-                ret_gold_file = beacon.dbscan_by_variance(
-                    delta_file = max_delta_file,
-                    delta_column = config["beacon"]["delta_column"],
-                    avg_delta = config["beacon"]["dbscan_var"]["avg_delta"],
-                    conn_cnt = config["beacon"]["dbscan_var"]["conn_cnt"],
-                    span_avg = config["beacon"]["dbscan_var"]["span_avg"],
-                    variance_per = config["beacon"]["dbscan_var"]["variance_per"],
-                    minimum_likelihood = config["beacon"]["dbscan_var"]["minimum_likelihood"],
-                    gold_loc = config["general"]["gold_loc"],
-                    overwrite = config["general"]["overwrite"],
-                    verbose = config["general"]["verbose"]
-                )
+            ret_gold_file = beacon.dbscan_by_variance(
+                delta_file = max_delta_file,
+                delta_column = config["beacon"]["delta_column"],
+                avg_delta = config["beacon"]["dbscan_var"]["avg_delta"],
+                conn_cnt = config["beacon"]["dbscan_var"]["conn_cnt"],
+                span_avg = config["beacon"]["dbscan_var"]["span_avg"],
+                variance_per = config["beacon"]["dbscan_var"]["variance_per"],
+                minimum_likelihood = config["beacon"]["dbscan_var"]["minimum_likelihood"],
+                gold_loc = config["general"]["gold_loc"],
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+            )
 
         # BY PACKET
         if config["general"]["cluster_type"] == "by_packet":
+
+            # NO DASHBOARD FOR CLI
             if config["dashboard"]["dashboard"] == True:
-                pass
-                # COMMENTED FOR CLI
-                # if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
-                #     ret_gold_file = beacon.packet(
-                #         delta_file = max_delta_file,
-                #         delta_column = config["beacon"]["delta_column"],
-                #         avg_delta = config["beacon"]["by_packet"]["avg_delta"],
-                #         conn_cnt = config["beacon"]["by_packet"]["conn_cnt"],
-                #         min_unique_percent = config["beacon"]["by_packet"]["min_unique_percent"],
-                #         gold_loc = config["general"]["gold_loc"],
-                #         overwrite = config["general"]["overwrite"],
-                #         verbose = config["general"]["verbose"]
-                #         )
+                logger.warning("Dashboard is not available for CLI version!")
+                config["dashboard"]["dashboard"] == False
 
-                #     dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
-                # else:
-                #     logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     return
-            else:
-                final_conn_count = config["beacon"]["by_packet"]["conn_cnt"]
+            # ALGO FILTERS
+            final_conn_count = config["beacon"]["by_packet"]["conn_cnt"]
 
-                ret_gold_file = beacon.packet(
-                    delta_file = max_delta_file,
-                    delta_column = config["beacon"]["delta_column"],
-                    avg_delta = config["beacon"]["by_packet"]["avg_delta"],
-                    conn_cnt = config["beacon"]["by_packet"]["conn_cnt"],
-                    min_unique_percent = config["beacon"]["by_packet"]["min_unique_percent"],
-                    gold_loc = config["general"]["gold_loc"],
-                    overwrite = config["general"]["overwrite"],
-                    verbose = config["general"]["verbose"]
-                    )
+            ret_gold_file = beacon.packet(
+                delta_file = max_delta_file,
+                delta_column = config["beacon"]["delta_column"],
+                avg_delta = config["beacon"]["by_packet"]["avg_delta"],
+                conn_cnt = config["beacon"]["by_packet"]["conn_cnt"],
+                min_unique_percent = config["beacon"]["by_packet"]["min_unique_percent"],
+                gold_loc = config["general"]["gold_loc"],
+                overwrite = config["general"]["overwrite"],
+                verbose = config["general"]["verbose"]
+                )
 
         # BY CONNECTION GROUP
         if config["general"]["cluster_type"] == "by_conn_group":
+
+            # NO DASHBOARD FOR CLI
             if config["dashboard"]["dashboard"] == True:
-                pass
-                # COMMENTED FOR CLI
-                # if new_delta == True or dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "get") == False:
-                #     ret_gold_file = beacon.cluster_conns(
-                #         delta_file = max_delta_file,
-                #         delta_column = config["beacon"]["delta_column"],
-                #         conn_cnt = config["beacon"]["by_conn_group"]["conn_cnt"],
-                #         conn_group = config["beacon"]["by_conn_group"]["conn_group"],
-                #         threshold = config["beacon"]["by_conn_group"]["threshold"],
-                #         gold_loc = config["general"]["gold_loc"],
-                #         overwrite = config["general"]["overwrite"],
-                #         verbose = config["general"]["verbose"]
-                #         )
+                logger.warning("Dashboard is not available for CLI version!")
+                config["dashboard"]["dashboard"] == False
 
-                #     dash._config_hash(conf = config["dashboard"]["conf"], conf_hash = config_hash, option = "add")
-                # else:
-                #     logger.warning("Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     print("\t* WARNING: Cluster options are the same, no need to rerun.  Please create a new delta file or change the configuration.")
-                #     return
-            else:
-                final_conn_count = config["beacon"]["by_conn_group"]["conn_cnt"]
+            # ALGO FILTERS
+            final_conn_count = config["beacon"]["by_conn_group"]["conn_cnt"]
 
-                ret_gold_file = beacon.cluster_conns(
-                        delta_file = max_delta_file,
-                        delta_column = config["beacon"]["delta_column"],
-                        conn_cnt = config["beacon"]["by_conn_group"]["conn_cnt"],
-                        conn_group = config["beacon"]["by_conn_group"]["conn_group"],
-                        threshold = config["beacon"]["by_conn_group"]["threshold"],
-                        gold_loc = config["general"]["gold_loc"],
-                        overwrite = config["general"]["overwrite"],
-                        verbose = config["general"]["verbose"]
+            ret_gold_file = beacon.cluster_conns(
+                    delta_file = max_delta_file,
+                    delta_column = config["beacon"]["delta_column"],
+                    conn_cnt = config["beacon"]["by_conn_group"]["conn_cnt"],
+                    conn_group = config["beacon"]["by_conn_group"]["conn_group"],
+                    threshold = config["beacon"]["by_conn_group"]["threshold"],
+                    gold_loc = config["general"]["gold_loc"],
+                    overwrite = config["general"]["overwrite"],
+                    verbose = config["general"]["verbose"]
                     )
 
         # PERSISTENT CONNECTIONS
@@ -740,36 +798,16 @@ def pipeline(conf):
 
         ###########################################################
         ##  MAD ALGO
-        ## MEDIAN AVG DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
+        ## MEDIAN ABSOLUTE DEVIATION OF THE MEAN OF OBSERVATIONS MEANS
         ###########################################################
 
         logger.info("Running MAD algorithm")
 
-        likelihood = 0.50
-        df_mad = mm.run_mad(max_delta_file, likelihood)
-
-        # FIX
-        #df_mad["dns"] = ""
+        mad_score = config["general"]["mad_score"] / 100
+        df_mad = mm.run_mad(max_delta_file, mad_score)
 
         if df_mad.empty:
             logger.warning("No results for Median Absolute Deviation!")
-        else:
-            pass
-            # COMMENTED FOR CLI
-            # if config["dashboard"]["dashboard"] == True:
-            #     logger.info("Loading MAD results")
-            #     dash.load_dashboard(
-            #         dataframe = df_mad,
-            #         dash_config = config["dashboard"]["conf"],
-            #         dash_type = "mad",
-            #         is_new = True,
-            #         group_id = group_id,
-            #         overwrite = config["general"]["overwrite"],
-            #         verbose = config["general"]["verbose"]
-            #     )
-
-        # COMMENTED FOR CLI
-        #df_mad.to_csv("/delta/rita.csv")
 
         ###########################################################
         ##  MAD ALGO
@@ -791,17 +829,6 @@ def pipeline(conf):
                 max_gold_file = ret_gold_file
             else:
                 max_gold_file = dash_config["db"]["file_loc"]
-
-            # COMMENTED FOR CLI
-            # dash.load_dashboard(
-            #     file_loc = max_gold_file,
-            #     dash_config = config["dashboard"]["conf"],
-            #     dash_type = "beacon",
-            #     is_new = True,
-            #     group_id = group_id,
-            #     overwrite = config["general"]["overwrite"],
-            #     verbose = config["general"]["verbose"]
-            # )
 
             # CHECK FOR RESULTS AND ADD BACK TO DICTIONARY
             if max_gold_file != None and os.path.exists(max_gold_file):
@@ -857,14 +884,16 @@ def pipeline(conf):
     # GET FILTERS
     df_filter = pd.read_parquet("filter/filtered_ips.parquet")
 
-    # CREATE CLI RESULTS DIRECTORY
-    Path("cli_results/{}".format(group_id)).mkdir(parents=True, exist_ok=True)
+    # CREATE CLI RESULTS DIRECTORY IF NECESSARY
+    if write_file:
+        Path("cli_results/{}".format(group_id)).mkdir(parents=True, exist_ok=True)
 
     # GET RESULTS
     if max_delta_file is None:
-        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
-        print("NONE")
-        print("X" * 121)
+        if show_results:
+            print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
+            print("NONE")
+            print("X" * 121)
     else:
         # GET DELTA FOR TOP TALKER
         df_delta = pd.read_parquet(max_delta_file)
@@ -872,10 +901,12 @@ def pipeline(conf):
         # WRITE FILES IF YOU HAVE RESULTS
         if df_rt.empty == False:
             # DNS FLIP & FILTER
-            if conf["general"]["ds_type"] == "HTTP File":
+            if config["general"]["ds_type"] == "HTTP File":
                 df_rt = df_rt.rename(columns={"id.resp_h": "host", "dns": "id.resp_h"}).rename(columns={"host": "dns"})
 
-            df_rt.to_csv("cli_results/{}/cluster_results.csv".format(group_id))
+            # WRITE FILE
+            write_results(df_rt,group_id,write_file,"cluster_results",write_file_type)
+
         else:
             # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
             df_rt = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "source_port", "dt", "cluster_score", "dns", "delta_mins"])
@@ -885,10 +916,11 @@ def pipeline(conf):
             df_mad = df_mad[df_mad["conn_count"] >= final_conn_count]
 
             # DNS FLIP & FILTER
-            if conf["general"]["ds_type"] == "HTTP File":
+            if config["general"]["ds_type"] == "HTTP File":
                 df_mad = df_mad.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
 
-            df_mad.to_csv("cli_results/{}/mad_results.csv".format(group_id))
+            # WRITE FILE
+            write_results(df_mad,group_id,write_file,"mad_results",write_file_type)
         else:
             # CREATE EMPTY DATAFRAME AS THERE IS NO RESULTS
             df_mad = pd.DataFrame(columns=["source_ip", "dest_ip", "port", "mad_score", "connection_count", "dns"])
@@ -896,7 +928,7 @@ def pipeline(conf):
         if df_delta.empty == False:
             df_delta = df_delta[~df_delta["dip"].isin(df_filter["ip"])]
 
-            if conf["general"]["ds_type"] == "HTTP File":
+            if config["general"]["ds_type"] == "HTTP File":
                 df_delta = df_delta.rename(columns={"dip": "host", "dns": "dip"}).rename(columns={"host": "dns"})
 
             # BUILD TOP TALKER
@@ -906,15 +938,22 @@ def pipeline(conf):
                 max_time=("datetime","max")
             ).rename(columns={"sip": "source_ip", "dip": "dest_ip"}).sort_values("count",ascending=False).reset_index()
 
-            df_delta.to_csv("cli_results/{}/top_talker_results.csv".format(group_id))
+            beacon_results["top_talkers"] = df_delta.head(30).to_dict(orient="records")
+
+            # WRITE FILE
+            write_results(df_delta,group_id,write_file,"top_talker_results",write_file_type)
 
         # FINAL AGGREGATE RESULTS
-        df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count)
-        df_agg.to_csv("cli_results/{}/aggregate_results.csv".format(group_id))
+        df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count,display_results=show_results)
+
+        # WRITE FILE
+        write_results(df_agg,group_id,write_file,"top_talker_results",write_file_type)
 
     # RUN CONFIG
-    with open("cli_results/{}/run_conf.yaml".format(group_id), "w") as file:
-        yaml.dump(config, file, sort_keys=False)
+    # WRITE FILE
+    if write_file:
+        with open("cli_results/{}/run_conf.yaml".format(group_id), "w") as file:
+            yaml.dump(config, file, sort_keys=False)
 
     #####################################################################################
     ##  DELETE BH CREATE FILES
@@ -945,322 +984,57 @@ def pipeline(conf):
 
     endtime = datetime.now() - starttime
     logger.info("Beacon Huntress completed {}".format(endtime))
-    logger.info("All export files are located in cli_results/{}".format(group_id))
 
-    # MOVE LOG FILE
+    # BACKHERE
+    df_rt = beacon.cli_add_mad_scr(df_rt, df_mad)
+
+    # RETURN RESULTS DICTIONARY
+    beacon_results["results"] = df_rt.to_dict(orient="records")
+
+    # WRITE FILE (LOG & MESSAGE)
+    if write_file:
+        logger.info("All export files are located in cli_results/{}".format(group_id))
+        beacon_results["results_dir"] = "cli_results/{}".format(group_id)
+
+    # CLOSE HANDLER
     for handler in logger.handlers[:]:
         handler.close()
         logger.removeHandler(handler)
 
-    shutil.move(log_file,"cli_results/{}/{}".format(group_id,log_file_name))
+    # MOVE LOG FILE
+    if write_file:
+        shutil.move(log_file,"cli_results/{}/{}".format(group_id,log_file_name))
 
-    # RETURN RESULTS DICTIONARY
     return beacon_results
-
-#####################################################################################
-##  CLI
-#####################################################################################
-
-def cli():
-
-    print(""" ____                                     _   _                _
-| __ )   ___   __ _   ___   ___   _ __   | | | | _   _  _ __  | |_  _ __   ___  ___  ___ 
-|  _ \  / _ \ / _` | / __| / _ \ | '_ \  | |_| || | | || '_ \ | __|| '__| / _ \/ __|/ __|
-| |_) ||  __/| (_| || (__ | (_) || | | | |  _  || |_| || | | || |_ | |   |  __/\__ \\__ \\
-|____/  \___| \__,_| \___| \___/ |_| |_| |_| |_| \__,_||_| |_| \__||_|    \___||___/|___/""")
-
-    print("\n")
-
-    while True:
-        print("Menu")
-        print("="*10)
-        print("1. Run Beacon Huntress")
-        print("2. Filtered DNS/IPs")
-        print("3. Results")
-        print("4. Quit\n")
-
-        option = int(input("Enter option [1-4]: "))
-
-        if option in [1, 2, 3, 4]:
-            break
-        else:
-            print("\nERROR: Invaild option!\n")
-
-    return option
-
-def cli_run():
-
-    # LOAD BEACON HUNTRESS CONFIG
-    conf = _load_config(os.path.join("config", "config.conf"))
-    db_conf = _load_config(os.path.join("config", "dashboard.conf"))
-
-    # INPUTS
-    raw_log = input("Log file folder location: ")
-
-    while True:
-        log_type = int(input("Log file type [1 = Zeek Conn, 2 = HTTP, 3 = Delta File]: "))
-        if log_type in [1, 2, 3]:
-            break
-        else:
-            print("Incorrect value! Values must be [1 = Zeek Conn, 2 = HTTP, 3 = Delta File]")
-
-    while True:
-        algo = int(input("Algorithm [1 = Quick Cluster Search, 2 = Cluster Search]: "))
-        if algo in [1, 2]:
-            break
-        else:
-            print("Incorrect value! Values must be [1 = Quick Cluster Search, 2 = Cluster Search]")
-
-    avg_delta = int(input("Average Delta Time in Minutes: "))
-    conn_cnt = int(input("Minimum Callback Count: "))
-    minimum_likelihood = int(input("Likelihood Percentage (e.g. 70): "))
-
-
-    if algo == 1:
-        conf["general"]["cluster_type"] = "dbscan_var"
-        conf["beacon"]["dbscan_var"]["avg_delta"] = avg_delta
-        conf["beacon"]["dbscan_var"]["conn_cnt"] = conn_cnt
-        conf["beacon"]["dbscan_var"]["span_avg"] = 15
-        conf["beacon"]["dbscan_var"]["variance_per"] = 15
-        conf["beacon"]["dbscan_var"]["minimum_likelihood"] = minimum_likelihood
-    elif algo == 2:
-        conf["general"]["cluster_type"] = "dbscan"
-        conf["beacon"]["dbscan"]["minimum_delta"] = avg_delta
-        conf["beacon"]["dbscan"]["spans"] = [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
-        conf["beacon"]["dbscan"]["minimum_points_in_cluster"] = conn_cnt
-        conf["beacon"]["dbscan"]["minimum_likelihood"] = minimum_likelihood
-
-    ds_name, ds_type = _get_ds_types(log_type)
-    conf["general"]["raw_loc"] = raw_log
-    conf["general"]["ds_name"] = ds_name
-    conf["general"]["ds_type"] = ds_type
-    conf["general"]["start_dte"] = ""
-    conf["general"]["end_dte"] = ""
-
-    return conf
-
-def cli_filter(option,is_dns):
-
-    df_fil_ips = pd.read_parquet("filter/filtered_ips.parquet")
-
-    if is_dns:
-        print("For multiples values use a list (e.g. [microsoft.com, amazon.com])")
-    else:
-        print("For multiples values use a list (e.g. [127.0.0.1, 255.255.255.255])")
-
-    # SHOW FILTERED IPS
-    if option == 3:
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):
-            print(df_fil_ips)
-    # ADD OR DELETE VALUES
-    else:
-        if is_dns:
-            vals = input("Enter DNS: ")
-        else:
-            vals = input("Enter IPs: ")
-
-        # CONVERT TO LIST
-        vals = [str(x) for x in vals.strip("[]").split(",")]
-
-        # OPTION 1 IS ADD
-        if option == 1:
-            opt = "added"
-            if isinstance(vals,list):
-                for x in vals:
-                    if is_dns:
-                        new_val = {"dns": x, "ip": ""}
-                    else:
-                        new_val = {"dns": "", "ip": x}
-                    df_fil_ips = pd.concat([df_fil_ips, pd.DataFrame([new_val])], ignore_index=True)
-            else:
-                print("\nERROR: Invaild Type!\n")
-
-        elif option == 2:
-            opt = "deleted"
-            if isinstance(vals,list):
-                for x in vals:
-                    if is_dns:
-                        df_fil_ips = df_fil_ips[df_fil_ips["dns"] != x]
-                    else:
-                        df_fil_ips = df_fil_ips[df_fil_ips["ip"] != x]
-            else:
-                print("\nERROR: Invaild Type!\n")
-
-        # ADD THE VALUES
-        df_fil_ips.to_parquet("filter/filtered_ips.parquet")
-        print("Value/s {}!".format(opt))
-
-def cli_results_files(path):
-    folders = []
-    dates = []
-
-    for dir in os.listdir(path):
-        full_dir = os.path.join(path, dir)
-        folders.append(dir)
-        folder_dte = os.path.getctime(full_dir)
-        dates.append(datetime.fromtimestamp(folder_dte))
-
-    df = pd.DataFrame({"Group_ID": folders, "Run_Date": dates})
-    df = df.sort_values(by=["Run_Date"]).reset_index(drop=True)
-    df["Run_ID"] = df.index + 1
-    df = df[["Run_ID", "Group_ID", "Run_Date"]]
-
-    return df
-
-def page_cli(df,opt,page_size=25):
-
-    if df.empty:
-        print("X" * 100)
-        print("No Results!!")
-        print("X" * 100)
-    else:
-        page = 0
-        total = len(df)
-        est_pg = (total + page_size - 1) // page_size
-        while True:
-            pg_start = page * page_size
-            pg_end = pg_start + page_size
-
-            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):
-                print("X" * 50, f"{opt}", "X" * 50)
-                print(df[pg_start:pg_end])
-                print("X" * (100 + len(opt)+2))
-                print("Page {} of {}".format(page+1,est_pg))
-                print("Total Records: {}".format(total))
-
-            if pg_end >= total:
-                break
-            else:
-                cmd = input("Q to Quit: ")
-                if cmd.lower() == "q" or cmd.lower() == "quit":
-                    break
-                else:
-                    if pg_end < total:
-                        page += 1
-                    else:
-                        print("End of results!")
-                        break
-
-def cli_view_results(df_results):
-
-    while True:
-        run_id = int(input("Enter Run_ID: "))
-        run_guid = df_results.loc[df_results["Run_ID"] == run_id]["Group_ID"].iloc[0]
-        while True:
-            v_or_d = int(input("View or Delete [1 = View, 2 = Delete]: "))
-
-            if v_or_d == 1:
-                break
-            elif v_or_d == 2:
-                _delete_folders([os.path.join("cli_results",run_guid)])
-                print("Results deleted!!")
-                return
-
-        option = int(input("Enter result option [1 = Aggregrate, 2 = Clustered Results, 3 = MAD Results, 4 = Top Talker Results, 5 = Run Configuration, 6 = Log File]: "))
-
-        # BACKHER
-        if option == 1:
-            path = os.path.join("cli_results",run_guid,"aggregate_results.csv")
-            opt = "Aggregate Results"
-            break
-        elif option == 2:
-            path = os.path.join("cli_results",run_guid,"cluster_results.csv")
-            opt = "Cluster Results"
-            break
-        elif option == 3:
-            path = os.path.join("cli_results",run_guid,"mad_results.csv")
-            opt = "MAD Results"
-            break
-        elif option == 4:
-            path =  os.path.join("cli_results",run_guid,"top_talker_results.csv")
-            opt = "Top Talker Results"
-            break
-        elif option == 5:
-            path = os.path.join("cli_results",run_guid,"run_conf.yaml")
-            opt = "Run Config"
-            break
-        elif option == 6:
-            f_list = os.listdir(os.path.join("cli_results",run_guid))
-            log_items = [x for x in f_list if "log" in x]
-            path = os.path.join("cli_results",run_guid,log_items[0])
-            opt = "Log Results"
-            break
-        else:
-            print("Invaild Option!!")
-
-    if option in [1, 2, 3, 4]:
-        if os.path.exists(path):
-            df_view = pd.read_csv(path)
-
-            page_cli(df_view,opt)
-        else:
-            print("X" * 100)
-            print("No Results!!")
-            print("X" * 100)
-    else:
-        if option in [5, 6]:
-            with open(path) as file:
-                for line in file:
-                    print(line,end='')
-
-def build_conf(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,start_dte,end_dte,zip,verbose):
-
-    # LOAD BEACON HUNTRESS CONFIG
-    conf = _load_config(os.path.join("config", "config.conf"))
-    db_conf = _load_config(os.path.join("config", "dashboard.conf"))
-
-    ds_name, ds_type = _get_ds_types(log_type)
-
-    conf["general"]["raw_loc"] = log_dir
-    conf["general"]["ds_name"] = ds_name
-    conf["general"]["ds_type"] = ds_type
-    conf["general"]["start_dte"] = str(start_dte)
-    conf["general"]["end_dte"] = str(end_dte)
-
-    if algo.lower() in ["q", "quick"]:
-        conf["general"]["cluster_type"] = "dbscan_var"
-        conf["beacon"]["dbscan_var"]["avg_delta"] = delta
-        conf["beacon"]["dbscan_var"]["conn_cnt"] = call_back
-        conf["beacon"]["dbscan_var"]["span_avg"] = span_avg
-        conf["beacon"]["dbscan_var"]["variance_per"] = variance
-        conf["beacon"]["dbscan_var"]["minimum_likelihood"] = percent
-    elif algo.lower() in ["c", "cluster"]:
-        conf["general"]["cluster_type"] = "dbscan"
-        conf["beacon"]["dbscan"]["minimum_delta"] = delta
-        conf["beacon"]["dbscan"]["spans"] = spans
-        conf["beacon"]["dbscan"]["minimum_points_in_cluster"] = call_back
-        conf["beacon"]["dbscan"]["minimum_likelihood"] = percent
-
-    return conf
-
-def parse_arg_date(dte):
-
-    if dte == "":
-        return ""
-
-    for fmt_dte in ('%Y-%m-%d %H:%M', '%Y-%m-%d'):
-        try:
-            return datetime.strptime(dte,fmt_dte)
-        except ValueError:
-            continue
-
-    raise argparse.ArgumentTypeError(
-        "Invalid date/time: '{}'. Expected 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank.".format(dte)
-    )
 
 #####################################################################################
 ##  MAIN
 #####################################################################################
 
-def main(conf):
+def main(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results):
 
-    # COMMENTED FOR CLI
-    #config = _load_config(conf)
-
-    ret_val = pipeline(conf = conf)
+    # RUN VIA ARGS
+    ret_val = pipeline(algo,
+                       log_type,
+                       log_dir,
+                       delta,
+                       call_back,
+                       percent,
+                       spans,
+                       span_avg,
+                       variance,
+                       mad_score,
+                       start_dte,
+                       end_dte,
+                       write_file,
+                       write_file_type,
+                       zip,
+                       verbose,
+                       show_results)
 
     return ret_val
 
+# RUN VIA ARGS
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter, description="Beacon Huntress Help Menu")
@@ -1283,17 +1057,18 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--percent", type=int,
         help = "Likelihood Percentage Filter (Clustering Only)\nExample: --percent 85"
     ),
-
     parser.add_argument("-s", "--spans", type=list, default=[[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]],
         help = "CLUSTER SEARCH ONLY(c/cluster) Spans you wish to search, in list format. Minimum number of delta records to search using your delta column.\nEnter spans as a list \nExample: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]"
     ),
     parser.add_argument("-sa", "--span_avg", type=int, default=15,
         help = "QUICK CLUSTER SEARCH ONLY(q/quick) The percentage to increase and decrease from the connections total delta span.\nExample: 15\n15 will decrease 15%% from the minimum and maximum delta span.\nDefault: 15"
     ),
-    parser.add_argument("-vp", "--variance_per", type=int, default=15,
+    parser.add_argument("-vp", "--variance", type=int, default=15,
         help = "QUICK CLUSTER SEARCH ONLY(q/quick) The amount of allowed variance or jitter in percentage.\nDefault: 15"
     ),
-
+    parser.add_argument("-ms", "--mad_score", type=int, default=50,
+        help = "Median Absolute Deviation (MAD) score filter. The minmuim percentage to show the results. Enter as integer value.\nDefault: 50"
+    ),
     parser.add_argument("-sd", "--start_dte",
         type=parse_arg_date,
         default='',
@@ -1304,12 +1079,20 @@ if __name__ == "__main__":
         default='',
         help="End Date for filters\nDate or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM', or blank('').\nDefault: ''"
     ),
-
-    parser.add_argument("-z", "--zip", type=bool, default=False,
-        help="log/s zip files (True/False)\nDefault: False"
+    parser.add_argument("-wf", "--write_file", type=_str_arg_bool, default=True,
+        help="Write results to files (True/False)\nDefault: True"
     ),
-    parser.add_argument("-v", "--verbose", type=bool, default=False,
+    parser.add_argument("-wt", "--write_file_type", type=str, default='csv',
+        help="Write results to files (True/False)\nDefault: CSV"
+    ),
+    parser.add_argument("-z", "--zip", type=_str_arg_bool, default=False,
+        help="Log/s zip files (True/False)\nDefault: False"
+    ),
+    parser.add_argument("-v", "--verbose", type=_str_arg_bool, default=False,
         help="Enable Verbose logging (True/False)\nDefault: False"
+    ),
+    parser.add_argument("-sr", "--show_results", type=_str_arg_bool, default=True,
+        help="Show results (True/False)\nDefault: True"
     )
 
     args = parser.parse_args()
@@ -1318,20 +1101,20 @@ if __name__ == "__main__":
         parser.exit(1)
         sys.exit(1)
 
-    conf = build_conf(
-        algo = args.algo,
-        log_type = args.log_type,
-        log_dir = args.log_dir,
-        delta = args.delta,
-        call_back = args.call_back,
-        percent = args.percent,
-        spans = args.spans,
-        span_avg = args.span_avg,
-        variance = args.variance_per,
-        start_dte = args.start_dte,
-        end_dte = args.end_dte,
-        zip = args.zip,
-        verbose = args.verbose
-        )
-
-    main(conf)
+    main(algo = args.algo,
+         log_type = args.log_type,
+         log_dir = args.log_dir,
+         delta = args.delta,
+         call_back = args.call_back,
+         percent = args.percent,
+         spans = args.spans,
+         span_avg = args.span_avg,
+         variance = args.variance,
+         mad_score = args.mad_score,
+         start_dte = args.start_dte,
+         end_dte = args.end_dte,
+         write_file = args.write_file,
+         write_file_type = args.write_file_type,
+         zip = args.zip,
+         verbose = args.verbose,
+         show_results = args.show_results)

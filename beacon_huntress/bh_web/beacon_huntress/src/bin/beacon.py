@@ -1491,7 +1491,7 @@ def build_bronze_ds(config,start_dte,end_dte,beacon_group,group_id, filter_ds = 
 
     return df_bronze, is_new_bronze
 
-def cli_results(beacon_df, mad_df, conn_cnt = 0, avg_delta = 0):
+def cli_results(beacon_df, mad_df, conn_cnt = 0, avg_delta = 0, display_results = True):
     """
     Display the results of a gold file in the Command Line Interface (CLI).\n
 
@@ -1545,14 +1545,29 @@ def cli_results(beacon_df, mad_df, conn_cnt = 0, avg_delta = 0):
         df2.sort_values(by=["cluster_score", "mad_score"], inplace=True, ascending=False)
         num_b = df2["dns"].nunique()
 
-        logger.info("Only top 25 results are displayed!")
-        print("X" * 50, " POTENTIAL BEACONS ({})".format(num_b), "X" * 50)
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):  # more options can be specified also
-            print(df2.head(25))
-        print("X" * 121)
+        if display_results == False:
+            pass
+        else:
+            logger.info("Only top 25 results are displayed!")
+            print("X" * 50, " POTENTIAL BEACONS ({})".format(num_b), "X" * 50)
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 1000):  # more options can be specified also
+                print(df2.head(25))
+            print("X" * 121)
     else:
-        print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
-        print("NONE")
-        print("X" * 121)
+        if display_results == False:
+            pass
+        else:
+            print("X" * 50, " POTENTIAL BEACONS (0)", "X" * 50)
+            print("NONE")
+            print("X" * 121)
 
     return df2
+
+def cli_add_mad_scr(df, df_mad):
+
+    df_scr = df.merge(df_mad[["source_ip", "dest_ip", "port", "mad_score"]],how="left",left_on=["source_ip", "dest_ip", "port"], right_on=["source_ip", "dest_ip", "port"])
+
+    end_cols = ["delta_mins", "source_file", "src_row_id"]
+    df_scr = df_scr[[x for x in df_scr.columns if x not in end_cols] + end_cols]
+
+    return df_scr

@@ -147,6 +147,7 @@ def build_raw(src_file, dest_parquet_file, ds_type = "conn", start_dte = "", end
     elif ext == "csv":
         df = pd.read_csv(src_file)
     else:
+        logger.error("Extension option {} does not exist for a Raw File type!".format(ext))
         print("ERROR: Extension option {} does not exist for a Raw File type!".format(ext))
 
     # CHECK FOR DATES

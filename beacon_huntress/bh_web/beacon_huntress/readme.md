@@ -5,13 +5,10 @@
 > * [Home](../readme.md)
 > * [Overview](#overview)
 > * [How to use](#howtouse)
->   * [Docker Setup](#docker)
->   * [Tutorial](src/lib/documentation/tutorial.md)
->   * [User Interface](src/lib/documentation/interface.md)
->   * [Beacon Huntress Dashboard](src/lib/documentation/dashboard.md)
->   * [Jupyter Notebook](src/lib/documentation/jupyter.md)
+>   * [Arguments](#args)
+>   * [CLI](#cli)
+>   * [Module/Jupyter Notebook](#bhmod)
 > * [Beacons Algorithms](src/lib/documentation/beaconalgo.md)
-
 
 #
 ## <a name="overview"></a>__Overview__
@@ -19,25 +16,21 @@
 Beacon Huntress uses a combination of Python and Machine Learning to identify potential beacons.
 
 ### <a name="fs_beacons"></a>__Fast/Slow Beacon__
-Throughout this documentation you will see the terms <i>__Fast Beacon__</i> and <i>__Slow Beacon__</i>. These terms describe two different beaconing patterns according to the time interval that passes between connection events. 
+Throughout this documentation you will see the terms <i>__Fast Beacon__</i> and <i>__Slow Beacon__</i>. These terms describe two different beaconing patterns according to the time interval that passes between connection events.
 * A Fast Beacon is a beacon that has a short interval time.  We consider anything <= 5 minutes a <i>__Fast Beacon__</i>.
 * A Slow Beacon is a beacon that has a long interval time.  We consider anything > 5 minutes a <i>__Slow Beacon__</i>.
 
 > ### __Note__<br>
-> 
+>
 > Beacon Huntress was tested using HTTP/HTTPS beacons. This version of Beacon Huntress has not yet been tested using DNS beacons -- although it should work.
-
-<br>
-
 
 ## <a name="howtouse"></a>__How to use__
 
-Beacon Huntress can be used in two ways: via [Docker](#docker) or a [Jupyter Notebook](src/lib/documentation/runoptions.md#a-idjupyterajupyter-notebook).<br>
+This lightweight version of Beacon Huntress can be used in two ways: via [CLI](#cli) or loading the Beacon Huntress module [Module Run](#bhmod).<br>
 
 > ### __Note__<br>
-> 
+>
 > For the purposes of this documentation, Beacon Huntress is assumed to have been downloaded via Git.
-
 
 To run Beacon Huntress, you will need to answer the following questions:<br>
 
@@ -46,54 +39,150 @@ To run Beacon Huntress, you will need to answer the following questions:<br>
 3. How many minutes do potential beacons wait before calling back?  Are the beacons [Fast](#fs_beacons) or [Slow](#fs_beacons)?
 4. How many connections does a potential beacon need to have in order to be reported?
 
+## <a name="xx"></a>**XX**
 
+### Parameters
 
-With answers to these questions, you can begin to configure Beacon Huntress to run. Check the [Tutorial](src/lib/documentation/tutorial.md) section for an example.
+**algo**: *str*
+- Beacon Algorithm
+   - Quick Cluster Search = q or quick
+   - Cluster Search = c or cluster
+   - Agglomerative Clustering = a or agg
 
-> ### __Beacon Huntress Default Settings__<br>
-> * Raw Bro/Zeek logs are copied to /tmp/raw/data. <br>
-> * All connections using ports 80 and 443 are included. <br>
-> * Local connections, i.e. connections with 127.0.0.1 as the source or destination, are excluded.
-> * Various high-usage top sites are excluded. See [Default Filtered Hosts](src/lib/documentation/defaultfilteredhosts.md) for the list of filtered sites.
+**log_type**: *str*
+- Log File Type
+   - Zeek Connection = conn or c
+   - Http = http or h
+   - Delta File = delta or d
 
+**log_dir**: *str*
+- Raw Log Directory
+   - Example: '/tutorial'
 
-<br>
+**delta**: *int*
+- Average Delta time in minutes
+- Example: 25
 
-## <a name="docker"></a>__Docker Setup__
+**call_back**: *int*
+- Number of Beacon Callbacks
+   - Example: 10
 
-The quickest way to set up this software is via docker-compose. 
+**percent**: *int*
+- Likelihood Percentage Filter *ONLY CLUSTERING ALGOS*
+   - Example: 85
+
+**spans**: *list*
+- Spans you wish to search in list format. Minimum number of delta records to search using your delta column. *ONLY CLUSTER SEARCH (c/cluster)*
+   - Example: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
+   - Default: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
+
+**span_avg**: *int*
+- The percentage to increase and decrease from the connections total delta span *ONLY QUICK CLUSTER SEARCH ONLY (q/quick).
+   - Example: 15
+      - 15 will decrease 15% from the minimum and maximum delta span.
+   - Default: 15
+
+**variance**: *int*
+- The amount of allowed variance or jitter in percentage *ONLY QUICK CLUSTER SEARCH (q/quick)*
+   - Default: 15"
+
+**start_dte**:
+- Start Date for filters. Date or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank('') for no filter.
+   - Default: ''
+
+**end_dte**:
+- End Date for filters. Date or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank('') for no filter.
+   - Default: ''
+
+**write_file**: *bool*
+- Write results to files (True/False)
+   - Default: False
+
+**write_file_type**: *str*
+- Write results files as either CSV or Parquet
+   - Default: CSV
+
+**zip**: *bool*
+- Log/s are zip files (True/False)
+   - Default: False"
+
+**verbose**: *bool*
+- Enable Verbose logging (True/False)
+   - Default: False
+
+**show_results**: *bool*
+- Show results (True/False)
+   - Default: True
+
+## <a name="cli"></a>**CLI**
+
+The CLI is one way to run the software.
 
 Before starting, ensure the following:
 
-* Docker is installed and running (check with `docker --version` in the terminal).
-* Docker-compose is installed (check with `docker-compose --version` or `docker compose --version` in the terminal).
-* You have Zeek connection logs available.
-* You have downloaded the Valkyrie Framework.
+- You have downloaded the Valkyrie Framework.
 
+1. `cd` to the `bh_web/beacon_huntress/src` directory
+2. Activate the Python virtual environment.
 
-Good to go? OK, proceed with the following in the terminal:
+   **Linux**
+   ```bash
+   source BH/bin/activate
+   ```
 
-1. `cd` to the Valkyrie Framework directory
-2. Run `docker-compose up -d` or `docker compose up -d` depending on your docker version. This will create the database, and may take some time to complete.
-3. Note that some docker volumes were created.
-   - `_mysql` is your database, so that if the container stops, you do not lose previously saved data
-4. Visit http://127.0.0.1:8000 in your web browser to access the Beacon Huntress Web UI. 
-5. Continue to the [Tutorial](src/lib/documentation/tutorial.md) section for examples on how to start using Beacon Huntress.
+   **Windows**
+   ```cmd
+   BH\scripts\activate
+   ```
+3. Run a test using the tutorial dataset via the options below. The aggregated results will appear on the screen.
 
-For troubleshooting, check `docker logs -f beacon_huntress` to access Web UI logging.
+   **Linux**
+   ```bash
+   python3 beacon_huntress.py --algo "quick" --log_dir "../../datasets\tutorial" --log_type "conn" --delta 20 --call_back 10 --percent 85
+   ```
+
+   **Windows**
+   ```cmd
+   python3 beacon_huntress.py --algo "quick" --log_dir "..\..\datasets\tutorial" --log_type "conn" --delta 20 --call_back 10 --percent 85
+   ```
+4. All data will be writen to the cli_results directory located in the src directory. The exact location of the results will be printed on the screen, see example below.
+   ```cmd
+   08-26 15:06:54 INFO:    All export files are located in cli_results/8587e322-1d32-48fb-849d-0575e3021857
+   ```
+5. Available arguments can be listed by using the help menu `--help` or `-h`
+   ```cmd
+   python3 beacon_huntress.py --help
+   ```
+
+## <a name="bhmod"></a>**Beacon Huntress Module**
+
+You can also run Beacon Huntress via Python or a Jupyter Notebook. Below is an example to get the results for both Beacon Huntress and Top Talkers into a pandas DataFrame.
 
 > ### __Note__<br>
-> 
-> Beacon Huntress Docker containers will fail if you attempt to use any of the following ports:
-> * 3000 (Grafana)
-> * 3306 (MySQL)
-> * 8000 (Django)
+>
+> You must activate the Python Virtual Environment before using the code below.
 
-Once you have the list of IP's from the dashboard you should conduct further investigation and analysis of the Potential Beacons using tools such as nslookup, pcaps, etc. to assess their veracity. Depending on network traffic and Beacon Huntress configuration, some connections identified as Potential Beacons may not be malicious.  You can filter these sites out of the results; for more details see the [User Interface](src/lib/documentation/interface.md) documentation.
+```python
+# LOAD MODULES
+import pandas as pd
+from beacon_huntress import BeaconHuntress
 
+# RUN BEACON HUNTRESS
+bh = BeaconHuntress()
+val = bh.run(algo="quick",
+             log_type = "conn",
+             log_dir = "C:\\bh_cli\\beacon_huntress\\bh_web\\datasets\\tutorial\\",
+             delta = 20,
+             call_back = 10,
+             percent = 85,
+             show_results = False)
 
+# BEACON RESULTS
+df = pd.DataFrame.from_dict(val["results"],orient='columns')
 
-### See [Tutorial](src/lib/documentation/tutorial.md) for running Beacon Huntress.
+# TOP TALKERS
+df = pd.DataFrame.from_dict(val["top_talkers"],orient='columns')
+```
 
 #
 Valkyrie Framework<br>
