@@ -1,6 +1,5 @@
-![Beacon Huntress](src/lib/images/beacon_huntress.png)
-#
-## __Table of Contents__
+# Beacon Huntress CLI
+## **Table of Contents**
 
 > * [Home](../readme.md)
 > * [Overview](#overview)
@@ -11,24 +10,24 @@
 > * [Beacons Algorithms](src/lib/documentation/beaconalgo.md)
 
 #
-## <a name="overview"></a>__Overview__
+## <a name="overview"></a>**Overview**
 
 Beacon Huntress uses a combination of Python and Machine Learning to identify potential beacons.
 
-### <a name="fs_beacons"></a>__Fast/Slow Beacon__
-Throughout this documentation you will see the terms <i>__Fast Beacon__</i> and <i>__Slow Beacon__</i>. These terms describe two different beaconing patterns according to the time interval that passes between connection events.
-* A Fast Beacon is a beacon that has a short interval time.  We consider anything <= 5 minutes a <i>__Fast Beacon__</i>.
-* A Slow Beacon is a beacon that has a long interval time.  We consider anything > 5 minutes a <i>__Slow Beacon__</i>.
+### <a name="fs_beacons"></a>**Fast/Slow Beacon**
+Throughout this documentation you will see the terms <i>**Fast Beacon**</i> and <i>**Slow Beacon**</i>. These terms describe two different beaconing patterns according to the time interval that passes between connection events.
+* A Fast Beacon is a beacon that has a short interval time.  We consider anything <= 5 minutes a <i>**Fast Beacon**</i>.
+* A Slow Beacon is a beacon that has a long interval time.  We consider anything > 5 minutes a <i>**Slow Beacon**</i>.
 
-> ### __Note__<br>
+> ### **Note**<br>
 >
 > Beacon Huntress was tested using HTTP/HTTPS beacons. This version of Beacon Huntress has not yet been tested using DNS beacons -- although it should work.
 
-## <a name="howtouse"></a>__How to use__
+## <a name="howtouse"></a>**How to use**
 
 This lightweight version of Beacon Huntress can be used in two ways: via [CLI](#cli) or loading the Beacon Huntress module [Module Run](#bhmod).<br>
 
-> ### __Note__<br>
+> ### **Note**<br>
 >
 > For the purposes of this documentation, Beacon Huntress is assumed to have been downloaded via Git.
 
@@ -39,9 +38,9 @@ To run Beacon Huntress, you will need to answer the following questions:<br>
 3. How many minutes do potential beacons wait before calling back?  Are the beacons [Fast](#fs_beacons) or [Slow](#fs_beacons)?
 4. How many connections does a potential beacon need to have in order to be reported?
 
-## <a name="xx"></a>**XX**
+## <a name="args"></a>**Arguments**
 
-### Parameters
+Below are the available arguments for the CLI & Module.
 
 **algo**: *str*
 - Beacon Algorithm
@@ -111,7 +110,7 @@ To run Beacon Huntress, you will need to answer the following questions:<br>
    - Default: False
 
 **show_results**: *bool*
-- Show results (True/False)
+- Show CLI results (True/False)
    - Default: True
 
 ## <a name="cli"></a>**CLI**
@@ -158,7 +157,7 @@ Before starting, ensure the following:
 
 You can also run Beacon Huntress via Python or a Jupyter Notebook. Below is an example to get the results for both Beacon Huntress and Top Talkers into a pandas DataFrame.
 
-> ### __Note__<br>
+> ### **Note**<br>
 >
 > You must activate the Python Virtual Environment before using the code below.
 
@@ -171,7 +170,7 @@ from beacon_huntress import BeaconHuntress
 bh = BeaconHuntress()
 val = bh.run(algo="quick",
              log_type = "conn",
-             log_dir = "C:\\bh_cli\\beacon_huntress\\bh_web\\datasets\\tutorial\\",
+             log_dir = "..\\..\\datasets\\tutorial",
              delta = 20,
              call_back = 10,
              percent = 85,
@@ -181,7 +180,10 @@ val = bh.run(algo="quick",
 df = pd.DataFrame.from_dict(val["results"],orient='columns')
 
 # TOP TALKERS
-df = pd.DataFrame.from_dict(val["top_talkers"],orient='columns')
+df_tt = pd.DataFrame.from_dict(val["top_talkers"],orient='columns')
+
+# DISPLAY FIRST 5 RECORDS
+df.head(5)
 ```
 
 #
