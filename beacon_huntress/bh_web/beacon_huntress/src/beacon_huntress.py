@@ -995,6 +995,9 @@ def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,varian
         else:
             beacon_results["burst"] = df_burst.to_dict(orient="records")
 
+            # WRITE FILE
+            write_results(df_burst,group_id,write_file,"burst_results",write_file_type)
+
         # FINAL AGGREGATE RESULTS
         df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count, display_results=show_results)
 
