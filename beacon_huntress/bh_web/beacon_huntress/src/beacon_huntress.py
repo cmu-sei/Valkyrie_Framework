@@ -226,6 +226,8 @@ class BeaconHuntress:
             span_avg: int = 15,
             variance: int = 15,
             mad_score: int = 50,
+            burst: bool = False,
+            burst_pct: int = 300,
             start_dte = '',
             end_dte = '',
             write_file: bool = False,
@@ -261,17 +263,26 @@ class BeaconHuntress:
             Likelihood Percentage Filter *ONLY CLUSTERING ALGOS*
             - Example: 85
         **spans**: list
-            Spans you wish to search in list format. Minimum number of delta records to search using your delta column. *ONLY CLUSTER SEARCH (c/cluster)* 
+            Spans you wish to search in list format. Minimum number of delta records to search using your delta column. *ONLY CLUSTER SEARCH (c/cluster)*
             - Example: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
             - Default: [[0, 5], [2, 15], [15, 35], [30, 60], [60, 120], [480, 1440]]
         **span_avg**: int
-            The percentage to increase and decrease from the connections total delta span *ONLY QUICK CLUSTER SEARCH ONLY (q/quick). 
+            The percentage to increase and decrease from the connections total delta span *ONLY QUICK CLUSTER SEARCH ONLY (q/quick).
             - Example: 15
                 - 15 will decrease 15% from the minimum and maximum delta span.
             - Default: 15
         **variance**: int
             The amount of allowed variance or jitter in percentage *ONLY QUICK CLUSTER SEARCH (q/quick)*
-            - Default: 15"
+            - Default: 15
+        **mad_score**: int
+            Median Absolute Deviation (MAD) score filter. The minmuim percentage to show the results. Enter as integer value.
+            - Default: 50
+        **burst**: boolean
+            Run the Burst algorithm. Burst algorithm is based on the mean change in connections per delta minute.
+            - Default: False
+        **burst_pct**: int
+            The Burst percentage needed for Burst Report. Burst percentage is calculated based on the mean change in connections per delta minute. Enter as integer value.
+            - Default: 300
         **start_dte**:
             Start Date for filters. Date or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank('') for no filter.
             - Default: ''
@@ -299,7 +310,25 @@ class BeaconHuntress:
         dict
             Beacon Huntress results as a dictionary
         """
-        val = pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results)
+        val = pipeline(algo,
+                       log_type,
+                       log_dir,
+                       delta,
+                       call_back,
+                       percent,
+                       spans,
+                       span_avg,
+                       variance,
+                       mad_score,
+                       burst,
+                       burst_pct,
+                       start_dte,
+                       end_dte,
+                       write_file,
+                       write_file_type,
+                       zip,
+                       verbose,show_results
+                       )
 
         return val
 
@@ -332,7 +361,7 @@ def write_results(df,group_id,write_file,file_name,write_file_type):
         else:
             df.to_csv("cli_results/{}/{}.csv".format(group_id,file_name))
 
-def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results):
+def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,burst,burst_pct,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results):
 
     # Return Dictionary
     beacon_results = {}
@@ -876,6 +905,21 @@ def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,varian
         max_delta_file = None
 
     #####################################################################################
+    ##  Running Burst Algorithm
+    #####################################################################################
+
+    if burst:
+        logger.info("Running Burst algorithm")
+
+        df_burst = beacon.burst_algo(max_delta_file,burst_pct,ds_type)
+
+        if df_burst.empty:
+            logger.warning("No results for Burst algorithm!")
+    else:
+        df_burst = pd.DataFrame()
+        logger.debug("Burst algorithm skipped")
+
+    #####################################################################################
     ##  FINAL RESULTS
     #####################################################################################
 
@@ -943,8 +987,16 @@ def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,varian
             # WRITE FILE
             write_results(df_delta,group_id,write_file,"top_talker_results",write_file_type)
 
+        if df_burst.empty:
+            beacon_results["burst"] = {}
+
+            if burst == False:
+                logger.warning("No results for Burst algorithm!")
+        else:
+            beacon_results["burst"] = df_burst.to_dict(orient="records")
+
         # FINAL AGGREGATE RESULTS
-        df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count,display_results=show_results)
+        df_agg = beacon.cli_results(df_rt, df_mad, final_conn_count, display_results=show_results)
 
         # WRITE FILE
         write_results(df_agg,group_id,write_file,"top_talker_results",write_file_type)
@@ -1011,7 +1063,7 @@ def pipeline(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,varian
 ##  MAIN
 #####################################################################################
 
-def main(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results):
+def main(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,mad_score,burst,burst_pct,start_dte,end_dte,write_file,write_file_type,zip,verbose,show_results):
 
     # RUN VIA ARGS
     ret_val = pipeline(algo,
@@ -1024,6 +1076,8 @@ def main(algo,log_type,log_dir,delta,call_back,percent,spans,span_avg,variance,m
                        span_avg,
                        variance,
                        mad_score,
+                       burst,
+                       burst_pct,
                        start_dte,
                        end_dte,
                        write_file,
@@ -1069,6 +1123,12 @@ if __name__ == "__main__":
     parser.add_argument("-ms", "--mad_score", type=int, default=50,
         help = "Median Absolute Deviation (MAD) score filter. The minmuim percentage to show the results. Enter as integer value.\nDefault: 50"
     ),
+    parser.add_argument("-b", "--burst", type=_str_arg_bool, default=False,
+        help="Run Burst algorithm (True/False)\nDefault: False"
+    )
+    parser.add_argument("-bp", "--burst_pct", type=int, default=300,
+        help = "The Burst percentage needed for Burst Report. Burst percentage is calculated based on the mean change in connections per delta minute. Enter as integer value.\nDefault: 300"
+    ),
     parser.add_argument("-sd", "--start_dte",
         type=parse_arg_date,
         default='',
@@ -1111,6 +1171,8 @@ if __name__ == "__main__":
          span_avg = args.span_avg,
          variance = args.variance,
          mad_score = args.mad_score,
+         burst = args.burst,
+         burst_pct = args.burst_pct,
          start_dte = args.start_dte,
          end_dte = args.end_dte,
          write_file = args.write_file,

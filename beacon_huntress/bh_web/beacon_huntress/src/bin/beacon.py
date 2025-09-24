@@ -1571,3 +1571,58 @@ def cli_add_mad_scr(df, df_mad):
     df_scr = df_scr[[x for x in df_scr.columns if x not in end_cols] + end_cols]
 
     return df_scr
+
+def burst_algo(delta_file,percentage = 300,ds_type = "Zeek Connection Logs"):
+
+    cols = ["connection_id", "delta_mins", "sip", "dip", "port", "proto", "dns"]
+
+    df = pd.read_parquet(delta_file, columns=cols)
+
+    # CONVERT STRING COLS TO CATEGORIES
+    for col in ["sip", "dip", "proto", "dns"]:
+        df[col] = df[col].astype("category")
+
+    # DROP NULLS AND CONVERT TO SMALLER INT
+    df = df.dropna(subset=["delta_mins"]).copy()
+    df["delta_mins"] = df["delta_mins"].astype("int32")
+
+    # GROUP COUNTS
+    df_burst = (
+        df.groupby(["delta_mins", "connection_id"])
+        .size()
+        .reset_index(name="connection_count")
+    )
+
+    # COMPUTE GROUP MEANS
+    group_means = df_burst.groupby("delta_mins")["connection_count"].mean()
+    df_burst["group_mean"] = df_burst["delta_mins"].map(group_means)
+
+    # PERCENTAGE
+    df_burst["percentage"] = (
+        ((df_burst["connection_count"] - df_burst["group_mean"]) / df_burst["group_mean"]) * 100
+    ).astype("int32")
+
+    # FILTER BY PERCENTAGE
+    df_burst = df_burst.loc[df_burst["percentage"] >= percentage]
+
+    # MERGE WITH LOOKUP
+    df_lookup = df[["connection_id", "sip", "dip", "port", "proto", "dns"]].drop_duplicates("connection_id")
+    df_burst = df_burst.merge(df_lookup, on="connection_id", how="left")
+
+    # MODIFY FINAL DATAFRAME
+    df_ret = df_burst.rename(columns={
+        "sip": "source_ip",
+        "dip": "destination_ip",
+        "proto": "protocol",
+        "delta_mins": "delta_mins",
+        "connection_count": "connection_count"
+    })[
+        ["source_ip", "destination_ip", "port", "protocol", "dns",
+        "delta_mins", "connection_count", "group_mean", "percentage"]
+    ].drop_duplicates()
+
+    # FLIP DNS & DESTINATION IP FOR PROXY VALUES
+    if ds_type.lower() == "http file":
+        df_ret.rename(columns={"destination_ip": "dns", "dns": "destination_ip"}, inplace=True)
+
+    return df_ret

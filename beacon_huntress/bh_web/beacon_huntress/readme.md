@@ -85,6 +85,18 @@ Below are the available arguments for the CLI & Module.
 - The amount of allowed variance or jitter in percentage *ONLY QUICK CLUSTER SEARCH (q/quick)*
    - Default: 15"
 
+**mad_score**: *int*
+- Median Absolute Deviation (MAD) score filter. The minmuim percentage to show the results. Enter as integer value.
+   - Default: 50
+
+**burst**: *boolean*
+- Run the Burst algorithm. Burst algorithm is based on the mean change in connections per delta minute.
+   - Default: False
+
+**burst_pct**: *int*
+- The Burst percentage needed for Burst Report. Burst percentage is calculated based on the mean change in connections per delta minute. Enter as integer value.
+   - Default: 300
+
 **start_dte**:
 - Start Date for filters. Date or datetime in format 'YYYY-MM-DD' or 'YYYY-MM-DD HH:MM' or blank('') for no filter.
    - Default: ''
@@ -181,6 +193,40 @@ df = pd.DataFrame.from_dict(val["results"],orient='columns')
 
 # TOP TALKERS
 df_tt = pd.DataFrame.from_dict(val["top_talkers"],orient='columns')
+
+# DISPLAY FIRST 5 RECORDS
+df.head(5)
+```
+
+### Run with Burst Algorithm
+
+The burst algorithm measures the average change in connections over a given time interval (delta). For instance, if the group average for a 5-minute interval is 10 connections, you can flag any connection pair that exceeds the mean by a specified percentage (e.g., 300% above the mean). The burst algorithm is disabled by default, and when enabled, the default burst threshold percentage is set to 300%. The final results will display the source_ip, destination_ip, port, protocol, dns, delta_mins, connection_count, group_mean, percentage.
+
+```python
+# LOAD MODULES
+import pandas as pd
+from beacon_huntress import BeaconHuntress
+
+# RUN BEACON HUNTRESS
+bh = BeaconHuntress()
+val = bh.run(algo="quick",
+             log_type = "conn",
+             log_dir = "..\\..\\datasets\\tutorial",
+             delta = 20,
+             call_back = 10,
+             burst = True,
+             burst_pct = 300,
+             percent = 85,
+             show_results = False)
+
+# BEACON RESULTS
+df = pd.DataFrame.from_dict(val["results"],orient='columns')
+
+# TOP TALKERS
+df_tt = pd.DataFrame.from_dict(val["top_talkers"],orient='columns')
+
+# BURST RESULTS
+df_burst = pd.DataFrame.from_dict(val["burst"], orient="columns")
 
 # DISPLAY FIRST 5 RECORDS
 df.head(5)
